@@ -1,0 +1,24 @@
+html, body{
+    background-color:#EEEEEE;
+}
+#header{
+    border-bottom: 1px solid black;
+}
+#header .welcome{
+    margin: 0 10px;
+}
+#footer{
+    width: 100%;
+    border-top: 1px solid black;
+    margin-top: 20px;
+}
+.xblockvideo{
+    height:575px;
+    width:750px;
+}
+.center-text{
+    text-align: center;
+}
+#home h2{
+    margin: 20px 0;
+}
