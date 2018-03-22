@@ -48,6 +48,13 @@ class JournalAccess(TimeStampedModel):
     def __str__(self):
         return str(self.uuid)
 
+    @classmethod
+    def user_has_access(cls, user, journal):
+        """ Checks if the user has access to this journal """
+        access_items = cls.objects.filter(user=user).filter(journal=journal)
+        return True if access_items else False
+
+
 class JournalDocument(AbstractDocument):
     '''
     Override the base Document model so we can index the Document contents for search
@@ -257,7 +264,8 @@ class JournalPage(Page):
         if not request.user.is_authenticated():
             return HttpResponseRedirect('/login/')
         journal = self.get_parent_journal()
-        if not self.user_has_access_to_journal(request.user, journal):
+        has_access = JournalAccess.user_has_access(request.user, journal)
+        if not has_access:
             raise PermissionDenied
         return super(JournalPage, self).serve(request)
 
@@ -275,9 +283,3 @@ class JournalPage(Page):
             except:
                 logging.error("Cannot find parent of {}".format(self))
         return journal_about.journal
-    
-    def user_has_access_to_journal(self, user, journal):
-        """ Checks if the user has access to this journal """
-        access_items = JournalAccess.objects.filter(user=user).filter(journal=journal)
-        return True if access_items else False
-
