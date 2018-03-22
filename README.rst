@@ -1,26 +1,26 @@
-skateboard  |Travis|_ |Codecov|_
+journals  |Travis|_ |Codecov|_
 ===================================================
-.. |Travis| image:: https://travis-ci.org/edx/skateboard.svg?branch=master
-.. _Travis: https://travis-ci.org/edx/skateboard
+.. |Travis| image:: https://travis-ci.org/edx/journals.svg?branch=master
+.. _Travis: https://travis-ci.org/edx/journals
 
-.. |Codecov| image:: http://codecov.io/github/edx/skateboard/coverage.svg?branch=master
-.. _Codecov: http://codecov.io/github/edx/skateboard?branch=master
+.. |Codecov| image:: http://codecov.io/github/edx/journals/coverage.svg?branch=master
+.. _Codecov: http://codecov.io/github/edx/journals?branch=master
 
 The ``README.rst`` file should start with a brief description of the repository, which sets it in the context of other repositories under the ``edx`` organization. It should make clear where this fits in to the overall edX codebase. You may also want to provide a brief overview of the code in this repository, including the main components and useful entry points for starting to understand the code in more detail, or link to a comparable description in your repo's docs.
 
 Documentation
 -------------
-.. |ReadtheDocs| image:: https://readthedocs.org/projects/skateboard/badge/?version=latest
-.. _ReadtheDocs: http://skateboard.readthedocs.io/en/latest/
+.. |ReadtheDocs| image:: https://readthedocs.org/projects/journals/badge/?version=latest
+.. _ReadtheDocs: http://journals.readthedocs.io/en/latest/
 
-`Documentation <https://skateboard.readthedocs.io/en/latest/>`_ is hosted on Read the Docs. The source is hosted in this repo's `docs <https://github.com/edx/skateboard/tree/master/docs>`_ directory. To contribute, please open a PR against this repo.
+`Documentation <https://journals.readthedocs.io/en/latest/>`_ is hosted on Read the Docs. The source is hosted in this repo's `docs <https://github.com/edx/journals/tree/master/docs>`_ directory. To contribute, please open a PR against this repo.
 
 License
 -------
 
 The code in this repository is licensed under version 3 of the AGPL unless otherwise noted. Please see the LICENSE_ file for details.
 
-.. _LICENSE: https://github.com/edx/skateboard/blob/master/LICENSE
+.. _LICENSE: https://github.com/edx/journals/blob/master/LICENSE
 
 How To Contribute
 -----------------
@@ -49,18 +49,18 @@ To get started, please complete the following steps:
         1. Go to LMS Admin http://localhost:18000/admin/oauth2/client/
         2. Click the `Add client` button.
         3. Leave the user field blank.
-        4. Specify the name of this service, ``skateboard``, as the client name.
+        4. Specify the name of this service, ``journals``, as the client name.
         5. Set the `URL` to the root path of this service: ``http://localhost:18606/``.
         6. Set the `Redirect URL` to the OIDC client endpoint: ``http://localhost:18606/complete/edx-oidc/``.
-        7. Copy the `Client ID` and `Client Secret` values. They will be used later in `skateboard/settings/local.py`.
+        7. Copy the `Client ID` and `Client Secret` values. They will be used later in `journals/settings/local.py`.
         8. Select `Confidential (Web applications)` as the client type.
         9. Click `Save`.
     2. Trust OAuth client in LMS
         1. Go to http://localhost:18000/admin/edx_oauth2_provider/trustedclient/add/
         2. Select your newly-created client's redirect URL from the dropdown.
         3. Click ``Save``.
-    3. Edit your local skateboard settings file
-        1. Set the following values in `skateboard/settings/local.py`:
+    3. Edit your local journals settings file
+        1. Set the following values in `journals/settings/local.py`:
             +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
             | Setting                                             | Description                                                                | Value                                                                    |
             +=====================================================+============================================================================+==========================================================================+
@@ -95,7 +95,7 @@ To get started, please complete the following steps:
         4. Go to http://localhost:18000/admin/api_admin/apiaccessrequest/ and find the request tied to that user
         5. Change the status of the request to "Approved"
         6. Go to http://localhost:18000/api-admin/status/ to get your ID and Secret
-    3. Set the following values in `skateboard/settings/local.py`:
+    3. Set the following values in `journals/settings/local.py`:
         +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
         | Setting                                             | Description                                                                | Value                                                                    |
         +=====================================================+============================================================================+==========================================================================+
