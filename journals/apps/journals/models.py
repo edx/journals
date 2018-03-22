@@ -2,7 +2,8 @@ from __future__ import absolute_import, unicode_literals
 
 from django.db import models
 from django.conf import settings
-from django.http import HttpResponseRedirect 
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseRedirect
 
 from model_utils.models import TimeStampedModel
 
@@ -21,7 +22,10 @@ from wagtail.wagtailsearch import index
 
 import base64
 import json
+import logging
 import uuid
+
+logger = logging.getLogger(__name__)
 
 class Journal(models.Model):
     """
@@ -30,6 +34,9 @@ class Journal(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     name = models.CharField(max_length=256)
 
+    def __str__(self):
+        return self.name
+
 class JournalAccess(TimeStampedModel):
     """
     Represents a learner's access to a journal. 
@@ -37,6 +44,16 @@ class JournalAccess(TimeStampedModel):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(User)
     journal = models.ForeignKey(Journal)
+
+    def __str__(self):
+        return str(self.uuid)
+
+    @classmethod
+    def user_has_access(cls, user, journal):
+        """ Checks if the user has access to this journal """
+        access_items = cls.objects.filter(user=user).filter(journal=journal)
+        return True if access_items else False
+
 
 class JournalDocument(AbstractDocument):
     '''
@@ -97,7 +114,7 @@ class JournalAboutPage(Page):
     Represents both the base journal with it's metadata and the journal
     marketing page that displays that information.
     """
-    journal = models.ForeignKey(Journal, on_delete=models.SET_NULL, null=True, blank=True)
+    journal = models.OneToOneField(Journal, on_delete=models.SET_NULL, null=True, blank=True)
 
     parent_page_types = ['JournalIndexPage']
     subpage_types = ['JournalPage']
@@ -198,8 +215,8 @@ class JournalPage(Page):
     def get_context(self, request):
         context = super(JournalPage, self).get_context(request)
 
-        context['prevPage'] = self.get_prev_page()
-        context['nextPage'] = self.get_next_page()
+        # context['prevPage'] = self.get_prev_page()
+        # context['nextPage'] = self.get_next_page()
 
         return context
 
@@ -246,17 +263,23 @@ class JournalPage(Page):
     def serve(self, request):
         if not request.user.is_authenticated():
             return HttpResponseRedirect('/login/')
-        journal_uuid = '' # Get ancestors ID
-        has_access = '' # get_journal_access()
-
-        #if hasJournalAccess(user, )
+        journal = self.get_parent_journal()
+        has_access = JournalAccess.user_has_access(request.user, journal)
+        if not has_access:
+            raise PermissionDenied
         return super(JournalPage, self).serve(request)
 
-
-
-
-
-
-
-
-
+    def get_parent_journal(self):
+        """ Moves up tree of pages until it finds an about page and returns it's linked journal """
+        journal_about = None
+        parent = self.get_parent()
+        journal_about = parent.specific
+        while True:
+            if isinstance(parent.specific, JournalAboutPage):
+                journal_about = parent.specific
+                break
+            try:
+                parent = self.get_parent()
+            except:
+                logging.error("Cannot find parent of {}".format(self))
+        return journal_about.journal
