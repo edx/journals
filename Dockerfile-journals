@@ -1,0 +1,8 @@
+FROM edxops/python:3.6
+WORKDIR /edx/app/journals/journals
+ADD requirements.txt /edx/app/journals/journals/
+ADD Makefile /edx/app/journals/journals/
+ADD requirements/ /edx/app/journals/journals/requirements/
+RUN make requirements
+ADD . /edx/app/journals/journals
+EXPOSE 18606
