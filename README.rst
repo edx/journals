@@ -47,6 +47,7 @@ To get started, please complete the following steps:
 1. Configure edx OIDC
     1. Create OAuth client in LMS
         1. Go to LMS Admin http://localhost:18000/admin/oauth2/client/
+            1. Credentials: edx/edx
         2. Click the `Add client` button.
         3. Leave the user field blank.
         4. Specify the name of this service, ``journals``, as the client name.
