@@ -179,17 +179,7 @@ AUTHENTICATION_BACKENDS = (
 ENABLE_AUTO_AUTH = False
 AUTO_AUTH_USERNAME_PREFIX = 'auto_auth_'
 
-SOCIAL_AUTH_STRATEGY = 'auth_backends.strategies.EdxDjangoStrategy'
-
-# Set these to the correct values for your OAuth2/OpenID Connect provider (e.g., devstack)
-SOCIAL_AUTH_EDX_OIDC_KEY = 'replace-me'
-SOCIAL_AUTH_EDX_OIDC_SECRET = 'replace-me'
-SOCIAL_AUTH_EDX_OIDC_URL_ROOT = 'replace-me'
-SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT = 'replace-me'
-SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL = 'replace-me'
-SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY = SOCIAL_AUTH_EDX_OIDC_SECRET
-SOCIAL_AUTH_EDX_OIDC_ISSUER = 'replace-me'
-SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
+SOCIAL_AUTH_STRATEGY = 'journals.apps.social_auth.strategies.CurrentSiteDjangoStrategy'
 
 # Request the user's permissions in the ID token
 EXTRA_SCOPE = ['permissions']
@@ -249,15 +239,6 @@ LOGGING = {
         },
     }
 }
-
-# Added Custom
-
-LMS_BASE_INTERNAL_URL = '' # E.g. "http://edx.devstack.lms:18000"
-LMS_EXTERNAL_DOMAIN = ''  # E.g. "localhost:18000
-LMS_CLIENT_ID = '' # Obtained through api-admin interface
-LMS_CLIENT_SECRET = '' # Obtained through api-admin interface
-LMS_BLOCK_API_PATH = '' # E.g. "/api/courses/v1/blocks/"
-DEFAULT_VIDEO_COURSE_RUN_ID = '' # E.g. course-v1:edX%2BDemoX%2BDemo_Course
 
 # Wagtail Specific
 
