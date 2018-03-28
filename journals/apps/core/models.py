@@ -60,6 +60,24 @@ class SiteConfiguration(models.Model):
         blank=True
     )
 
+    discovery_api_url = models.URLField(
+        verbose_name=_('Discovery API URL'),
+        null=False,
+        blank=False,
+    )
+
+    ecommerce_api_url = models.URLField(
+        verbose_name=_('Ecommerce API URL'),
+        null=False,
+        blank=False,
+    )
+
+    ecommerce_public_url_root = models.URLField(
+        verbose_name=_('Ecommerce public base url'),
+        null=True,
+        blank=True
+    )
+
     oauth_settings = JSONField(
         verbose_name=_('OAuth settings'),
         help_text=_('JSON string containing OAuth backend settings.'),
@@ -105,4 +123,21 @@ class SiteConfiguration(models.Model):
 
     @property
     def lms_courses_api_client(self):
+        """ 
+        Returns an API client to the LMS courses API
+        """
         return EdxRestApiClient(self.build_lms_url('/api/courses/v1/'), jwt=self.access_token)
+
+    @property
+    def discovery_api_client(self):
+        """
+        Returns an API client to access the Discovery service.
+        """
+        return EdxRestApiClient(self.discovery_api_url, jwt=self.access_token)
+
+    @property
+    def ecommerce_api_client(self):
+        """
+        Returns an API client to access the Ecommerce service.
+        """
+        return EdxRestApiClient(self.ecommerce_api_url, jwt=self.access_token)
