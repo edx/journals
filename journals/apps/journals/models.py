@@ -2,18 +2,24 @@
 from __future__ import absolute_import, unicode_literals
 
 import base64
+import json
 import logging
+import requests
 import uuid
 
 from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
+from django.utils.translation import ugettext_lazy as _
+
+from edx_rest_api_client.client import EdxRestApiClient
 
 from model_utils.models import TimeStampedModel
 
 from journals.apps.core.models import User
 from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
-from journals.apps.journals.api_client.lms import JwtLmsApiClient
+
+from jsonfield.fields import JSONField
 
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailcore.fields import RichTextField, StreamField
@@ -25,12 +31,36 @@ from wagtail.wagtailsearch import index
 logger = logging.getLogger(__name__)
 
 
+class Organization(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    site = models.ForeignKey(
+        'wagtailcore.Site',
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        return self.name
+
+
 class Journal(models.Model):
     """
     A collection of informational articles to which access can be purchased.
     """
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=255)
+    video_course_ids = JSONField(
+        verbose_name=_('Video Source Course IDs'),
+        help_text=_('List of course IDs to pull videos from'),
+        null=False,
+        blank=False,
+        default={'course_runs': []}
+    )
+    organization = models.ForeignKey(
+        'Organization',
+        on_delete=models.CASCADE,
+        null=True
+    )
+
 
     def __str__(self):
         return self.name
@@ -86,9 +116,10 @@ class Video(index.Indexed, models.Model):
     Video model
     '''
     block_id = models.CharField(max_length=128, unique=True)
-    display_name = models.CharField(max_length=512)
-    view_url = models.URLField(max_length=512)
-    transcript_url = models.URLField(max_length=512)
+    display_name = models.CharField(max_length=255)
+    view_url = models.URLField(max_length=255)
+    transcript_url = models.URLField(max_length=255)
+    source_course_run = models.CharField(max_length=255)
 
     search_fields = [
         index.SearchField('display_name', partial_match=True),
@@ -102,8 +133,9 @@ class Video(index.Indexed, models.Model):
         to elasticsearch
         '''
         try:
-            contents = JwtLmsApiClient().get_video_transcript(self.transcript_url)
-            return contents.decode('utf-8') if contents else None
+            response = requests.get(self.transcript_url) # No auth needed for transcripts
+            contents = response.content
+            return contents.decode('utf-8') if contents else None 
         except Exception as err:
             print('Exception trying to read transcript', err)
             return None
