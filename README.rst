@@ -59,55 +59,21 @@ To get started, please complete the following steps:
         1. Go to http://localhost:18000/admin/edx_oauth2_provider/trustedclient/add/
         2. Select your newly-created client's redirect URL from the dropdown.
         3. Click ``Save``.
-    3. Edit your local journals settings file
-        1. Set the following values in `journals/settings/local.py`:
-            +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-            | Setting                                             | Description                                                                | Value                                                                    |
-            +=====================================================+============================================================================+==========================================================================+
-            | SOCIAL_AUTH_EDX_OIDC_KEY                            | OAuth 2.0 client key                                                       | (This should be set to the value of "Client id" generated from above)    |
-            +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-            | SOCIAL_AUTH_EDX_OIDC_SECRET                         | OAuth 2.0 client secret                                                    | (This should be set to the value of "Client secret" generated from above)|
-            +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-            | SOCIAL_AUTH_EDX_OIDC_URL_ROOT                       | OAuth 2.0 authentication URL                                               | http://edx.devstack.lms:18000/oauth2                                     |
-            +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-            | SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT                | OAuth 2.0 public authentication URL                                        | http://localhost:18000/oauth2                                            |
-            +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-            | SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL                     | OAuth 2.0 logout URL                                                       | http://localhost:18000/logout                                            |
-            +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-            | SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY        | OIDC ID token decryption key. This value is used to validate the ID token. | (This should be the same value as SOCIAL_AUTH_EDX_OIDC_SECRET.)          |
-            +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-            | SOCIAL_AUTH_EDX_OIDC_ISSUER                         | OIDC ID issuer.                                                            | http://edx.devstack.lms:18000/oauth2                                     |
-            +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-            | SOCIAL_AUTH_REDIRECT_IS_HTTPS                       | Determines whether Auth is forced over SSL                                 | False                                                                    |
-            +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-
-2. Initialize envionrment
+2. Create a Site Configuration
+    1. Go to http://localhost:18606/admin/core/siteconfiguration/add/
+    2. Set site to be your default site
+    3. Set `LMS base url` to `http://edx.devstack.lms:18000`
+    4. Set `LMS public base url` to `http://localhost:18000`
+    5. Set `OAuth settings` to the following JSON::
+        {
+            "SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY":"<<Client Secret generated from above>>",
+            "SOCIAL_AUTH_EDX_OIDC_URL_ROOT":"http://edx.devstack.lms:18000/oauth2",
+            "SOCIAL_AUTH_EDX_OIDC_ISSUERS":["http://edx.devstack.lms:18000"],
+            "SOCIAL_AUTH_EDX_OIDC_KEY":"<<Client ID generated from above>>",
+            "SOCIAL_AUTH_EDX_OIDC_SECRET":"<<Client Secret generated from above>>",
+            "SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT": "http://localhost:18000/oauth2",
+            "SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL":"http://localhost:18000/logout",
+            "SOCIAL_AUTH_EDX_OIDC_ISSUER":"http://edx.devstack.lms:18000/oauth2"
+        }
+3. Initialize envionrment
     1. Run `make dev.init`. This should create your containers, migrate your databases, and build your elastic search indexes.
-
-3. Set up connection with LMS
-    1. Enabled API Admin
-        1. Go to http://localhost:18000/admin/api_admin/apiaccessconfig/
-        2. Add a new item where enabled is checked true and save
-    2. Get a Client ID and Secret from LMS
-        1. Login to LMS (http://localhost:18000/login)
-        2. Go to http://localhost:18000/api-admin
-        3. Enter the requested fields (can be whatever) and click "Request API Access"
-        4. Go to http://localhost:18000/admin/api_admin/apiaccessrequest/ and find the request tied to that user
-        5. Change the status of the request to "Approved"
-        6. Go to http://localhost:18000/api-admin/status/ to get your ID and Secret
-    3. Set the following values in `journals/settings/local.py`:
-        +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-        | Setting                                             | Description                                                                | Value                                                                    |
-        +=====================================================+============================================================================+==========================================================================+
-        | LMS_BASE_INTERNAL_URL                               | URL to internal devstack LMS                                               | Probably "http://edx.devstack.lms:18000"                                 |
-        +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-        | LMS_EXTERNAL_DOMAIN                                 | URL to external devstack LMS                                               | Probably "http://localhost:18000"                                        |
-        +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-        | LMS_CLIENT_ID                                       | Client ID generated from Api-Admin request above                           | Alphanumeric string                                                      |
-        +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-        | LMS_CLIENT_SECRET                                   | Client Secret generated from Api-Admin request above                       | Alphanumeric string                                                      |
-        +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-        | LMS_BLOCK_API_PATH                                  | Location of course blocks api                                              | Probably "/api/courses/v1/blocks/"                                       |
-        +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
-        | DEFAULT_VIDEO_COURSE_RUN_ID                         | Course run ID that you want videos to be pulled from                       | For Demo course in Devstack "course-v1:edX%2BDemoX%2BDemo_Course"        |
-        +-----------------------------------------------------+----------------------------------------------------------------------------+--------------------------------------------------------------------------+
