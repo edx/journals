@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.translation import ugettext_lazy as _
 
-from journals.apps.core.models import User
+from journals.apps.core.models import User, SiteConfiguration
 
 
 class CustomUserAdmin(UserAdmin):
@@ -18,5 +18,8 @@ class CustomUserAdmin(UserAdmin):
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
 
+@admin.register(SiteConfiguration)
+class SiteConfigurationAdmin(admin.ModelAdmin):
+    pass
 
 admin.site.register(User, CustomUserAdmin)
