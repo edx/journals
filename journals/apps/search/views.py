@@ -1,3 +1,4 @@
+'''Search view class'''
 from __future__ import absolute_import, unicode_literals
 
 from journals.apps.journals.models import JournalDocument, JournalPage, Video
@@ -11,6 +12,7 @@ from wagtail.wagtailsearch.models import Query
 MATCH_PHRASE_START_CHAR = '\"'
 MATCH_PHRASE_END_CHAR = '\"'
 
+
 class SearchDisplay:
     '''
     This class encapsulate search results in a form easily
@@ -18,13 +20,13 @@ class SearchDisplay:
     the top level page where the hit was found and a list of
     objects (i.e. Video, Documents) where the hit was found
     '''
-    def __init__(self, journal_subpage):
-        self.journal_subpage = journal_subpage
-        if not hasattr(self.journal_subpage, 'score'):
-            setattr(self.journal_subpage, 'score', 0)
-        self.hit_list = [self.journal_subpage]
-        self.max_score = self.journal_subpage.score
-        self._set_type(self.journal_subpage)
+    def __init__(self, journal_page):
+        self.journal_page = journal_page
+        if not hasattr(self.journal_page, 'score'):
+            setattr(self.journal_page, 'score', 0)
+        self.hit_list = [self.journal_page]
+        self.max_score = self.journal_page.score
+        self._set_type(self.journal_page)
 
     def add_hit(self, hit):
         self.hit_list.append(hit)
@@ -81,11 +83,11 @@ def search(request):
 
         for hit in page_search_results + doc_search_results + video_search_results:
             if isinstance(hit, JournalPage):
-                results[hit.id] = SearchDisplay(journal_subpage=hit)
+                results[hit.id] = SearchDisplay(journal_page=hit)
             elif isinstance(hit, JournalDocument) or isinstance(hit, Video):
-                page_set = hit.JournalPage.all().distinct()
+                page_set = hit.journalpage_set.all().distinct()
                 for parent_page in page_set:
-                    results.setdefault(parent_page.id, SearchDisplay(journal_subpage=parent_page)).add_hit(hit)
+                    results.setdefault(parent_page.id, SearchDisplay(journal_page=parent_page)).add_hit(hit)
 
         # Transform dict into sorted list (by score) of SearchDisplay objects
         sorted_results = sorted(results.values(), key=lambda page: page.max_score, reverse=True)

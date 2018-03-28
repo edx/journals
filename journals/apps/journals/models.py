@@ -1,7 +1,11 @@
+'''Journal Models'''
 from __future__ import absolute_import, unicode_literals
 
+import base64
+import logging
+import uuid
+
 from django.db import models
-from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 
@@ -14,18 +18,12 @@ from journals.apps.journals.api_client.lms import JwtLmsApiClient
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailcore.fields import RichTextField, StreamField
 from wagtail.wagtailcore.models import Page
-from wagtail.wagtaildocs.blocks import DocumentChooserBlock
 from wagtail.wagtaildocs.models import AbstractDocument, Document
-from wagtail.wagtailimages.blocks import ImageChooserBlock
 from wagtail.wagtailimages.models import Image
 from wagtail.wagtailsearch import index
 
-import base64
-import json
-import logging
-import uuid
-
 logger = logging.getLogger(__name__)
+
 
 class Journal(models.Model):
     """
@@ -37,9 +35,10 @@ class Journal(models.Model):
     def __str__(self):
         return self.name
 
+
 class JournalAccess(TimeStampedModel):
     """
-    Represents a learner's access to a journal. 
+    Represents a learner's access to a journal.
     """
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(User)
@@ -51,6 +50,9 @@ class JournalAccess(TimeStampedModel):
     @classmethod
     def user_has_access(cls, user, journal):
         """ Checks if the user has access to this journal """
+        if user.is_staff:
+            return True
+
         access_items = cls.objects.filter(user=user).filter(journal=journal)
         return True if access_items else False
 
@@ -68,15 +70,21 @@ class JournalDocument(AbstractDocument):
     admin_form_fields = Document.admin_form_fields
 
     def data(self):
-        # return the contents of the document, base64 encoded
-        # data used as input to elasticsearch ingest-attachment plugin
+        '''
+        Return the contents of the document as base64 encoded
+        data used as input to elasticsearch ingest-attachment plugin
+        '''
         self.file.open()
         contents = base64.b64encode(self.file.read()).decode('ascii')
         self.file.close()
         print('in get data for file=', self.file.name)
         return contents
 
+
 class Video(index.Indexed, models.Model):
+    '''
+    Video model
+    '''
     block_id = models.CharField(max_length=128, unique=True)
     display_name = models.CharField(max_length=512)
     view_url = models.URLField(max_length=512)
@@ -109,6 +117,7 @@ from .blocks import (
     PDF_BLOCK_TYPE, VIDEO_BLOCK_TYPE, IMAGE_BLOCK_TYPE, RICH_TEXT_BLOCK_TYPE, RAW_HTML_BLOCK_TYPE,
     TOC_BLOCK_TYPE, STREAM_DATA_DOC_FIELD, STREAM_DATA_TYPE_FIELD)
 
+
 class JournalAboutPage(Page):
     """
     Represents both the base journal with it's metadata and the journal
@@ -126,7 +135,7 @@ class JournalIndexPage(Page):
     Publicly available.
     """
     subpage_types = ['JournalAboutPage']
-    
+
     intro = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [
@@ -138,9 +147,9 @@ class JournalIndexPage(Page):
         index.SearchField('search_description', partial_match=True)
     ]
 
-    def get_context(self, request):
+    def get_context(self, request, *args, **kwargs):
         # Update context to include only published pages
-        context = super(JournalIndexPage, self).get_context(request)
+        context = super(JournalIndexPage, self).get_context(request, args, kwargs)
         context['journalaboutpage'] = self.get_children().live()
         return context
 
@@ -150,12 +159,13 @@ class JournalPage(Page):
     A page inside a journal. These can be nested indefinitely. Restricted to
     users who purchased access to the journal.
     """
-
     parent_page_types = ['JournalAboutPage', 'JournalPage']
     subpage_types = ['JournalPage']
 
     body = StreamField([
-        (RICH_TEXT_BLOCK_TYPE, JournalRichTextBlock(features=['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image'])),
+        (RICH_TEXT_BLOCK_TYPE, JournalRichTextBlock(
+            features=['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image']
+        )),
         (RAW_HTML_BLOCK_TYPE, JournalRawHTMLBlock()),
         (IMAGE_BLOCK_TYPE, JournalImageChooserBlock()),
         (PDF_BLOCK_TYPE, PDFBlock()),
@@ -202,18 +212,18 @@ class JournalPage(Page):
 
         for data in self.body.stream_data:
             # TODO: search for images/docs embedded in RichText block as well
-            type = data.get(STREAM_DATA_TYPE_FIELD, None)
-            if documents and type == PDF_BLOCK_TYPE:
+            block_type = data.get(STREAM_DATA_TYPE_FIELD, None)
+            if documents and block_type == PDF_BLOCK_TYPE:
                 doc_set.add(JournalDocument.objects.get(id=data.get('value').get(STREAM_DATA_DOC_FIELD)))
-            elif videos and type == VIDEO_BLOCK_TYPE:
+            elif videos and block_type == VIDEO_BLOCK_TYPE:
                 video_set.add(Video.objects.get(id=data.get('value').get('video')))
-            elif images and type == IMAGE_BLOCK_TYPE:
+            elif images and block_type == IMAGE_BLOCK_TYPE:
                 image_set.add(Image.objects.get(id=data.get('value')))
 
         return doc_set, video_set, image_set
 
-    def get_context(self, request):
-        context = super(JournalPage, self).get_context(request)
+    def get_context(self, request, *args, **kwargs):
+        context = super(JournalPage, self).get_context(request, args, kwargs)
 
         # context['prevPage'] = self.get_prev_page()
         # context['nextPage'] = self.get_next_page()
@@ -259,15 +269,14 @@ class JournalPage(Page):
         children = self.get_descendants()
         return children[len(children) - 1] if children else None
 
-
-    def serve(self, request):
+    def serve(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
             return HttpResponseRedirect('/login/')
         journal = self.get_parent_journal()
         has_access = JournalAccess.user_has_access(request.user, journal)
         if not has_access:
             raise PermissionDenied
-        return super(JournalPage, self).serve(request)
+        return super(JournalPage, self).serve(request, args, kwargs)
 
     def get_parent_journal(self):
         """ Moves up tree of pages until it finds an about page and returns it's linked journal """
