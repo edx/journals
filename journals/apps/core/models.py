@@ -66,6 +66,12 @@ class SiteConfiguration(models.Model):
         blank=False,
     )
 
+    discovery_journal_api_url = models.URLField(
+        verbose_name=_('Discovery API URL for Journal Endpoint'),
+        null=False,
+        blank=False,
+    )
+
     ecommerce_api_url = models.URLField(
         verbose_name=_('Ecommerce API URL'),
         null=False,
@@ -134,6 +140,13 @@ class SiteConfiguration(models.Model):
         Returns an API client to access the Discovery service.
         """
         return EdxRestApiClient(self.discovery_api_url, jwt=self.access_token)
+
+    @property
+    def discovery_journal_api_client(self):
+        """
+        Returns an API client to access the Discovery service.
+        """
+        return EdxRestApiClient(self.discovery_journal_api_url, jwt=self.access_token)
 
     @property
     def ecommerce_api_client(self):
