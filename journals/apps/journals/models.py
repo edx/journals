@@ -2,6 +2,7 @@
 from __future__ import absolute_import, unicode_literals
 
 import base64
+import datetime
 import json
 import logging
 import requests
@@ -27,6 +28,7 @@ from wagtail.wagtailcore.models import Page
 from wagtail.wagtaildocs.models import AbstractDocument, Document
 from wagtail.wagtailimages.models import Image
 from wagtail.wagtailsearch import index
+
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +62,7 @@ class Journal(models.Model):
         on_delete=models.CASCADE,
         null=True
     )
-
+    access_length = models.DurationField()
 
     def __str__(self):
         return self.name
@@ -73,6 +75,7 @@ class JournalAccess(TimeStampedModel):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     user = models.ForeignKey(User)
     journal = models.ForeignKey(Journal)
+    expiration_date = models.DateField()
 
     def __str__(self):
         return str(self.uuid)
@@ -83,8 +86,27 @@ class JournalAccess(TimeStampedModel):
         if user.is_staff:
             return True
 
-        access_items = cls.objects.filter(user=user).filter(journal=journal)
+        access_items = cls.objects.filter(
+            user=user
+        ).filter(
+            journal=journal
+        ).filter(
+            expiration_date__lte=datetime.date.today()
+        )
         return True if access_items else False
+
+    @classmethod
+    def create_journal_access(cls, user, journal):
+        """ Creates new journal access for user """
+        expiration_date = datetime.datetime.now() + journal.access_length
+
+        access = cls.objects.create(
+            user=user, 
+            journal=journal,
+            expiration_date=expiration_date,
+        )
+        access.save()
+        return access
 
 
 class JournalDocument(AbstractDocument):
