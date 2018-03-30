@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 
 
 class Organization(models.Model):
+    '''Organization Model'''
     name = models.CharField(max_length=255, unique=True)
     site = models.ForeignKey(
         'wagtailcore.Site',
@@ -45,6 +46,22 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class JournalManager(models.Manager):
+    '''Custom model manager for Journals'''
+
+    def create_journal(self, name, org_name, access_length):
+        organization = Organization.objects.get(name=org_name)
+
+        if organization:
+            journal = self.create(
+                name=name, organization=organization, access_length=datetime.timedelta(days=access_length)
+            )
+            return journal
+        else:
+            logger.log('Could not find matching organization for %s', org_name)
+            return None
 
 
 class Journal(models.Model):
@@ -63,12 +80,79 @@ class Journal(models.Model):
     organization = models.ForeignKey(
         'Organization',
         on_delete=models.CASCADE,
-        null=True
+        null=False
     )
     access_length = models.DurationField()
+    objects = JournalManager()
+
+    class Meta(object):
+        unique_together = (
+            ('name', 'organization')
+        )
 
     def __str__(self):
         return self.name
+
+
+class JournalMetaData(object):
+    '''
+    JournalMetaData model is used to encapsulate data that is shared with
+    discovery-service and ecommerce-service
+    NOTE: this is not a database model, just an object wrapper for metadata
+    '''
+    def __init__(self, journal_about_page, price, currency, sku):
+        self.journal_about_page = journal_about_page
+        self.journal = journal_about_page.journal
+        self.price = price
+        self.currency = currency
+        self.sku = sku
+
+        # add 10 years to current date, TODO not sure how to pass NULL to 
+        # ecommerce post
+        startDate = datetime.datetime.now()
+        endDate = startDate.replace(startDate.year + 10)
+        self.expires = str(endDate)
+
+    def get_discovery_data(self):
+        '''return data shared with discovery service'''
+        return {
+            'uuid': str(self.journal.uuid),
+            'partner': self.journal.organization.site.siteconfiguration.discovery_partner_id,
+            'organization': self.journal.organization.name,
+            'title': self.journal.name,
+            'price': self.price,
+            'currency': self.currency,
+            'sku': self.sku,
+            'access_length': self.journal.access_length.days,
+            'card_image_url': self.journal_about_page.card_image.file if self.journal_about_page.card_image else '',
+            'short_description': self.journal_about_page.short_description,
+            'full_description': self.journal_about_page.long_description
+        }
+
+    def get_ecommerce_data(self):
+        '''get ecommerce product data'''
+        return {
+            'structure': 'standalone',
+            'product_class': 'Journal',
+            'title': self.journal.name,
+            'expires': self.expires,
+            'attribute_values': [
+                {
+                    'name': 'UUID',
+                    'code': 'UUID',
+                    'value': str(self.journal.uuid)
+                }
+            ],
+            'stockrecords': [{
+                'partner': self.journal.organization.site.siteconfiguration.ecommerce_partner_id,
+                'partner_sku': self.sku,
+                'price_currency': self.currency,
+                'price_excl_tax': self.price
+            }]
+        }
+
+    def __str__(self):
+        return self.title
 
 
 class JournalAccess(TimeStampedModel):
@@ -94,7 +178,7 @@ class JournalAccess(TimeStampedModel):
         ).filter(
             journal=journal
         ).filter(
-            expiration_date__lte=datetime.date.today()
+            expiration_date__gte=datetime.date.today()
         )
         return True if access_items else False
 
@@ -183,10 +267,10 @@ class JournalAboutPage(Page):
     journal = models.OneToOneField(Journal, on_delete=models.SET_NULL, null=True, blank=True)
     # title = journal.title ???
     card_image = models.ForeignKey(
-        'wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True
+        'wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True, blank=True
     )
     hero_image = models.ForeignKey(
-        'wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True
+        'wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True, blank=True
     )
     short_description = models.CharField(max_length=128, blank=True, default='')
     long_description = models.TextField(blank=True, default=None, null=True)
@@ -248,7 +332,7 @@ class JournalIndexPage(Page):
     subpage_types = ['JournalAboutPage']
 
     hero_image = models.ForeignKey(
-        'wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True
+        'wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True, blank=True
     )
     intro = RichTextField(blank=True)
 
@@ -261,12 +345,6 @@ class JournalIndexPage(Page):
         index.SearchField('intro', partial_match=True),
         index.SearchField('search_description', partial_match=True)
     ]
-
-    def get_context(self, request, *args, **kwargs):
-        # Update context to include only published pages
-        context = super(JournalIndexPage, self).get_context(request, args, kwargs)
-        context['journalaboutpage'] = self.get_children().live()
-        return context
 
 
 class JournalPage(Page):
