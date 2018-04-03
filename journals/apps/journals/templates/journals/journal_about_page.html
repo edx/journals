@@ -1,20 +1,36 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% load wagtailcore_tags %}
-
+{% load wagtailimages_tags %}
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/journal_about_page.css' %}">
+{% endblock %}
 {% block content %}
-    <div id="journal-page" class="container">
+    {% image page.hero_image width-1920 as hero_photo %}
+    <div class="hero"
+        style="background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5) ), url({{hero_photo.url}});">
+        <div id="journal-about-hero" class="container">
+            <div class="row">
+                <div class="col col-12">
+                    <h1>{{ page.title }}</h1>
+                    <h2>{{ page.short_description }}</h2>
+                    {% if user_has_access %}
+                    <a href="{{root_journal_page_url}}" class="btn btn-success">View Now</a>
+                    {% else %}
+                    <a href="{{buy_button_url}}" class="btn btn-success">Get Access</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="journal-about-content" class="container">
         <div class="row">
-            <div class="col-12 content">
-                <h1>{{ page.title }}</h1>
-                <p>Available Journals:</p>
-                <ul>
-                    {% for child in page.get_children %}
-                    <li>
-                        <a href="{{child.url}}">{{child.title}}</a>
-                    </li>
-                    {% endfor %}
-                </ul>
+            <div class="col col-12 content">
+                <p>{{ page.long_description }}</p>
+                <div>
+                    {{ page.custom_content|richtext }}
+                </div>
             </div>
         </div>
     </div>

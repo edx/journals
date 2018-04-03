@@ -8,12 +8,12 @@ class JournalAboutPageAdmin(admin.ModelAdmin):
 
 @admin.register(Journal)
 class JournalAdmin(admin.ModelAdmin):
-    fields = ('uuid', 'journalaboutpage', 'name', 'access_length')
+    fields = ('uuid', 'journalaboutpage', 'name', 'access_length', 'organization')
     readonly_fields = ('uuid', 'journalaboutpage')
 
 @admin.register(JournalAccess)
 class JournalAccessAdmin(admin.ModelAdmin):
-    fields = ('uuid', 'user', 'journal', 'expiration_date', )
+    fields = ('uuid', 'user', 'journal', 'expiration_date')
     readonly_fields = ('uuid',)
 
 # Default admin pages below

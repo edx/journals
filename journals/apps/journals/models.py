@@ -22,7 +22,10 @@ from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 
 from jsonfield.fields import JSONField
 
+from urllib.parse import urlsplit, urlunsplit
+
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
+from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailcore.fields import RichTextField, StreamField
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtaildocs.models import AbstractDocument, Document
@@ -101,7 +104,7 @@ class JournalAccess(TimeStampedModel):
         expiration_date = datetime.datetime.now() + journal.access_length
 
         access = cls.objects.create(
-            user=user, 
+            user=user,
             journal=journal,
             expiration_date=expiration_date,
         )
@@ -157,7 +160,7 @@ class Video(index.Indexed, models.Model):
         try:
             response = requests.get(self.transcript_url) # No auth needed for transcripts
             contents = response.content
-            return contents.decode('utf-8') if contents else None 
+            return contents.decode('utf-8') if contents else None
         except Exception as err:
             print('Exception trying to read transcript', err)
             return None
@@ -178,9 +181,61 @@ class JournalAboutPage(Page):
     marketing page that displays that information.
     """
     journal = models.OneToOneField(Journal, on_delete=models.SET_NULL, null=True, blank=True)
+    # title = journal.title ???
+    card_image = models.ForeignKey(
+        'wagtailimages.Image', on_delete=models.CASCADE, related_name='+', null=True
+    )
+    hero_image = models.ForeignKey(
+        'wagtailimages.Image', on_delete=models.CASCADE, related_name='+', null=True
+    )
+    short_description = models.CharField(max_length=128, blank=True, default='')
+    long_description = models.TextField(blank=True, default=None, null=True)
+    custom_content = RichTextField(blank=True)
+
+
+    content_panels = Page.content_panels + [
+        FieldPanel('short_description'),
+        FieldPanel('long_description'),
+        ImageChooserPanel('card_image'),
+        ImageChooserPanel('hero_image'),
+        FieldPanel('custom_content'),
+    ]
 
     parent_page_types = ['JournalIndexPage']
     subpage_types = ['JournalPage']
+
+    def get_context(self, request, *args, **kwargs):
+        # Update context to include only published pages
+        context = super(JournalAboutPage, self).get_context(request, args, kwargs)
+        context['root_journal_page_url'] = self.root_journal_page_url
+        if request.user.is_authenticated():
+            context['user_has_access'] = JournalAccess.user_has_access(request.user, self.journal)
+        else:
+            context['user_has_access'] = False
+        discovery_journal_api_client = self.site.siteconfiguration.discovery_journal_api_client
+        journal_data = discovery_journal_api_client.journals(self.journal.uuid).get()
+        context['buy_button_url'] = self.generate_basket_url(journal_data['sku'])
+        return context
+
+    def generate_basket_url(self, sku):
+        ecommerce_base_url = self.site.siteconfiguration.ecommerce_public_url_root
+        (scheme, netloc, _, _, _) = urlsplit(ecommerce_base_url)
+        basket_url = urlunsplit((
+            scheme,
+            netloc,
+            '/basket/add/',
+            f'sku={sku}',
+            ''
+        ))
+        return basket_url
+
+    @property
+    def site(self):
+        return self.journal.organization.site
+
+    @property
+    def root_journal_page_url(self):
+        return self.get_descendants()[0].full_url
 
 
 class JournalIndexPage(Page):
