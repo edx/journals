@@ -25,3 +25,17 @@ html, body{
 .content{
     margin-top: 20px;
 }
+.navbar-brand img{
+    height:30px;
+}
+.hero {
+    min-height: 350px;
+    background-size: cover !important;
+    background-repeat: no-repeat !important;
+    color: white;
+    display:flex;
+    align-items:center;
+}
+.hero h1{
+    margin: 20px 0;
+}

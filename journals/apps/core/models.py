@@ -92,6 +92,8 @@ class SiteConfiguration(models.Model):
         default={}
     )
 
+    site_logo = models.ImageField(verbose_name="Header/Footer Logo", null=True)
+
     def build_lms_url(self, path=''):
         """
         Returns path joined with the appropriate LMS URL root for the current site.
@@ -129,7 +131,7 @@ class SiteConfiguration(models.Model):
 
     @property
     def lms_courses_api_client(self):
-        """ 
+        """
         Returns an API client to the LMS courses API
         """
         return EdxRestApiClient(self.build_lms_url('/api/courses/v1/'), jwt=self.access_token)

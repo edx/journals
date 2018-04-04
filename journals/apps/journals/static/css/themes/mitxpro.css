@@ -1,0 +1,13 @@
+html, body{
+    background-color: #f5f5f5;
+}
+.journal-card {
+    border-bottom: 5px solid #a31f34;
+}
+.journal-card:hover {
+    border: 1px solid #a31f34;
+    border-bottom: 5px solid #a31f34;
+}
+.journal-card-title{
+    color: #a31f34;
+}

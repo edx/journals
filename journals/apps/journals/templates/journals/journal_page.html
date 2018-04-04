@@ -3,9 +3,9 @@
 {% load wagtailcore_tags %}
 
 {% block content %}
-    <div id="journal-sub-page" class="container">
+    <div id="journal-sub-page" class="container content">
         <div class="row">
-            <div class="col-12 content">
+            <div class="col-12">
                 <h1>{{ page.title }}</h1>
                     {% for child in page.get_children %}
                     <a href="{{child.url}}">{{child.title}}</a>

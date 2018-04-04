@@ -1,21 +1,53 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% load wagtailcore_tags %}
+{% load wagtailimages_tags %}
+
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/journal_index_page.css' %}">
+{% endblock %}
 
 {% block content %}
-    <div id="journal-index-page" class="container">
-        <div class="row">
-            <div class="col-12 content">
-                <h1>{{ page.title }}</h1>
-                <p>Available Journals:</p>
-                <ul>
-                    {% for child in page.get_children %}
-                    <li>
-                        <a href="{{child.url}}">{{child.title}}</a>
-                    </li>
-                    {% endfor %}
-                </ul>
+    {% image page.hero_image width-1920 as hero_photo %}
+    <div class="hero"
+        style="background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5) ), url({{hero_photo.url}});">
+        <div id="journal-index-hero" class="container">
+            <div class="row">
+                <div class="col col-12">
+                    <h1 class="title">{{ page.title }}</h1>
+                </div>
             </div>
+        </div>
+    </div>
+    <div id="journal-index-page" class="container content">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="journal-list-header">Available Journals</h2>
+            </div>
+        </div>
+        <div class="row journal-card-row">
+            {% for child in page.get_children %}
+            <div class="col-12 col-lg-4">
+                <a href="{{child.url}}">
+                    <div class="journal-card">
+                        <div class="journal-card-image">
+                            {% image child.specific.card_image width-720 as card_image %}
+                            <img src="{{card_image.url}}" alt="{{card_image}}" >
+                        </div>
+                        <div class="journal-card-organization">
+                            {{child.specific.journal.organization}}
+                        </div>
+                        <div class="journal-card-title">
+                            {{child.title}}
+                        </div>
+                        <div class="journal-card-link">
+                            <button class="btn btn-secondary">Learn More</button>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
         </div>
     </div>
 {% endblock %}
