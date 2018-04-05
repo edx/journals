@@ -29,6 +29,10 @@
         {% block extra_css %}
             {# Override this in templates to add extra stylesheets #}
         {% endblock %}
+
+        {# Theming overrides #}
+        <link rel="stylesheet" type="text/css" href="{% static 'css/themes/mitxpro.css' %}">
+
     </head>
 
     <body class="{% block body_class %}{% endblock %}">
@@ -39,7 +43,8 @@
 
         {% block content %}{% endblock %}
 
-        {%include "footer.html" %}
+        {# Hide footer untils it's decided it's needed #}
+        {# {%include "footer.html" %} #}
 
         {# Global javascript #}
         <script type="text/javascript" src="{% static 'js/jquery.min.js' %}"></script>

@@ -1,11 +1,3 @@
-.hero {
-    background-size: cover !important;
-    background-repeat: no-repeat !important;
-    color: white;
-}
-.hero h1{
-    margin: 20px 0;
-}
 #journal-about-hero .col{
     margin-top: 20px;
     margin-bottom: 20px;

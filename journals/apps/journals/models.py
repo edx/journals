@@ -245,10 +245,14 @@ class JournalIndexPage(Page):
     """
     subpage_types = ['JournalAboutPage']
 
+    hero_image = models.ForeignKey(
+        'wagtailimages.Image', on_delete=models.CASCADE, related_name='+', null=True
+    )
     intro = RichTextField(blank=True)
 
     content_panels = Page.content_panels + [
-        FieldPanel('intro', classname="full")
+        ImageChooserPanel('hero_image'),
+        FieldPanel('intro', classname="full"),
     ]
 
     search_fields = Page.search_fields + [
