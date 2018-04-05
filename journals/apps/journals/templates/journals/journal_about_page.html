@@ -18,7 +18,7 @@
                     {% if user_has_access %}
                     <a href="{{root_journal_page_url}}" class="btn btn-success">View Now</a>
                     {% else %}
-                    <a href="{{buy_button_url}}" class="btn btn-success">Get Access</a>
+                    <a href="{{buy_button_url}}" class="btn btn-success">Purchase Access (${{journal_data.price}})</a>
                     {% endif %}
                 </div>
             </div>

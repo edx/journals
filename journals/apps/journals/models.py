@@ -183,10 +183,10 @@ class JournalAboutPage(Page):
     journal = models.OneToOneField(Journal, on_delete=models.SET_NULL, null=True, blank=True)
     # title = journal.title ???
     card_image = models.ForeignKey(
-        'wagtailimages.Image', on_delete=models.CASCADE, related_name='+', null=True
+        'wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True
     )
     hero_image = models.ForeignKey(
-        'wagtailimages.Image', on_delete=models.CASCADE, related_name='+', null=True
+        'wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True
     )
     short_description = models.CharField(max_length=128, blank=True, default='')
     long_description = models.TextField(blank=True, default=None, null=True)
@@ -214,6 +214,7 @@ class JournalAboutPage(Page):
             context['user_has_access'] = False
         discovery_journal_api_client = self.site.siteconfiguration.discovery_journal_api_client
         journal_data = discovery_journal_api_client.journals(self.journal.uuid).get()
+        context['journal_data'] = journal_data
         context['buy_button_url'] = self.generate_basket_url(journal_data['sku'])
         return context
 
@@ -235,7 +236,8 @@ class JournalAboutPage(Page):
 
     @property
     def root_journal_page_url(self):
-        return self.get_descendants()[0].full_url
+        descendants = self.get_descendants()
+        return descendants[0].full_url if descendants else '#'
 
 
 class JournalIndexPage(Page):
@@ -246,7 +248,7 @@ class JournalIndexPage(Page):
     subpage_types = ['JournalAboutPage']
 
     hero_image = models.ForeignKey(
-        'wagtailimages.Image', on_delete=models.CASCADE, related_name='+', null=True
+        'wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True
     )
     intro = RichTextField(blank=True)
 
