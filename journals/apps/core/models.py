@@ -78,6 +78,12 @@ class SiteConfiguration(models.Model):
         blank=False,
     )
 
+    ecommerce_journal_api_url = models.URLField(
+        verbose_name=_('Ecommerce API URL for Journal Endpoint'),
+        null=False,
+        blank=False,
+    )
+
     ecommerce_public_url_root = models.URLField(
         verbose_name=_('Ecommerce public base url'),
         null=True,
@@ -93,6 +99,31 @@ class SiteConfiguration(models.Model):
     )
 
     site_logo = models.ImageField(verbose_name="Header/Footer Logo", null=True)
+
+    discovery_partner_id = models.CharField(
+        max_length=8,
+        verbose_name=_('Discovery service partner short code'),
+        help_text=_('The short code of the associated Partner in discovery service (core_partners table)'),
+        null=False,
+        blank=False
+    )
+
+    ecommerce_partner_id = models.CharField(
+        max_length=8,
+        verbose_name=_('Ecommerce sevice partner short code'),
+        help_text=_('The short code of the associated Partner in ecommerce service (partner_partners table)'),
+        null=False,
+        blank=False
+    )
+
+    currency_codes = models.CharField(
+        max_length=256,
+        verbose_name=_('Currencies supported for purchase'),
+        help_text=_('Comma separated list of currency codes (from discovery core_currencies table)'),
+        null=False,
+        blank=False,
+        default='USD'
+    )
 
     def build_lms_url(self, path=''):
         """
@@ -146,7 +177,7 @@ class SiteConfiguration(models.Model):
     @property
     def discovery_journal_api_client(self):
         """
-        Returns an API client to access the Discovery service.
+        Returns an API client to access the Discovery service journal endpoint.
         """
         return EdxRestApiClient(self.discovery_journal_api_url, jwt=self.access_token)
 
@@ -156,3 +187,13 @@ class SiteConfiguration(models.Model):
         Returns an API client to access the Ecommerce service.
         """
         return EdxRestApiClient(self.ecommerce_api_url, jwt=self.access_token)
+
+    @property
+    def ecommerce_journal_api_client(self):
+        """
+        Returns an API client to access the Ecommerce journal endpoint.
+        """
+        return EdxRestApiClient(self.ecommerce_journal_api_url, jwt=self.access_token)
+
+    def __str__(self):
+        return str(self.site.site_name)

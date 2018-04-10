@@ -27,7 +27,7 @@
             </div>
         </div>
         <div class="row journal-card-row">
-            {% for child in page.get_children %}
+            {% for child in page.get_children.live %}
             <div class="col-12 col-lg-4">
                 <a href="{{child.url}}">
                     <div class="journal-card">

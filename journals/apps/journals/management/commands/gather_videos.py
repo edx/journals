@@ -71,7 +71,6 @@ class Command(BaseCommand):
                 'blocks': block_response.get('blocks')
             })
         return blocks if blocks else []
-    
 
     def handle(self, *args, **options):
         """ Collect all videos in courses """

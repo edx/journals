@@ -17,7 +17,9 @@ TOC_BLOCK_TYPE = 'table_of_content'
 STREAM_DATA_TYPE_FIELD = 'type'
 STREAM_DATA_DOC_FIELD = 'doc'
 
+
 class VideoChooserBlock(blocks.ChooserBlock):
+    '''VideoChooserBlock component'''
     target_model = Video
     widget = forms.Select
 
@@ -33,6 +35,7 @@ class VideoChooserBlock(blocks.ChooserBlock):
 
 
 class PDFBlock(blocks.StructBlock):
+    '''PDFBlock component'''
     title = blocks.CharBlock()
     doc = DocumentChooserBlock()
 
@@ -44,22 +47,25 @@ class PDFBlock(blocks.StructBlock):
 
 
 class TOCBlock(blocks.StructBlock):
-
+    '''TOCBlock component'''
     class Meta:
         template = 'blocks/toc.html'
 
 
 class JournalRichTextBlock(blocks.RichTextBlock):
+    '''JournalRichTextBlock component'''
     def get_searchable_content(self, value):
         return [parser(value.source, 'html.parser').get_text(' ')]
 
 
 class JournalRawHTMLBlock(blocks.RawHTMLBlock):
+    '''JournalRawHTMLBlock component'''
     def get_searchable_content(self, value):
         return [parser(six.text_type(value), 'html.parser').get_text()]
 
 
 class XBlockVideoBlock(blocks.StructBlock):
+    '''XBlockVideoBlock component'''
     BLOCK_TYPE = 'xblock_video'
     STREAM_DATA_FIELD = 'video'
 
@@ -78,8 +84,6 @@ class XBlockVideoBlock(blocks.StructBlock):
 
 
 class JournalImageChooserBlock(ImageChooserBlock):
+    '''JournalImageChooserBlock component'''
     def get_searchable_content(self, value):
         return ['Image: ' + value.title]
-
-
-
