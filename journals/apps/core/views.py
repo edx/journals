@@ -6,11 +6,14 @@ from django.db import transaction, connection, DatabaseError
 from django.http import JsonResponse
 from django.conf import settings
 from django.contrib.auth import get_user_model, login, authenticate
+from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import redirect
 from django.views.generic import View
 
 from journals.apps.core.constants import Status
+
+from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -84,3 +87,21 @@ class AutoAuth(View):
         login(request, user)
 
         return redirect('/')
+
+@login_required
+def required_auth(request):
+    """
+    Used to require the user to log in through the journals service (thus
+    creating an account in Journal for a new user) before being forwarded to
+    the destination URL. This is necessary for verifying a user has an account
+    in Journals so a purchase can be linked to that account.
+
+    When generating a basket URL for a product that includes Journal access,
+    it should be created via the following pattern:
+
+    encoded_basket_url = urllib.parse.quote("<basket_url>")
+    display_url = "<journals_domain>/require_auth?forward={}".format(encoded_basket_url)
+    """
+    # Quoted URL: http%3A//localhost%3A18130/basket/add/%3Fsku%3D8CF08E5
+    forwarded_url = unquote(request.GET.get('forward'))
+    return redirect(forwarded_url)

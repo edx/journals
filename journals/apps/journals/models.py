@@ -22,7 +22,7 @@ from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 
 from jsonfield.fields import JSONField
 
-from urllib.parse import urlsplit, urlunsplit
+from urllib.parse import quote, urlsplit, urlunsplit
 
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -215,8 +215,14 @@ class JournalAboutPage(Page):
         discovery_journal_api_client = self.site.siteconfiguration.discovery_journal_api_client
         journal_data = discovery_journal_api_client.journals(self.journal.uuid).get()
         context['journal_data'] = journal_data
-        context['buy_button_url'] = self.generate_basket_url(journal_data['sku'])
+        context['buy_button_url'] = self.generate_require_auth_basket_url(journal_data['sku'])
         return context
+
+    def generate_require_auth_basket_url(self, sku):
+        basket_url = self.generate_basket_url(sku)
+        encoded_basket_url = quote(basket_url)
+        return "/require_auth?forward={}".format(encoded_basket_url)
+
 
     def generate_basket_url(self, sku):
         ecommerce_base_url = self.site.siteconfiguration.ecommerce_public_url_root
