@@ -1,12 +1,14 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from edx_rest_api_client.client import EdxRestApiClient
+from functools import reduce
 from urllib.parse import urlsplit, urlunsplit
 from wagtail.wagtailcore.models import Site
 
 from journals.apps.journals.models import Video
 
 import itertools
+import operator
 
 class Command(BaseCommand):
     help = 'Gathers all videos from relevant courses'
@@ -16,19 +18,21 @@ class Command(BaseCommand):
         if not site.siteconfiguration.lms_public_url_root_override:
             # Return url if it's not being overwritten
             return url
-        
-        split_url = urlsplit(url)
+
+        (_, _, original_path, original_query, original_fragment) = urlsplit(url)
+        (override_scheme, override_host, _, _, _) = urlsplit(site.siteconfiguration.lms_public_url_root_override)
+
         override_url = urlunsplit((
-            split_url.scheme, 
-            site.siteconfiguration.lms_public_url_root_override, 
-            split_url.path,
-            split_url.query,
-            split_url.fragment,
+            override_scheme,
+            override_host,
+            original_path,
+            original_query,
+            original_fragment,
         ))
         return override_url
-    
+
     def get_video_course_runs_per_org(self, org):
-        """ 
+        """
         Retrieves all video course runs connected to an organization
 
         Returns an iterable containing all course runs
@@ -38,7 +42,7 @@ class Command(BaseCommand):
             [journal.video_course_ids['course_runs'] for journal in journals]
         )
         return course_runs
-    
+
     def get_video_course_runs_for_site(self, site):
         orgs = site.organization_set.all()
         course_runs = itertools.chain.from_iterable(
@@ -66,18 +70,18 @@ class Command(BaseCommand):
                 self.stderr.write("Unable to retrieves blocks from course run {}".format(course_run))
                 continue
             blocks.append({
-                'site': site
+                'site': site,
                 'course_run': course_run,
                 'blocks': block_response.get('blocks')
             })
         return blocks if blocks else []
-    
+
 
     def handle(self, *args, **options):
         """ Collect all videos in courses """
 
-        # Contains a list of dicts that contain a course run and all 
-        # the blocks in that course run. 
+        # Contains a list of dicts that contain a course run and all
+        # the blocks in that course run.
         block_collections = itertools.chain.from_iterable(
             [self.get_videos_for_site(site) for site in Site.objects.all()]
         )
@@ -91,9 +95,12 @@ class Command(BaseCommand):
                 display_name = blocks[block].get('display_name')
                 view_url = blocks[block].get('student_view_url')
                 transcript_url = blocks[block].get('student_view_data', {}).get('transcripts', {}).get('en')
+                fallback_source_url = blocks[block].get('student_view_data', {}).get('encoded_videos', {}).get('fallback', {}).get('url')
+                youtube_source_url = blocks[block].get('student_view_data', {}).get('encoded_videos', {}).get('youtube', {}).get('url')
 
                 view_url = self.rewrite_url_for_external_use(view_url, site)
                 self.stdout.write("Creating/updating video block {}".format(block_id))
+                self.stdout.write(str(blocks[block]))
                 Video.objects.update_or_create(
                     block_id=block_id,
                     defaults={
@@ -101,6 +108,8 @@ class Command(BaseCommand):
                         'display_name': display_name,
                         'view_url': view_url,
                         'transcript_url': transcript_url,
-                        'source_course_run': course_run
+                        'source_course_run': course_run,
+                        'fallback_source_url': fallback_source_url,
+                        'youtube_source_url': youtube_source_url,
                     }
                 )

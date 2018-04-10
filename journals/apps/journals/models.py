@@ -145,6 +145,8 @@ class Video(index.Indexed, models.Model):
     view_url = models.URLField(max_length=255)
     transcript_url = models.URLField(max_length=255)
     source_course_run = models.CharField(max_length=255)
+    fallback_source_url = models.URLField(max_length=255, default='')
+    youtube_source_url = models.URLField(max_length=255, default='')
 
     search_fields = [
         index.SearchField('display_name', partial_match=True),
