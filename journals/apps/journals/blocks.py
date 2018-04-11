@@ -13,7 +13,6 @@ VIDEO_BLOCK_TYPE = 'xblock_video'
 IMAGE_BLOCK_TYPE = 'image'
 RICH_TEXT_BLOCK_TYPE = 'rich_text'
 RAW_HTML_BLOCK_TYPE = 'raw_html'
-TOC_BLOCK_TYPE = 'table_of_content'
 STREAM_DATA_TYPE_FIELD = 'type'
 STREAM_DATA_DOC_FIELD = 'doc'
 
@@ -44,12 +43,6 @@ class PDFBlock(blocks.StructBlock):
 
     class Meta:
         template = 'blocks/pdf.html'
-
-
-class TOCBlock(blocks.StructBlock):
-    '''TOCBlock component'''
-    class Meta:
-        template = 'blocks/toc.html'
 
 
 class JournalRichTextBlock(blocks.RichTextBlock):
