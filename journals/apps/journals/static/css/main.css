@@ -1,41 +1,45 @@
-html, body{
-    background-color:#EEEEEE;
+html,
+body {
+    background-color: #ffffff;
 }
-#header{
+#header {
     border-bottom: 1px solid black;
 }
-#header .welcome{
+#header .welcome {
     margin: 0 10px;
 }
-#footer{
+#footer {
     width: 100%;
     border-top: 1px solid black;
     margin-top: 20px;
 }
-.xblockvideo{
-    height:575px;
-    width:750px;
-}
-.center-text{
+.center-text {
     text-align: center;
 }
-#home h2{
+#home h2 {
     margin: 20px 0;
 }
-.content{
+.content {
     margin-top: 20px;
 }
-.navbar-brand img{
-    height:30px;
+.navbar-brand img {
+    height: 30px;
 }
 .hero {
     min-height: 350px;
     background-size: cover !important;
     background-repeat: no-repeat !important;
     color: white;
-    display:flex;
-    align-items:center;
+    display: flex;
+    align-items: center;
 }
-.hero h1{
+.hero h1 {
     margin: 20px 0;
+}
+.xblockvideo {
+    height: 575px;
+    width: 750px;
+}
+.page-nav {
+    text-align: center;
 }

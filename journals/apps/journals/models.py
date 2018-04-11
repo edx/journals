@@ -254,9 +254,9 @@ class Video(index.Indexed, models.Model):
 
 # This has to be below the Video model because XBlockVideoBlock imported below imports the Video model.
 from .blocks import (
-    JournalRichTextBlock, JournalImageChooserBlock, PDFBlock, TOCBlock, XBlockVideoBlock,
+    JournalRichTextBlock, JournalImageChooserBlock, PDFBlock, XBlockVideoBlock,
     PDF_BLOCK_TYPE, VIDEO_BLOCK_TYPE, IMAGE_BLOCK_TYPE, RICH_TEXT_BLOCK_TYPE,
-    TOC_BLOCK_TYPE, STREAM_DATA_DOC_FIELD, STREAM_DATA_TYPE_FIELD)
+    STREAM_DATA_DOC_FIELD, STREAM_DATA_TYPE_FIELD)
 
 
 class JournalAboutPage(Page):
@@ -361,7 +361,6 @@ class JournalPage(Page):
         )),
         (IMAGE_BLOCK_TYPE, JournalImageChooserBlock()),
         (PDF_BLOCK_TYPE, PDFBlock()),
-        (TOC_BLOCK_TYPE, TOCBlock()),
         (VIDEO_BLOCK_TYPE, XBlockVideoBlock()),
     ], blank=True)
 
@@ -416,9 +415,10 @@ class JournalPage(Page):
 
     def get_context(self, request, *args, **kwargs):
         context = super(JournalPage, self).get_context(request, args, kwargs)
+        context['journal_structure'] = self.get_journal_structure()
 
-        # context['prevPage'] = self.get_prev_page()
-        # context['nextPage'] = self.get_next_page()
+        context['prevPage'] = self.get_prev_page()
+        context['nextPage'] = self.get_next_page()
 
         return context
 
@@ -433,7 +433,7 @@ class JournalPage(Page):
             return last_child if last_child else prev_sib
 
         parent = self.get_parent()
-        return parent if parent and not parent.is_root() else None
+        return parent if parent and isinstance(parent.specific, JournalPage) else None
 
     def get_next_page(self, children_and_sibs=True):
         '''
@@ -449,7 +449,7 @@ class JournalPage(Page):
 
         # no direct children or siblings, now lets recursively check parent's siblings
         parent = self.get_parent()
-        if parent.is_root():
+        if not isinstance(parent.specific, JournalPage):
             return None
         next_sib = parent.get_next_sibling()
         return next_sib if next_sib else parent.specific.get_next_page(children_and_sibs=False)
@@ -472,6 +472,10 @@ class JournalPage(Page):
 
     def get_parent_journal(self):
         """ Moves up tree of pages until it finds an about page and returns it's linked journal """
+        journal_about = self.get_journal_about_page()
+        return journal_about.journal
+
+    def get_journal_about_page(self):
         journal_about = None
         parent = self.get_parent()
         journal_about = parent.specific
@@ -480,7 +484,37 @@ class JournalPage(Page):
                 journal_about = parent.specific
                 break
             try:
-                parent = self.get_parent()
+                parent = parent.get_parent()
             except:
                 logging.error("Cannot find parent of {}".format(self))
-        return journal_about.journal
+                break
+        return journal_about
+
+    def get_journal_structure(self):
+        """ Returns the heirarchy of the journal as a dict """
+        journal_about_page = self.get_journal_about_page()
+        structure = {
+            "journal_structure": [
+                journal_page.specific.get_nested_children()
+                for journal_page
+                in journal_about_page.get_children()
+            ]
+        }
+        return structure
+
+    def get_json_journal_structure(self):
+        return json.dumps(self.get_journal_structure())
+
+
+    def get_nested_children(self):
+        structure = {
+            "title": self.title,
+            "url": self.url,
+            "children": None
+        }
+        children = self.get_children()
+        if not children:
+            return structure
+
+        structure["children"] = [child.specific.get_nested_children() for child in children]
+        return structure

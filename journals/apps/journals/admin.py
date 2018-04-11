@@ -8,7 +8,7 @@ class JournalAboutPageAdmin(admin.ModelAdmin):
 
 @admin.register(Journal)
 class JournalAdmin(admin.ModelAdmin):
-    fields = ('uuid', 'journalaboutpage', 'name', 'access_length', 'organization')
+    fields = ('uuid', 'journalaboutpage', 'name', 'access_length', 'organization', 'video_course_ids')
     readonly_fields = ('uuid', 'journalaboutpage')
 
 @admin.register(JournalAccess)
