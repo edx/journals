@@ -16,19 +16,19 @@ class Command(BaseCommand):
         if not site.siteconfiguration.lms_public_url_root_override:
             # Return url if it's not being overwritten
             return url
-        
+
         split_url = urlsplit(url)
         override_url = urlunsplit((
-            split_url.scheme, 
-            site.siteconfiguration.lms_public_url_root_override, 
+            split_url.scheme,
+            site.siteconfiguration.lms_public_url_root_override,
             split_url.path,
             split_url.query,
             split_url.fragment,
         ))
         return override_url
-    
+
     def get_video_course_runs_per_org(self, org):
-        """ 
+        """
         Retrieves all video course runs connected to an organization
 
         Returns an iterable containing all course runs
@@ -38,7 +38,7 @@ class Command(BaseCommand):
             [journal.video_course_ids['course_runs'] for journal in journals]
         )
         return course_runs
-    
+
     def get_video_course_runs_for_site(self, site):
         orgs = site.organization_set.all()
         course_runs = itertools.chain.from_iterable(
@@ -66,7 +66,7 @@ class Command(BaseCommand):
                 self.stderr.write("Unable to retrieves blocks from course run {}".format(course_run))
                 continue
             blocks.append({
-                'site': site
+                'site': site,
                 'course_run': course_run,
                 'blocks': block_response.get('blocks')
             })
@@ -75,8 +75,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         """ Collect all videos in courses """
 
-        # Contains a list of dicts that contain a course run and all 
-        # the blocks in that course run. 
+        # Contains a list of dicts that contain a course run and all
+        # the blocks in that course run.
         block_collections = itertools.chain.from_iterable(
             [self.get_videos_for_site(site) for site in Site.objects.all()]
         )
