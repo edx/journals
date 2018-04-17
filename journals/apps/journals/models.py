@@ -348,15 +348,6 @@ class JournalAboutPage(Page):
             "discovery"
         )
 
-        ecommerce_data = {
-            "title": self.title
-        }
-        update_service(
-            self.site.siteconfiguration.ecommerce_journal_api_client,
-            ecommerce_data,
-            "ecommerce"
-        )
-
     @property
     def card_image_absolute_url(self):
         if not self.card_image:
