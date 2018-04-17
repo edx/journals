@@ -129,6 +129,7 @@ class JournalMetaData(object):
             'short_description': self.journal_about_page.short_description,
             'full_description': self.journal_about_page.long_description,
             'status': 'active' if self.journal_about_page.live else 'inactive',
+            'slug': self.journal_about_page.slug,
         }
 
     def get_ecommerce_data(self):
@@ -309,7 +310,6 @@ class JournalAboutPage(Page):
         encoded_basket_url = quote(basket_url)
         return "/require_auth?forward={}".format(encoded_basket_url)
 
-
     def generate_basket_url(self, sku):
         ecommerce_base_url = self.site.siteconfiguration.ecommerce_public_url_root
         (scheme, netloc, _, _, _) = urlsplit(ecommerce_base_url)
@@ -321,8 +321,6 @@ class JournalAboutPage(Page):
             ''
         ))
         return basket_url
-
-
 
     def update_related_objects(self, deactivate=False):
 
@@ -341,6 +339,7 @@ class JournalAboutPage(Page):
             "title": self.title,
             "full_description": self.long_description,
             "short_description": self.short_description,
+            "slug": self.slug
         }
         update_service(
             self.site.siteconfiguration.discovery_journal_api_client,

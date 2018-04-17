@@ -85,8 +85,8 @@ class Command(BaseCommand):
             # get base root page and add JournalIndexPage as child
             root_page = Page.get_root_nodes()[0]
             index_page = JournalIndexPage(
-                title="{} Index Page".format(site.site_name),
-                intro="{} introduction".format(site.site_name)
+                title="{} Index Page".format(journal.organization.name),
+                intro="{} introduction".format(journal.organization.name)
             )
             root_page.add_child(instance=index_page)
 
