@@ -1,15 +1,26 @@
 from wagtail.wagtailcore.signals import page_published, page_unpublished
-from .models import JournalPage
+from .models import JournalAboutPage, JournalPage
 
 
-def pub_receiver(sender, **kwargs):
+def page_pub_receiver(sender, **kwargs):
     journal_page = kwargs['instance']
     journal_page.update_related_objects()
 
 
-def unpub_receiver(sender, **kwargs):
+def page_unpub_receiver(sender, **kwargs):
     journal_page = kwargs['instance']
     journal_page.update_related_objects(clear=True)
 
-page_published.connect(pub_receiver, sender=JournalPage)
-page_unpublished.connect(unpub_receiver, sender=JournalPage)
+def about_page_pub_receiver(sender, **kwargs):
+    journal_about_page = kwargs['instance']
+    journal_about_page.update_related_objects()
+
+def about_page_unpub_receiver(sender, **kwargs):
+    journal_about_page = kwargs['instance']
+    journal_about_page.update_related_objects(deactivate=True)
+
+
+page_published.connect(page_pub_receiver, sender=JournalPage)
+page_unpublished.connect(page_unpub_receiver, sender=JournalPage)
+page_published.connect(about_page_pub_receiver, sender=JournalAboutPage)
+page_unpublished.connect(about_page_unpub_receiver, sender=JournalAboutPage)

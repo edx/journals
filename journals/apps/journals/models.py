@@ -22,7 +22,8 @@ from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 
 from jsonfield.fields import JSONField
 
-from urllib.parse import quote, urlsplit, urlunsplit
+from urllib.parse import quote, urljoin, urlparse, urlsplit, urlunsplit
+from slumber.exceptions import HttpClientError, HttpNotFoundError
 
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -107,7 +108,7 @@ class JournalMetaData(object):
         self.currency = currency
         self.sku = sku
 
-        # add 10 years to current date, TODO not sure how to pass NULL to 
+        # add 10 years to current date, TODO not sure how to pass NULL to
         # ecommerce post
         startDate = datetime.datetime.now()
         endDate = startDate.replace(startDate.year + 10)
@@ -124,9 +125,10 @@ class JournalMetaData(object):
             'currency': self.currency,
             'sku': self.sku,
             'access_length': self.journal.access_length.days,
-            'card_image_url': self.journal_about_page.card_image.file if self.journal_about_page.card_image else '',
+            'card_image_url': self.journal_about_page.card_image_absolute_url,
             'short_description': self.journal_about_page.short_description,
-            'full_description': self.journal_about_page.long_description
+            'full_description': self.journal_about_page.long_description,
+            'status': 'active' if self.journal_about_page.live else 'inactive',
         }
 
     def get_ecommerce_data(self):
@@ -319,6 +321,42 @@ class JournalAboutPage(Page):
             ''
         ))
         return basket_url
+
+
+
+    def update_related_objects(self, deactivate=False):
+
+        def update_service(client, data, service_name):
+            try:
+                client.journals(self.journal.uuid).patch(data)
+            except HttpNotFoundError as err:
+                # Only a WARN because this will often happen on JournalAboutPage creation.
+                logging.warn(f"JournalAboutPage unable to update {service_name} because UUID doesn't exist: {err.content}")
+            except HttpClientError as err:
+                logging.error(f"Error updating discovery after JournalAboutPage publish: {err.content}")
+
+        discovery_data = {
+            "status": "active" if not deactivate else "inactive",
+            "card_image_url": self.card_image_absolute_url,
+            "title": self.title,
+            "full_description": self.long_description,
+            "short_description": self.short_description,
+        }
+        update_service(
+            self.site.siteconfiguration.discovery_journal_api_client,
+            discovery_data,
+            "discovery"
+        )
+
+    @property
+    def card_image_absolute_url(self):
+        if not self.card_image:
+            return ''
+        is_absolute_url = bool(urlparse(self.card_image.file.url).netloc)
+        if is_absolute_url:
+            return self.card_image.file.url
+        else:
+            return urljoin(self.site.root_url, self.card_image.file.url)
 
     @property
     def site(self):
