@@ -1,8 +1,8 @@
 """ API v1 URLs. """
-from django.conf.urls import url
+from rest_framework.routers import DefaultRouter
 
 from .views import JournalAccessViewSet
 
-urlpatterns = [
-    url(r'^journalaccess', JournalAccessViewSet.as_view({'post': 'create',})),
-]
+router = DefaultRouter()
+router.register(r'journalaccess', JournalAccessViewSet, base_name='journalaccess')
+urlpatterns = router.urls
