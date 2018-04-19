@@ -43,6 +43,7 @@ THIRD_PARTY_APPS = (
     'rest_framework',
     'social_django',
     'waffle',
+    'django_filters',
 )
 
 PROJECT_APPS = (
