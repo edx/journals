@@ -19,8 +19,9 @@ class JournalAccessViewSet(viewsets.ModelViewSet):
     serializer_class = JournalAccessSerializer
     filter_backends = (DjangoFilterBackend,)
     filter_class = JournalAccessFilter
+    permission_classes = (IsAdminUser,)
 
-    def create(self, request):
+    def create(self, request, *args, **kwargs):
         '''create a JournalAccess entry'''
         order_number = request.data.get('order_number')
         username = request.data.get('user')
