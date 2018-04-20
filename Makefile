@@ -79,6 +79,9 @@ validate_translations: fake_translations detect_changed_source_translations
 
 # Docker commands below
 
+dev.provision:
+	bash ./provision-journals.sh
+
 dev.init: dev.up dev.migrate dev.update_index
 
 dev.update_index:
@@ -90,11 +93,15 @@ dev.makemigrations:
 dev.migrate: # Migrates databases. Application and DB server must be up for this to work.
 	docker exec -it journals.app bash -c 'cd /edx/app/journals/journals && make migrate'
 
-dev.up: # Starts all containers 
+dev.up: # Starts all containers
 	docker-compose up -d --build
 
 dev.down: # Kills containers and all of their data that isn't in volumes
 	docker-compose down
+
+dev.destroy: dev.down #Kills containers and destroys volumnes
+	docker volume rm journals_journals_mysql
+	docker volume rm journals_journals_es
 
 dev.stop: # Stops containers so they can be restarted
 	docker-compose stop

@@ -190,7 +190,7 @@ LOGIN_REDIRECT_URL = '/'
 # END AUTHENTICATION CONFIGURATION
 
 
-# OPENEDX-SPECIFIC CONFIGURATION 
+# OPENEDX-SPECIFIC CONFIGURATION
 PLATFORM_NAME = 'Your Platform Name Here'
 # END OPENEDX-SPECIFIC CONFIGURATION
 
@@ -241,6 +241,33 @@ LOGGING = {
     }
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'edx_rest_framework_extensions.authentication.BearerAuthentication',
+        'edx_rest_framework_extensions.authentication.JwtAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+
+JWT_AUTH = {
+    'JWT_DECODE_HANDLER': 'edx_rest_framework_extensions.utils.jwt_decode_handler',
+    'JWT_AUDIENCE': 'journals',
+    'JWT_VERIFY_AUDIENCE': False,
+    'JWT_ALGORITHM': 'HS256',
+    'JWT_ISSUERS': [
+        {
+            'SECRET_KEY': 'lms-secret',
+            'AUDIENCE': 'lms-key',
+            'ISSUER': 'http://edx.devstack.lms:18000/oauth2'
+        }
+    ],
+    'JWT_ISSUER': 'journals'
+}
 # Wagtail Specific
 
 WAGTAIL_SITE_NAME = 'Journals'

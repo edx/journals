@@ -18,6 +18,7 @@ class JournalAccessViewSet(viewsets.ModelViewSet):
     queryset = JournalAccess.objects.all().order_by('-created')
     serializer_class = JournalAccessSerializer
     filter_backends = (DjangoFilterBackend,)
+    permission_classes = (IsAdminUser,)
     filter_class = JournalAccessFilter
 
     def create(self, request):
