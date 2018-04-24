@@ -1,3 +1,4 @@
+# pylint: disable=missing-docstring
 from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -9,7 +10,7 @@ from journals.apps.theming.models import SiteBranding
 from wagtail.wagtailcore.models import Page, Site, Collection, GroupPagePermission, GroupCollectionPermission
 
 PERMISSIONS = {
-    'Editors':{
+    'Editors': {
         'page_permissions': ['add', 'edit'],
         'collection_permissions': [
             'add_image', 'change_image',
@@ -17,7 +18,7 @@ PERMISSIONS = {
         ],
         'core_permissions': ['access_admin']
     },
-    'Moderators':{
+    'Moderators': {
         'page_permissions': ['add', 'edit', 'publish'],
         'collection_permissions': [
             'add_image', 'change_image', 'delete_image',
@@ -27,16 +28,16 @@ PERMISSIONS = {
     }
 }
 
-class Command(BaseCommand):
+
+class Command(BaseCommand):  # pylint: disable=missing-docstring
     help = 'Creates a new site and all necessary additional configs'
 
     def add_arguments(self, parser):
-        parser.add_argument('--sitename', help='Name of new site') # MITxPRO or edX
+        parser.add_argument('--sitename', help='Name of new site')  # MITxPRO or edX
         parser.add_argument('--hostname', help='Hostname of new site (e.g. journals.example.com)')
         parser.add_argument('--port', help='Webserver port to listen to')
 
-
-    def create_index_page(self, sitename):
+    def create_index_page(self, sitename):  # pylint: disable=missing-docstring
         root_page = Page.get_root_nodes()[0]
         index_page = JournalIndexPage(
             title="{} Index Page".format(sitename),
@@ -46,19 +47,17 @@ class Command(BaseCommand):
         index_page.save_revision().publish()
         return index_page
 
-
     def copy_site_config(self, site):
         """ Take first site config found, clone it and replace site """
         example_site_config = SiteConfiguration.objects.all()[0]
         example_site_config.pk = None
         example_site_config.site = site
         example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_KEY'] = 'journals-key-' + site.site_name
-        example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY'] = 'journals-secret-' + site.site_name
+        example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY'] = 'journals-secret-' + site.site_name  # noqa pylint: disable=line-too-long
         example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_SECRET'] = 'journals-secret-' + site.site_name
         example_site_config.save()
 
-
-    def create_collection(self, name):
+    def create_collection(self, name):  # pylint: disable=missing-docstring
         root_collection = Collection.get_first_root_node()
         collection = Collection(
             name=name
@@ -66,7 +65,6 @@ class Command(BaseCommand):
         root_collection.add_child(instance=collection)
         collection.save()
         return collection
-
 
     def add_group_permissions_by_codename(self, group, codename, page=None, collection=None):
         """
@@ -98,7 +96,6 @@ class Command(BaseCommand):
             permission = Permission.objects.get(codename=codename)
             group.permissions.add(permission)
 
-
     def create_groups_and_permissions(self, name, index_page, collection):
         for role in PERMISSIONS:
             group = Group.objects.create(
@@ -110,7 +107,6 @@ class Command(BaseCommand):
                 self.add_group_permissions_by_codename(group, codename, collection=collection)
             for codename in PERMISSIONS[role]['core_permissions']:
                 self.add_group_permissions_by_codename(group, codename)
-
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -142,7 +138,7 @@ class Command(BaseCommand):
         self.copy_site_config(site)
 
         # Create site branding with theme name
-        site_branding = SiteBranding.objects.create(
+        site_branding = SiteBranding.objects.create(  # pylint: disable=unused-variable
             site=site,
             theme_name=sitename
         )

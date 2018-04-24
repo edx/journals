@@ -1,4 +1,4 @@
-# Custom blocks
+""" Custom blocks """
 from django import forms
 from django.utils import six
 from wagtail.wagtailcore import blocks

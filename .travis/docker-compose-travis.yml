@@ -1,0 +1,41 @@
+# This is only meant to be used for testing on travis-ci.org
+version: "2.1"
+
+services:
+  mysql:
+    image: mysql:5.6
+    container_name: journals.mysql
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: ""
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_USER: "journalsdbuser"
+      MYSQL_PASSWORD: "password"
+      MYSQL_DATABASE: "journals"
+  journals:
+    #image: edxops/journals::test
+    container_name: journals_testing
+    build:
+      context: ../
+      dockerfile: ./.travis/Dockerfile
+    command: bash -c 'while true; do python /edx/app/journals/journals/manage.py runserver 0.0.0.0:18606; sleep 2; done'
+    volumes:
+      - ..:/edx/app/journals/journals
+      - $HOME/.cache/pip:/edx/app/journals/.cache/pip
+      - /edx/app/journals/journals/node_modules
+    depends_on:
+      - mysql
+    environment:
+      CI_ENVIRONMENT: 1
+      JS_TEST_BROWSER: FirefoxNoUpdates
+      JS_TEST_HOST: localhost
+      SELENIUM_HOST: localhost
+      SELENIUM_BROWSER: firefox
+      CONN_MAX_AGE: 60
+      DB_ENGINE: "django.db.backends.mysql"
+      DB_HOST: "journals.mysql"
+      DB_NAME: "journals"
+      DB_PASSWORD: "password"
+      DB_PORT: "3306"
+      DB_USER: "journalsdbuser"
+      DJANGO_SETTINGS_MODULE: "journals.settings.test"

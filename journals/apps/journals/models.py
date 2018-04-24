@@ -5,24 +5,18 @@ import base64
 import datetime
 import json
 import logging
-import requests
 import uuid
+from urllib.parse import quote, urljoin, urlparse, urlsplit, urlunsplit
+import requests
 
 from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
-from edx_rest_api_client.client import EdxRestApiClient
-
 from model_utils.models import TimeStampedModel
 
-from journals.apps.core.models import User
-from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
-
 from jsonfield.fields import JSONField
-
-from urllib.parse import quote, urljoin, urlparse, urlsplit, urlunsplit
 from slumber.exceptions import HttpClientError, HttpNotFoundError
 
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
@@ -33,6 +27,8 @@ from wagtail.wagtaildocs.models import AbstractDocument, Document
 from wagtail.wagtailimages.models import Image
 from wagtail.wagtailsearch import index
 
+from journals.apps.core.models import User
+from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 
 logger = logging.getLogger(__name__)
 
@@ -155,7 +151,7 @@ class JournalMetaData(object):
         }
 
     def __str__(self):
-        return self.title
+        return self.journal
 
 
 class JournalAccess(TimeStampedModel):
@@ -245,21 +241,23 @@ class Video(index.Indexed, models.Model):
         to elasticsearch
         '''
         try:
-            response = requests.get(self.transcript_url) # No auth needed for transcripts
+            response = requests.get(self.transcript_url)  # No auth needed for transcripts
             contents = response.content
             return contents.decode('utf-8') if contents else None
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-except
             print('Exception trying to read transcript', err)
             return None
 
     def __str__(self):
         return self.display_name
 
+
 # This has to be below the Video model because XBlockVideoBlock imported below imports the Video model.
+# pylint: disable=wrong-import-position
 from .blocks import (
     JournalRichTextBlock, JournalImageChooserBlock, PDFBlock, XBlockVideoBlock,
     PDF_BLOCK_TYPE, VIDEO_BLOCK_TYPE, IMAGE_BLOCK_TYPE, RICH_TEXT_BLOCK_TYPE,
-    STREAM_DATA_DOC_FIELD, STREAM_DATA_TYPE_FIELD)
+    STREAM_DATA_DOC_FIELD, STREAM_DATA_TYPE_FIELD)  # noqa
 
 
 class JournalAboutPage(Page):
@@ -278,7 +276,6 @@ class JournalAboutPage(Page):
     short_description = models.CharField(max_length=128, blank=True, default='')
     long_description = models.TextField(blank=True, default=None, null=True)
     custom_content = RichTextField(blank=True)
-
 
     content_panels = Page.content_panels + [
         FieldPanel('short_description'),
@@ -310,7 +307,7 @@ class JournalAboutPage(Page):
         encoded_basket_url = quote(basket_url)
         return "/require_auth?forward={}".format(encoded_basket_url)
 
-    def generate_basket_url(self, sku):
+    def generate_basket_url(self, sku):  # pylint: disable=missing-docstring
         ecommerce_base_url = self.site.siteconfiguration.ecommerce_public_url_root
         (scheme, netloc, _, _, _) = urlsplit(ecommerce_base_url)
         basket_url = urlunsplit((
@@ -322,17 +319,19 @@ class JournalAboutPage(Page):
         ))
         return basket_url
 
-    def update_related_objects(self, deactivate=False):
+    def update_related_objects(self, deactivate=False):  # pylint: disable=missing-docstring
 
         def update_service(client, data, service_name):
             try:
                 client.journals(self.journal.uuid).patch(data)
             except HttpNotFoundError as err:
                 # Only a WARN because this will often happen on JournalAboutPage creation.
-                logging.warn("JournalAboutPage unable to update {service_name} because UUID doesn't exist: {error}".format(
-                    service_name=service_name,
-                    error=err.content
-                ))
+                logging.warning(
+                    "JournalAboutPage unable to update {service_name} because UUID doesn't exist: {error}".format(
+                        service_name=service_name,
+                        error=err.content
+                    )
+                )
             except HttpClientError as err:
                 logging.error("Error updating {service_name} after JournalAboutPage publish: {error}".format(
                     service_name=service_name,
@@ -364,15 +363,15 @@ class JournalAboutPage(Page):
     def card_image_absolute_url(self):
         if not self.card_image:
             return ''
-        is_absolute_url = bool(urlparse(self.card_image.file.url).netloc)
+        is_absolute_url = bool(urlparse(self.card_image.file.url).netloc)  # pylint: disable=no-member
         if is_absolute_url:
-            return self.card_image.file.url
+            return self.card_image.file.url  # pylint: disable=no-member
         else:
-            return urljoin(self.site.root_url, self.card_image.file.url)
+            return urljoin(self.site.root_url, self.card_image.file.url)  # pylint: disable=no-member
 
     @property
     def site(self):
-        return self.journal.organization.site
+        return self.journal.organization.site  # pylint: disable=no-member
 
     @property
     def root_journal_page_url(self):
@@ -438,13 +437,13 @@ class JournalPage(Page):
         This gets called when page is published/unpublished
         '''
         if not clear:
-            new_docs, new_videos, new_images = self._get_related_objects(documents=True, videos=True, images=False)
+            new_docs, new_videos, __ = self._get_related_objects(documents=True, videos=True, images=False)
         else:
             new_docs = set()
             new_videos = set()
 
-        self.documents.set(new_docs)
-        self.videos.set(new_videos)
+        self.documents.set(new_docs)  # pylint: disable=no-member
+        self.videos.set(new_videos)  # pylint: disable=no-member
 
     def _get_related_objects(self, documents=True, videos=True, images=True):
         '''
@@ -457,7 +456,7 @@ class JournalPage(Page):
         video_set = set()
         image_set = set()
 
-        for data in self.body.stream_data:
+        for data in self.body.stream_data:  # pylint: disable=no-member
             # TODO: search for images/docs embedded in RichText block as well
             block_type = data.get(STREAM_DATA_TYPE_FIELD, None)
             if documents and block_type == PDF_BLOCK_TYPE:
@@ -531,7 +530,7 @@ class JournalPage(Page):
         journal_about = self.get_journal_about_page()
         return journal_about.journal
 
-    def get_journal_about_page(self):
+    def get_journal_about_page(self):  # pylint: disable=missing-docstring
         journal_about = None
         parent = self.get_parent()
         journal_about = parent.specific
@@ -541,7 +540,7 @@ class JournalPage(Page):
                 break
             try:
                 parent = parent.get_parent()
-            except:
+            except:  # noqa pylint: disable=bare-except
                 logging.error("Cannot find parent of {}".format(self))
                 break
         return journal_about
@@ -561,8 +560,7 @@ class JournalPage(Page):
     def get_json_journal_structure(self):
         return json.dumps(self.get_journal_structure())
 
-
-    def get_nested_children(self):
+    def get_nested_children(self):  # pylint: disable=missing-docstring
         structure = {
             "title": self.title,
             "url": self.url,

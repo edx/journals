@@ -39,11 +39,16 @@ services:
 
     ports:
       - "18606:18606"
+      - "13876:13876"
 
     depends_on:
       - mysql
       - elasticsearch
-
+    environment:
+      SELENIUM_INSECURE_CERTS: 1
+      SELENIUM_PORT: 4444
+      SELENIUM_BROWSER: firefox
+      SELENIUM_HOST: edx.devstack.firefox
     networks:
       - devstack_default
     # Allows attachment to this container using 'docker attach <containerID>'.

@@ -21,9 +21,8 @@ class JournalAccessViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminUser,)
     filter_class = JournalAccessFilter
 
-    def create(self, request):
+    def create(self, request):  # pylint: disable=arguments-differ
         '''create a JournalAccess entry'''
-        order_number = request.data.get('order_number')
         username = request.data.get('user')
         journal_uuid = request.data.get('journal')
         try:
@@ -34,7 +33,7 @@ class JournalAccessViewSet(viewsets.ModelViewSet):
             logger.info("Could not grant access to user [%s], user does not exist in journals service", username)
             return HttpResponseBadRequest()
 
-        except Journal.DoesNotExist:
+        except Journal.DoesNotExist:  # pylint: disable=duplicate-except
             logger.info("Could not grant access to journal [%s] for user [%s], journal does not exist",
                         journal_uuid, username)
             return HttpResponseBadRequest()

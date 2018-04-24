@@ -1,8 +1,9 @@
 '''management command to publish journals'''
 from __future__ import unicode_literals
 
-from django.core.management.base import BaseCommand, CommandError
 from hashlib import md5
+
+from django.core.management.base import BaseCommand, CommandError
 from journals.apps.journals.models import Journal, JournalIndexPage, JournalAboutPage, JournalMetaData
 from slumber.exceptions import HttpClientError
 from wagtail.wagtailcore.models import Page

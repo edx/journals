@@ -1,3 +1,6 @@
+"""
+Search backend module
+"""
 from __future__ import absolute_import, unicode_literals
 
 from elasticsearch.helpers import bulk
@@ -62,7 +65,7 @@ class JournalsearchMapping(Elasticsearch5Mapping):
         return mapping
 
 
-class JournalsearchIndex(Elasticsearch5Index):
+class JournalsearchIndex(Elasticsearch5Index):  # pylint: disable=missing-docstring
 
     def put(self):
         '''
@@ -85,7 +88,7 @@ class JournalsearchIndex(Elasticsearch5Index):
                 id=INGEST_ATTACHMENT_ID,
                 body=body
             )
-            #import pdb;pdb.set_trace()
+
             print('created index for _ingest attachment, results=', results)
 
     def add_item(self, item):
@@ -93,7 +96,7 @@ class JournalsearchIndex(Elasticsearch5Index):
         Called when new item added to the index
         Need to override to include pipeline attribute for ingest_plugin attachment
         '''
-        #import pdb;pdb.set_trace()
+
         # Make sure the object can be indexed
         if not class_is_indexed(item.__class__):
             return
@@ -145,7 +148,7 @@ class JournalsearchIndex(Elasticsearch5Index):
             super(JournalsearchIndex, self).add_items(model, items)
 
 
-class JournalsearchSearchQuery(Elasticsearch5SearchQuery):
+class JournalsearchSearchQuery(Elasticsearch5SearchQuery):  # pylint: disable=missing-docstring
     def __init__(self, *args, **kwargs):
 
         super(JournalsearchSearchQuery, self).__init__(*args, **kwargs)
@@ -228,7 +231,9 @@ class JournalsearchSearchResults(Elasticsearch5SearchResults):
 
         # Get pks from results
         pks = [hit['fields']['pk'][0] for hit in hits['hits']['hits']]
-        meta_info = {str(hit['fields']['pk'][0]): [hit['_score'], hit.get('highlight', None)] for hit in hits['hits']['hits']}
+        meta_info = {
+            str(hit['fields']['pk'][0]): [hit['_score'], hit.get('highlight', None)] for hit in hits['hits']['hits']
+        }
 
         # Initialise results dictionary
         results = dict((str(pk), None) for pk in pks)
@@ -259,5 +264,6 @@ class JournalsearchSearchBackend(Elasticsearch5SearchBackend):
     index_class = JournalsearchIndex
     query_class = JournalsearchSearchQuery
     results_class = JournalsearchSearchResults
+
 
 SearchBackend = JournalsearchSearchBackend
