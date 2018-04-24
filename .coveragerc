@@ -1,0 +1,22 @@
+# .coveragerc for journals
+[run]
+data_file = test_root/reports/.coverage
+source =
+    journals
+
+omit =
+    journals/wsgi.py
+    journals/settings/*
+    */migrations/*.py
+    *test*
+
+[report]
+ignore_errors = True
+
+exclude_lines =
+   pragma: no cover
+   raise NotImplementedError
+
+[html]
+title = Journals Python Test Coverage Report
+directory = test_root/reports/htmlcov

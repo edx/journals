@@ -340,7 +340,7 @@ disable =
 	unpacking-in-except,
 	using-cmp-argument,
 	xrange-builtin,
-	zip-builtin-not-iterating,,invalid-name
+	zip-builtin-not-iterating,,invalid-name,cyclic-import
 
 [REPORTS]
 output-format = text
@@ -440,4 +440,4 @@ int-import-graph =
 [EXCEPTIONS]
 overgeneral-exceptions = Exception
 
-# 6a2d8e754f691a664db457e6eddef2d4ed11b854
+# 7bf381af5d1135fb648ab717ef414878541c11c0

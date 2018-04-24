@@ -3,11 +3,11 @@ from journals.apps.journals.models import JournalAccess
 from django_filters import rest_framework as filters
 
 
-class JournalAccessFilter(filters.FilterSet):
+class JournalAccessFilter(filters.FilterSet):  # pylint: disable=missing-docstring
     user = filters.CharFilter(name='user__username')
     get_latest = filters.BooleanFilter(name='get_latest', method='filter_latest')
 
-    def filter_latest(self, queryset, name, value):
+    def filter_latest(self, queryset, name, value):  # pylint: disable=unused-argument
         """
         If a user has renewed their access to a given journal they may have multiple JournalAccess records for a
         given journal. If 'get_latest' is set to true, only return one JournalAccess record per journal per user.
@@ -46,4 +46,3 @@ class JournalAccessFilter(filters.FilterSet):
             'user',
             'get_latest',
         )
-

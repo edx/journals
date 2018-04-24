@@ -1,14 +1,16 @@
-from django.conf import settings
-from django.core.management.base import BaseCommand
-from edx_rest_api_client.client import EdxRestApiClient
+"""
+Management command to gather all videos from relavant courses
+"""
+import itertools
 from urllib.parse import urlsplit, urlunsplit
+
+from django.core.management.base import BaseCommand
 from wagtail.wagtailcore.models import Site
 
 from journals.apps.journals.models import Video
 
-import itertools
 
-class Command(BaseCommand):
+class Command(BaseCommand):  # pylint: disable=missing-docstring
     help = 'Gathers all videos from relevant courses'
 
     def rewrite_url_for_external_use(self, url, site):
@@ -41,14 +43,14 @@ class Command(BaseCommand):
         )
         return course_runs
 
-    def get_video_course_runs_for_site(self, site):
+    def get_video_course_runs_for_site(self, site):  # pylint: disable=missing-docstring
         orgs = site.organization_set.all()
         course_runs = itertools.chain.from_iterable(
             [self.get_video_course_runs_per_org(org) for org in orgs]
         )
         return course_runs
 
-    def get_videos_for_site(self, site):
+    def get_videos_for_site(self, site):  # pylint: disable=missing-docstring
         if not hasattr(site, 'siteconfiguration'):
             self.stderr.write("Missing site config for site {}".format(site))
             return []
@@ -64,7 +66,7 @@ class Command(BaseCommand):
                     block_types_filter='video',
                     student_view_data='video',
                 )
-            except Exception as e:
+            except Exception:  # pylint: disable=broad-except
                 self.stderr.write("Unable to retrieves blocks from course run {}".format(course_run))
                 continue
             blocks.append({

@@ -32,7 +32,8 @@ assets/
 
 # Unit test / coverage reports
 .coverage
-htmlcov
+.pytest_cache
+test_root
 .tox
 nosetests.xml
 unittests.xml
@@ -80,6 +81,7 @@ private.py
 *.trace
 
 docs/_build/
+node_modules
 
 
 # Additional

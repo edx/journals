@@ -1,13 +1,11 @@
 '''Search view class'''
 from __future__ import absolute_import, unicode_literals
 
-from journals.apps.journals.models import JournalDocument, JournalPage, Video
-
-from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.shortcuts import render
-
 from wagtail.wagtailsearch.backends import get_search_backend
 from wagtail.wagtailsearch.models import Query
+
+from journals.apps.journals.models import JournalDocument, JournalPage, Video
 
 MATCH_PHRASE_START_CHAR = '\"'
 MATCH_PHRASE_END_CHAR = '\"'
@@ -30,7 +28,7 @@ class SearchDisplay:
 
     def add_hit(self, hit):
         self.hit_list.append(hit)
-        if (hit.score > self.max_score):
+        if hit.score > self.max_score:
             self.max_score = hit.score
         self._set_type(hit)
 
@@ -84,7 +82,7 @@ def search(request):
         for hit in page_search_results + doc_search_results + video_search_results:
             if isinstance(hit, JournalPage):
                 results[hit.id] = SearchDisplay(journal_page=hit)
-            elif isinstance(hit, JournalDocument) or isinstance(hit, Video):
+            elif isinstance(hit, (JournalDocument, Video)):
                 page_set = hit.journalpage_set.all().distinct()
                 for parent_page in page_set:
                     results.setdefault(parent_page.id, SearchDisplay(journal_page=parent_page)).add_hit(hit)

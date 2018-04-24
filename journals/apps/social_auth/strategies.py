@@ -1,3 +1,6 @@
+"""
+Python Social Auth custom strategy
+"""
 from auth_backends.strategies import EdxDjangoStrategy
 
 

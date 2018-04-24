@@ -1,4 +1,5 @@
 """ Core models. """
+from urllib.parse import urljoin
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -6,7 +7,6 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from edx_rest_api_client.client import EdxRestApiClient
 from jsonfield.fields import JSONField
-from urllib.parse import urljoin
 
 
 class User(AbstractUser):
@@ -20,11 +20,11 @@ class User(AbstractUser):
         Assumes user has authenticated at least once with edX Open ID Connect.
         """
         try:
-            return self.social_auth.first().extra_data[u'access_token']  # pylint: disable=no-member
+            return self.social_auth.first().extra_data[u'access_token']
         except Exception:  # pylint: disable=broad-except
             return None
 
-    class Meta(object):  # pylint:disable=missing-docstring
+    class Meta(object):
         get_latest_by = 'date_joined'
         db_table = 'journals_user'
 
@@ -152,7 +152,7 @@ class SiteConfiguration(models.Model):
         """
 
         url = '{root}/access_token'.format(root=self.oauth2_provider_url)
-        access_token, expiration_datetime = EdxRestApiClient.get_oauth_access_token(
+        access_token, expiration_datetime = EdxRestApiClient.get_oauth_access_token(  # pylint: disable=unused-variable
             url,
             self.oauth_settings['SOCIAL_AUTH_EDX_OIDC_KEY'],
             self.oauth_settings['SOCIAL_AUTH_EDX_OIDC_SECRET'],
@@ -196,4 +196,4 @@ class SiteConfiguration(models.Model):
         return EdxRestApiClient(self.ecommerce_journal_api_url, jwt=self.access_token)
 
     def __str__(self):
-        return str(self.site.site_name)
+        return str(self.site.site_name)  # pylint: disable=no-member
