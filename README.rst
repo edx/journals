@@ -6,7 +6,13 @@ journals  |Travis|_ |Codecov|_
 .. |Codecov| image:: http://codecov.io/github/edx/journals/coverage.svg?branch=master
 .. _Codecov: http://codecov.io/github/edx/journals?branch=master
 
-The ``README.rst`` file should start with a brief description of the repository, which sets it in the context of other repositories under the ``edx`` organization. It should make clear where this fits in to the overall edX codebase. You may also want to provide a brief overview of the code in this repository, including the main components and useful entry points for starting to understand the code in more detail, or link to a comparable description in your repo's docs.
+The Journal service is a standalone IDA that provides functionality to author, market and view Content Journals. This repository contains the needed code to support the base Journal functionality. It uses the Content Mangement System, Wagtail, to create and author Journals.
+
+Additional edX Platform modules are being developed to allow the Journal to be integrated into the edX platform. These include modules for Ecommerce (to support purchasing journals), and LMS/Discovery (to support surfacing and interacting with journals). The integration modules can be found in the following repositories:
+
+-  edx-platform: https://github.com/edx/edx-platform/tree/whitelabel/journal
+-  course-discovery: https://github.com/edx/course-discovery/tree/whitelabel/journal
+-  ecommerce: https://github.com/edx/ecommerce/tree/whitelabel/journal
 
 Documentation
 -------------
@@ -32,48 +38,34 @@ Reporting Security Issues
 
 Please do not report security issues in public. Please email security@edx.org.
 
-Get Help
---------
-
-Ask questions and discuss this project on `Slack <https://openedx.slack.com/messages/general/>`_ or in the `edx-code Google Group <https://groups.google.com/forum/#!forum/edx-code>`_.
-
 Getting Started
 ---------------
+Journal currently runs in it’s own docker environment. For development, it is dependent on the edx-platform which also runs in it’s own docker environment. Initial setup is necessary to configure both environments such that they can communicate with each other.
 
-Running in Docker
-~~~~~~~~~~~~~~~~~
-To get started, please complete the following steps:
+edx-platform configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Get edx-platform docker devstack up and running.
+   
+   -  ``git clone https://github.com/edx/devstack.git; git checkout whitelabel/journals``
+   -  Then follow instructions found here to configure: https://github.com/edx/devstack/blob/master/README.rst
 
-1. Configure edx OIDC
-    1. Create OAuth client in LMS
-        1. Go to LMS Admin http://localhost:18000/admin/oauth2/client/
-        2. Click the `Add client` button.
-        3. Leave the user field blank.
-        4. Specify the name of this service, ``journals``, as the client name.
-        5. Set the `URL` to the root path of this service: ``http://localhost:18606/``.
-        6. Set the `Redirect URL` to the OIDC client endpoint: ``http://localhost:18606/complete/edx-oidc/``.
-        7. Copy the `Client ID` and `Client Secret` values. They will be used later in `journals/settings/local.py`.
-        8. Select `Confidential (Web applications)` as the client type.
-        9. Click `Save`.
-    2. Trust OAuth client in LMS
-        1. Go to http://localhost:18000/admin/edx_oauth2_provider/trustedclient/add/
-        2. Select your newly-created client's redirect URL from the dropdown.
-        3. Click ``Save``.
-2. Create a Site Configuration
-    1. Go to http://localhost:18606/admin/core/siteconfiguration/add/
-    2. Set site to be your default site
-    3. Set `LMS base url` to `http://edx.devstack.lms:18000`
-    4. Set `LMS public base url` to `http://localhost:18000`
-    5. Set `OAuth settings` to the following JSON::
-        {
-            "SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY":"<<Client Secret generated from above>>",
-            "SOCIAL_AUTH_EDX_OIDC_URL_ROOT":"http://edx.devstack.lms:18000/oauth2",
-            "SOCIAL_AUTH_EDX_OIDC_ISSUERS":["http://edx.devstack.lms:18000"],
-            "SOCIAL_AUTH_EDX_OIDC_KEY":"<<Client ID generated from above>>",
-            "SOCIAL_AUTH_EDX_OIDC_SECRET":"<<Client Secret generated from above>>",
-            "SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT": "http://localhost:18000/oauth2",
-            "SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL":"http://localhost:18000/logout",
-            "SOCIAL_AUTH_EDX_OIDC_ISSUER":"http://edx.devstack.lms:18000/oauth2"
-        }
-3. Initialize envionrment
-    1. Run `make dev.init`. This should create your containers, migrate your databases, and build your elastic search indexes.
+2. Verify that edx-platform is working correctly. Visit http://localhost:18000 and make sure you can login
+
+3. Install whitelabel/journal branches for the following three services in the directories where devstack is configured to look:
+
+   -  LMS: ``cd ~/projects/edx-platform; git checkout whitelabel/journals``
+   -  Discovery: ``cd ~/projects/course-discovery; git checkout whitelabel/journals``
+   -  Ecommerce: ``cd ~/projects/ecommerce; git checkout whitelabel/journals``
+
+4. Restart the services: ``docker-compose restart``
+
+Journal Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. Run ``make dev.destroy`` to destroy previous setup and start from scratch
+
+2. Run ``make dev.provision`` to setup all necessary configuration in Journals and edx-platform and create ‘Demo Journal’ 
+
+3. Verify Journal is running by going to http://localhost:18606. You should see “edx Index” page by default showing one Journal “Demo Journal”
+
+4. To edit the Demo Journal, first login as ``username:staff@example.com`` ``password:edx``, then click the CMS link in the header. This will bring you into Wagtail CMS environment. 
+
