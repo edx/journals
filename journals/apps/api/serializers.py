@@ -1,13 +1,14 @@
 '''Journal serializers'''
 from rest_framework import serializers
 from journals.apps.core.models import User
-from journals.apps.journals.models import Journal, JournalAccess, JournalAboutPage
+from journals.apps.journals.models import Journal, JournalAccess, JournalAboutPage, Organization
 
 
 class JournalAboutPageSerializer(serializers.ModelSerializer):
     """
     Serializer for JournalAboutPage
     """
+
     class Meta:
         model = JournalAboutPage
         fields = ('slug', 'card_image_absolute_url', 'short_description')
@@ -18,10 +19,15 @@ class JournalSerializer(serializers.ModelSerializer):
     Serializer for Journal
     """
     journalaboutpage = JournalAboutPageSerializer(many=False, read_only=True)
+    organization = serializers.SlugRelatedField(slug_field='name', queryset=Organization.objects.all())
 
     class Meta:
         model = Journal
-        fields = ('name', 'journalaboutpage')
+        fields = (
+            'name',
+            'journalaboutpage',
+            'organization'
+        )
 
 
 class JournalAccessSerializer(serializers.ModelSerializer):
