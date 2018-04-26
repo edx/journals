@@ -17,15 +17,17 @@ class Command(BaseCommand):
             # Return url if it's not being overwritten
             return url
 
-        split_url = urlsplit(url)
-        override_url = urlunsplit((
-            split_url.scheme,
-            site.siteconfiguration.lms_public_url_root_override,
-            split_url.path,
-            split_url.query,
-            split_url.fragment,
+        split_input_url = urlsplit(url)
+        split_override_url = urlsplit(site.siteconfiguration.lms_public_url_root_override)
+
+        final_url = urlunsplit((
+            split_override_url.scheme,
+            split_override_url.netloc,
+            split_input_url.path,
+            split_input_url.query,
+            split_input_url.fragment,
         ))
-        return override_url
+        return final_url
 
     def get_video_course_runs_per_org(self, org):
         """
