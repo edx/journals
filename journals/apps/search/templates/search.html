@@ -14,16 +14,15 @@
                 {% for search_display in search_results %}
                     <li>
                         <h4><a href="{% pageurl search_display.journal_page %}">{{ search_display.journal_page }}</a>
-                        {{search_display.max_score}}
                         </h4>
                         {% for hit in search_display.get_hit_list_sorted %}
                             {% if hit.score > 0 and hit.search_results_metadata %}
                                 {% if hit.is_page %}
-                                <h7>Page Contents</h7> {{hit.score}}
+                                <h7>Page Contents</h7>
                                 {% elif hit.is_doc %}
-                                <h7>Document: {{hit.title}}</h7> {{hit.score}}
+                                <h7>Document: {{hit.title}}</h7>
                                 {% elif hit.is_video %}
-                                <h7>Video: {{hit.title}}</h7> {{hit.score}}
+                                <h7>Video: {{hit.title}}</h7>
                                 {% endif %}
                                 <ul>
                                 {% for key, value in hit.search_results_metadata.items %} 
