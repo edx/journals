@@ -331,7 +331,7 @@ class JournalAboutPage(Page):
                 # Only a WARN because this will often happen on JournalAboutPage creation.
                 logging.warn(f"JournalAboutPage unable to update {service_name} because UUID doesn't exist: {err.content}")
             except HttpClientError as err:
-                logging.error(f"Error updating discovery after JournalAboutPage publish: {err.content}")
+                logging.error(f"Error updating {service_name} after JournalAboutPage publish: {err.content}")
 
         discovery_data = {
             "status": "active" if not deactivate else "inactive",
@@ -341,10 +341,17 @@ class JournalAboutPage(Page):
             "short_description": self.short_description,
             "slug": self.slug
         }
+
         update_service(
             self.site.siteconfiguration.discovery_journal_api_client,
             discovery_data,
             "discovery"
+        )
+
+        update_service(
+            self.site.siteconfiguration.ecommerce_journal_api_client,
+            {'title': self.title},
+            'ecommerce'
         )
 
     @property
