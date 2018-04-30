@@ -23,7 +23,7 @@ from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 from jsonfield.fields import JSONField
 
 from urllib.parse import quote, urljoin, urlparse, urlsplit, urlunsplit
-from slumber.exceptions import HttpClientError, HttpNotFoundError
+from slumber.exceptions import HttpClientError, HttpNotFoundError, HttpServerError
 
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -330,6 +330,12 @@ class JournalAboutPage(Page):
             except HttpNotFoundError as err:
                 # Only a WARN because this will often happen on JournalAboutPage creation.
                 logging.warn(f"JournalAboutPage unable to update {service_name} because UUID doesn't exist: {err.content}")
+            except HttpServerError as err:
+                # Only a WARN if ecommerce as this will happen on initial create of Journal
+                if service_name == 'ecommerce':
+                    logging.warn(f"JournalAboutPage unable to update {service_name} because UUID doesn't exist: {err}")
+                else:
+                    logging.error(f"Error updating {service_name} after JournalAboutPage publish: {err.content}")
             except HttpClientError as err:
                 logging.error(f"Error updating {service_name} after JournalAboutPage publish: {err.content}")
 
