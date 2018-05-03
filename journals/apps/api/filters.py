@@ -5,7 +5,45 @@ from django_filters import rest_framework as filters
 
 class JournalAccessFilter(filters.FilterSet):
     user = filters.CharFilter(name='user__username')
+    get_latest = filters.BooleanFilter(name='get_latest', method='filter_latest')
+
+    def filter_latest(self, queryset, name, value):
+        """
+        If a user has renewed their access to a given journal they may have multiple JournalAccess records for a
+        given journal. If 'get_latest' is set to true, only return one JournalAccess record per journal per user.
+        In other words, for a given user-journal pair there should only be one JournalAccess record returned.  In the
+        case where a user-journal pair has multiple journal access records, return the access record with the latest
+        expiration date.
+
+        Args:
+            queryset (QuerySet): queryset to be filtered
+            value (Boolean): if True only return latest record per user-journal pair, else do no filtering
+
+        Returns:
+            filtered_queryset (QuerySet): filtered query sets
+        """
+        if not value:
+            return queryset
+
+        users = set(queryset.values_list('user', flat=True))
+        filtered_uuids = []
+        for user in users:
+            user_queryset = queryset.filter(user=user)
+            current_user_journals = set(user_queryset.values_list('journal', flat=True))
+            for journal in current_user_journals:
+                journal_queryset = user_queryset.filter(journal=journal)
+                filtered_uuids.append(journal_queryset.order_by('-expiration_date').first().uuid)
+
+        filtered_queryset = queryset.filter(uuid__in=filtered_uuids)
+        return filtered_queryset
 
     class Meta:
         model = JournalAccess
-        fields = ('user',)
+        # user: returns access records only for that user
+        # get_latest_journals: if true, only returns one journal access record per journal.
+        #   selects journal with latest expiration date
+        fields = (
+            'user',
+            'get_latest',
+        )
+
