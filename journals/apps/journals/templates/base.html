@@ -31,7 +31,15 @@
         {% endblock %}
 
         {# Theming overrides #}
-        <link rel="stylesheet" type="text/css" href="{% static 'css/themes/mitxpro.css' %}">
+        {% with settings.sitesettings.SiteBranding as branding %}
+            {% if branding.theme_name %}
+                <link rel="stylesheet" type="text/css" href="{% static 'css/themes/'|add:branding.theme_name|add:'.css' %}">
+            {% else %}
+                <link rel="stylesheet" type="text/css" href="{% static 'css/themes/default.css' %}">    
+            {% endif %}
+        {% endwith %}
+
+        
 
     </head>
 
