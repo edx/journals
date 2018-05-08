@@ -52,6 +52,9 @@ class Command(BaseCommand):
         example_site_config = SiteConfiguration.objects.all()[0]
         example_site_config.pk = None
         example_site_config.site = site
+        example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_KEY'] = 'journals-key-' + site.site_name
+        example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY'] = 'journals-secret-' + site.site_name
+        example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_SECRET'] = 'journals-secret-' + site.site_name
         example_site_config.save()
 
 
