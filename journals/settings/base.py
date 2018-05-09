@@ -35,8 +35,10 @@ INSTALLED_APPS = (
     'wagtail.wagtailsearch',
     'wagtail.wagtailadmin',
     'wagtail.wagtailcore',
+    'wagtail.contrib.settings',
     'modelcluster',
     'taggit',
+
 )
 
 THIRD_PARTY_APPS = (
@@ -51,6 +53,7 @@ PROJECT_APPS = (
     'journals.apps.api',
     'journals.apps.journals',
     'journals.apps.search',
+    'journals.apps.theming'
 )
 
 INSTALLED_APPS += THIRD_PARTY_APPS
@@ -149,6 +152,7 @@ TEMPLATES = [
                 'django.template.context_processors.tz',
                 'django.contrib.messages.context_processors.messages',
                 'journals.apps.core.context_processors.core',
+                'wagtail.contrib.settings.context_processors.settings',
             ),
             'debug': True,  # Django will only display debug pages if the global DEBUG setting is set to True.
         }
@@ -285,3 +289,5 @@ WAGTAILSEARCH_BACKENDS = {
 
 WAGTAILDOCS_DOCUMENT_MODEL = 'journals.JournalDocument'
 WAGTAIL_FRONTEND_LOGIN_URL = LOGIN_URL
+
+THEME_DIR = '/edx/app/journals/themes/'
