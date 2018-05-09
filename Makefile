@@ -13,7 +13,7 @@ help:
 	@echo "  help                       display this help message"
 	@echo "  html_coverage              generate and view HTML coverage report"
 	@echo "  migrate                    apply database migrations"
-	@echo "  prod-requirements          install requirements for production"
+	@echo "  production-requirements          install requirements for production"
 	@echo "  pull_translations          pull translations from Transifex"
 	@echo "  push_translations          push source translation files (.po) from Transifex"
 	@echo "  quality                    run PEP8 and Pylint"
@@ -35,7 +35,7 @@ clean:
 requirements:
 	pip install -qr requirements/local.txt --exists-action w
 
-prod-requirements:
+production-requirements:
 	pip install -qr requirements.txt --exists-action w
 
 test: clean
