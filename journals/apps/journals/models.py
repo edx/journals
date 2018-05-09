@@ -317,7 +317,7 @@ class JournalAboutPage(Page):
             scheme,
             netloc,
             '/basket/add/',
-            f'sku={sku}',
+            'sku={sku}'.format(sku=sku),
             ''
         ))
         return basket_url
@@ -329,9 +329,15 @@ class JournalAboutPage(Page):
                 client.journals(self.journal.uuid).patch(data)
             except HttpNotFoundError as err:
                 # Only a WARN because this will often happen on JournalAboutPage creation.
-                logging.warn(f"JournalAboutPage unable to update {service_name} because UUID doesn't exist: {err.content}")
+                logging.warn("JournalAboutPage unable to update {service_name} because UUID doesn't exist: {error}".format(
+                    service_name=service_name,
+                    error=err.content
+                ))
             except HttpClientError as err:
-                logging.error(f"Error updating {service_name} after JournalAboutPage publish: {err.content}")
+                logging.error("Error updating {service_name} after JournalAboutPage publish: {error}".format(
+                    service_name=service_name,
+                    error=err.content
+                ))
 
         discovery_data = {
             "status": "active" if not deactivate else "inactive",
