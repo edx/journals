@@ -65,8 +65,8 @@ class JournalsearchMapping(Elasticsearch5Mapping):
         return mapping
 
 
-class JournalsearchIndex(Elasticsearch5Index):  # pylint: disable=missing-docstring
-
+class JournalsearchIndex(Elasticsearch5Index):
+    '''Journal specific backend to Elasticsearch5'''
     def put(self):
         '''
         Called during index creation
@@ -148,7 +148,8 @@ class JournalsearchIndex(Elasticsearch5Index):  # pylint: disable=missing-docstr
             super(JournalsearchIndex, self).add_items(model, items)
 
 
-class JournalsearchSearchQuery(Elasticsearch5SearchQuery):  # pylint: disable=missing-docstring
+class JournalsearchSearchQuery(Elasticsearch5SearchQuery):
+    '''Journal specific backend for SearchQuery'''
     def __init__(self, *args, **kwargs):
 
         super(JournalsearchSearchQuery, self).__init__(*args, **kwargs)

@@ -21,7 +21,7 @@ class JournalAccessViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminUser,)
     filter_class = JournalAccessFilter
 
-    def create(self, request):  # pylint: disable=arguments-differ
+    def create(self, request, *args, **kwargs):
         '''create a JournalAccess entry'''
         username = request.data.get('user')
         journal_uuid = request.data.get('journal')

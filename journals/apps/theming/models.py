@@ -5,8 +5,9 @@ from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.contrib.settings.models import BaseSetting, register_setting
 
 
-@register_setting  # pylint: disable=missing-docstring
+@register_setting
 class SiteBranding(BaseSetting):
+    '''Model that contains branding related attributes'''
     site_logo = models.ForeignKey(
         'wagtailimages.Image',
         null=True,

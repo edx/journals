@@ -530,7 +530,8 @@ class JournalPage(Page):
         journal_about = self.get_journal_about_page()
         return journal_about.journal
 
-    def get_journal_about_page(self):  # pylint: disable=missing-docstring
+    def get_journal_about_page(self):
+        '''return about_page for journal'''
         journal_about = None
         parent = self.get_parent()
         journal_about = parent.specific
@@ -560,7 +561,8 @@ class JournalPage(Page):
     def get_json_journal_structure(self):
         return json.dumps(self.get_journal_structure())
 
-    def get_nested_children(self):  # pylint: disable=missing-docstring
+    def get_nested_children(self):
+        '''get nested children'''
         structure = {
             "title": self.title,
             "url": self.url,
