@@ -1,6 +1,7 @@
 """ Core views. """
 import logging
 import uuid
+from urllib.parse import unquote
 
 from django.db import transaction, connection, DatabaseError
 from django.http import JsonResponse
@@ -12,8 +13,6 @@ from django.shortcuts import redirect
 from django.views.generic import View
 
 from journals.apps.core.constants import Status
-
-from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -87,6 +86,7 @@ class AutoAuth(View):
         login(request, user)
 
         return redirect('/')
+
 
 @login_required
 def required_auth(request):
