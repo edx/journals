@@ -3,7 +3,8 @@ from journals.apps.journals.models import JournalAccess
 from django_filters import rest_framework as filters
 
 
-class JournalAccessFilter(filters.FilterSet):  # pylint: disable=missing-docstring
+class JournalAccessFilter(filters.FilterSet):
+    '''Filter for JournalAccess'''
     user = filters.CharFilter(name='user__username')
     get_latest = filters.BooleanFilter(name='get_latest', method='filter_latest')
 

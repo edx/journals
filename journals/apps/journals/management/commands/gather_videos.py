@@ -10,7 +10,8 @@ from wagtail.wagtailcore.models import Site
 from journals.apps.journals.models import Video
 
 
-class Command(BaseCommand):  # pylint: disable=missing-docstring
+class Command(BaseCommand):
+    '''Management command to gather course videos'''
     help = 'Gathers all videos from relevant courses'
 
     def rewrite_url_for_external_use(self, url, site):
@@ -43,14 +44,16 @@ class Command(BaseCommand):  # pylint: disable=missing-docstring
         )
         return course_runs
 
-    def get_video_course_runs_for_site(self, site):  # pylint: disable=missing-docstring
+    def get_video_course_runs_for_site(self, site):
+        '''get videos for course runs'''
         orgs = site.organization_set.all()
         course_runs = itertools.chain.from_iterable(
             [self.get_video_course_runs_per_org(org) for org in orgs]
         )
         return course_runs
 
-    def get_videos_for_site(self, site):  # pylint: disable=missing-docstring
+    def get_videos_for_site(self, site):
+        '''get_videos for given site'''
         if not hasattr(site, 'siteconfiguration'):
             self.stderr.write("Missing site config for site {}".format(site))
             return []

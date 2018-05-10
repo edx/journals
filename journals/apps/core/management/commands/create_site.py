@@ -1,4 +1,4 @@
-# pylint: disable=missing-docstring
+'''Create Site management command'''
 from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -29,7 +29,8 @@ PERMISSIONS = {
 }
 
 
-class Command(BaseCommand):  # pylint: disable=missing-docstring
+class Command(BaseCommand):
+    '''Management Command for creating site'''
     help = 'Creates a new site and all necessary additional configs'
 
     def add_arguments(self, parser):
@@ -37,7 +38,8 @@ class Command(BaseCommand):  # pylint: disable=missing-docstring
         parser.add_argument('--hostname', help='Hostname of new site (e.g. journals.example.com)')
         parser.add_argument('--port', help='Webserver port to listen to')
 
-    def create_index_page(self, sitename):  # pylint: disable=missing-docstring
+    def create_index_page(self, sitename):
+        '''create_index_page'''
         root_page = Page.get_root_nodes()[0]
         index_page = JournalIndexPage(
             title="{} Index Page".format(sitename),
@@ -53,11 +55,13 @@ class Command(BaseCommand):  # pylint: disable=missing-docstring
         example_site_config.pk = None
         example_site_config.site = site
         example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_KEY'] = 'journals-key-' + site.site_name
-        example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY'] = 'journals-secret-' + site.site_name  # noqa pylint: disable=line-too-long
+        example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY'] = \
+            'journals-secret-' + site.site_name
         example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_SECRET'] = 'journals-secret-' + site.site_name
         example_site_config.save()
 
-    def create_collection(self, name):  # pylint: disable=missing-docstring
+    def create_collection(self, name):
+        '''create_collection'''
         root_collection = Collection.get_first_root_node()
         collection = Collection(
             name=name
