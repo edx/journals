@@ -4,7 +4,6 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from urllib.parse import urljoin, urlsplit, urlunsplit
-import json
 
 from journals.apps.journals.models import JournalIndexPage
 from journals.apps.core.models import SiteConfiguration
