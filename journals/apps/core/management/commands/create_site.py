@@ -1,4 +1,6 @@
 '''Create Site management command'''
+from urllib.parse import urljoin
+
 from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -34,9 +36,65 @@ class Command(BaseCommand):
     help = 'Creates a new site and all necessary additional configs'
 
     def add_arguments(self, parser):
-        parser.add_argument('--sitename', help='Name of new site')  # MITxPRO or edX
-        parser.add_argument('--hostname', help='Hostname of new site (e.g. journals.example.com)')
-        parser.add_argument('--port', help='Webserver port to listen to')
+        parser.add_argument(
+            '--sitename',
+            help='Name of new site',
+            required=True
+        )
+        parser.add_argument(
+            '--hostname',
+            help='Hostname of new site (e.g. journals.example.com)',
+            required=True
+        )
+        parser.add_argument(
+            '--port',
+            help='Webserver port to listen to',
+            required=True
+        )
+        parser.add_argument(
+            '--lms-root-url',
+            help='Root URL for LMS for API calls'
+        )
+        parser.add_argument(
+            '--lms-public-root-url',
+            help='Public facing root URL for LMS (only needed if different than lms-root-url'
+        )
+        parser.add_argument(
+            '--discovery-api-url',
+            help='Discovery api endpoint'
+        )
+        parser.add_argument(
+            '--ecommerce-api-url',
+            help='Ecommerce api endpoint'
+        )
+        parser.add_argument(
+            '--discovery-partner-id',
+            help='Discovery service partner short code'
+        )
+        parser.add_argument(
+            '--ecommerce-partner-id',
+            help='Ecommerce service partner short code'
+        )
+        parser.add_argument(
+            '--currency-codes',
+            help='Comma separated list of currency codes'
+        )
+        parser.add_argument(
+            '--client-secret',
+            help='OAuth client secret'
+        )
+        parser.add_argument(
+            '--client-id',
+            help='OAuth client key'
+        )
+        parser.add_argument(
+            '--discovery-journal-api-url',
+            help='Journal endpoint of discovery (defaults to /journal/api/v1 on discovery domain)'
+        )
+        parser.add_argument(
+            '--ecommerce-journal-api-url',
+            help='Journal endpoint of ecommerce (defaults to /journal/api/v1 on ecommerce domain)'
+        )
 
     def create_index_page(self, sitename):
         '''create_index_page'''
@@ -49,16 +107,81 @@ class Command(BaseCommand):
         index_page.save_revision().publish()
         return index_page
 
-    def copy_site_config(self, site):
-        """ Take first site config found, clone it and replace site """
-        example_site_config = SiteConfiguration.objects.all()[0]
-        example_site_config.pk = None
-        example_site_config.site = site
-        example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_KEY'] = 'journals-key-' + site.site_name
-        example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY'] = \
-            'journals-secret-' + site.site_name
-        example_site_config.oauth_settings['SOCIAL_AUTH_EDX_OIDC_SECRET'] = 'journals-secret-' + site.site_name
-        example_site_config.save()
+    def build_oauth_settings(
+        self,
+        client_id,
+        client_secret,
+        lms_root_url,
+        lms_public_root_url
+    ):
+        ''' Builds JSON based OAuth settings for site config '''
+        settings = {
+            "SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY": client_secret,
+            "SOCIAL_AUTH_EDX_OIDC_SECRET": client_secret,
+            "SOCIAL_AUTH_EDX_OIDC_URL_ROOT": urljoin(lms_root_url, '/oauth2'),
+            "SOCIAL_AUTH_EDX_OIDC_ISSUER": urljoin(lms_root_url, '/oauth2'),
+            "SOCIAL_AUTH_EDX_OIDC_KEY": client_id,
+            "SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT": urljoin(lms_public_root_url, 'oauth2'),
+            "SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL": urljoin(lms_public_root_url, 'logout'),
+            "SOCIAL_AUTH_EDX_OIDC_ISSUERS": [
+                lms_root_url
+            ]
+        }
+        return settings
+
+    def create_site_config(self, site, options):
+        '''
+        Creates a site config for a site. If a site config already exists in the DB, it copies
+        the values to use as default values. It then overwrites any values with command line
+        overrides in `options`.
+        '''
+        # All optional fields
+        oauth_settings = self.build_oauth_settings(
+            options.get('client_id', 'journals-key-' + site.site_name),
+            options.get('client_secret', 'journals-secret-' + site.site_name),
+            options.get('lms_root_url'),
+            options.get('lms_public_root_url'),
+        )
+
+        # If the journal endpoint isn't provided, fallback on rewriting the discovery endpoint with the journal path
+        discovery_journal_api_url = options.get(
+            'discovery_journal_api_url',
+            urljoin(options.get('discovery_api_url'), '/journal/api/v1')
+        )
+
+        # Same as above, but with ecommerce.
+        ecommerce_journal_api_url = options.get(
+            'ecommerce_journal_api_url',
+            urljoin(options.get('ecommerce_api_url'), '/journal/api/v1')
+        )
+
+        fields = {
+            'lms_root_url': options.get('lms_root_url'),
+            'lms_public_root_url': options.get('lms_public_root_url'),
+            'discovery_api_url': options.get('discovery_api_url'),
+            'ecommerce_api_url': options.get('ecommerce_api_url'),
+            'discovery_partner_id': options.get('discovery_partner_id'),
+            'ecommerce_partner_id': options.get('ecommerce_partner_id'),
+            'currency_codes': options.get('currency_codes'),
+            'oauth_settings': oauth_settings,
+            'discovery_journal_api_url': discovery_journal_api_url,
+            'ecommerce_journal_api_url': ecommerce_journal_api_url,
+        }
+
+        # If another site config exists, use it's values as defaults
+        site_configs = SiteConfiguration.objects.all()
+        if site_configs:
+            site_config = site_configs[0]
+            site_config.pk = None
+            site_config.site = site
+        else:
+            site_config = SiteConfiguration(site=site)
+
+        for key in fields:
+            if fields[key]:
+                setattr(site_config, key, fields[key])
+
+        site_config.save()
 
     def create_collection(self, name):
         '''create_collection'''
@@ -123,6 +246,7 @@ class Command(BaseCommand):
             - collection for documents and images
             - groups & permissions (collection names, root page, title)
         """
+        # Required fields
         sitename = options['sitename']
         hostname = options['hostname']
         port = options['port']
@@ -139,10 +263,10 @@ class Command(BaseCommand):
         )
 
         # Create site config
-        self.copy_site_config(site)
+        self.create_site_config(site, options)
 
         # Create site branding with theme name
-        site_branding = SiteBranding.objects.create(  # pylint: disable=unused-variable
+        SiteBranding.objects.create(
             site=site,
             theme_name=sitename
         )
