@@ -95,10 +95,17 @@ class SiteConfiguration(models.Model):
         help_text=_('JSON string containing OAuth backend settings.'),
         null=False,
         blank=False,
-        default={}
+        default={
+            "SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY":"",
+            "SOCIAL_AUTH_EDX_OIDC_SECRET":"",
+            "SOCIAL_AUTH_EDX_OIDC_URL_ROOT":"",
+            "SOCIAL_AUTH_EDX_OIDC_ISSUER":"",
+            "SOCIAL_AUTH_EDX_OIDC_KEY":"",
+            "SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT":"",
+            "SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL":"",
+            "SOCIAL_AUTH_EDX_OIDC_ISSUERS":[""]
+        }
     )
-
-    site_logo = models.ImageField(verbose_name="Header/Footer Logo", null=True)
 
     discovery_partner_id = models.CharField(
         max_length=8,
