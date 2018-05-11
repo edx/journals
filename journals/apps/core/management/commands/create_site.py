@@ -275,13 +275,10 @@ class Command(BaseCommand):
         )
 
         # Create site config
-        self.create_site_config(
-            site,
-            options
-        )
+        self.create_site_config(site, options)
 
         # Create site branding with theme name
-        site_branding = SiteBranding.objects.create(  # pylint: disable=unused-variable
+        SiteBranding.objects.create(  # pylint: disable=unused-variable
             site=site,
             theme_name=sitename
         )
