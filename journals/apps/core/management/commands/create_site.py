@@ -1,9 +1,9 @@
 '''Create Site management command'''
+from urllib.parse import urljoin
+
 from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand
 from django.db import transaction
-
-from urllib.parse import urljoin, urlsplit, urlunsplit
 
 from journals.apps.journals.models import JournalIndexPage
 from journals.apps.core.models import SiteConfiguration
@@ -114,6 +114,7 @@ class Command(BaseCommand):
         lms_root_url,
         lms_public_root_url
     ):
+        ''' Builds JSON based OAuth settings for site config '''
         settings = {
             "SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY": client_secret,
             "SOCIAL_AUTH_EDX_OIDC_SECRET": client_secret,
@@ -128,19 +129,12 @@ class Command(BaseCommand):
         }
         return settings
 
-    def rewrite_path(self, original_url, new_path):
-        split_url = urlsplit(original_url)
-        new_url = urlunsplit([
-            split_url.scheme,
-            split_url.netloc,
-            new_path,
-            split_url.fragment,
-            split_url.query,
-        ])
-        return new_url
-
-
     def create_site_config(self, site, options):
+        '''
+        Creates a site config for a site. If a site config already exists in the DB, it copies
+        the values to use as default values. It then overwrites any values with command line
+        overrides in `options`.
+        '''
         # All optional fields
         oauth_settings = self.build_oauth_settings(
             options.get('client_id', 'journals-key-' + site.site_name),
@@ -152,19 +146,13 @@ class Command(BaseCommand):
         # If the journal endpoint isn't provided, fallback on rewriting the discovery endpoint with the journal path
         discovery_journal_api_url = options.get(
             'discovery_journal_api_url',
-            self.rewrite_path(
-                options.get('discovery_api_url'),
-                '/journal/api/v1'
-            )
+            urljoin(options.get('discovery_api_url'), '/journal/api/v1')
         )
 
         # Same as above, but with ecommerce.
         ecommerce_journal_api_url = options.get(
             'ecommerce_journal_api_url',
-            self.rewrite_path(
-                options.get('ecommerce_api_url'),
-                '/journal/api/v1'
-            )
+            urljoin(options.get('ecommerce_api_url'), '/journal/api/v1')
         )
 
         fields = {
@@ -176,8 +164,8 @@ class Command(BaseCommand):
             'ecommerce_partner_id': options.get('ecommerce_partner_id'),
             'currency_codes': options.get('currency_codes'),
             'oauth_settings': oauth_settings,
-            'discovery_journal_api_url': options.get('discovery_journal_api_url'),
-            'ecommerce_journal_api_url': options.get('ecommerce_journal_api_url'),
+            'discovery_journal_api_url': discovery_journal_api_url,
+            'ecommerce_journal_api_url': ecommerce_journal_api_url,
         }
 
         # If another site config exists, use it's values as defaults
@@ -278,7 +266,7 @@ class Command(BaseCommand):
         self.create_site_config(site, options)
 
         # Create site branding with theme name
-        SiteBranding.objects.create(  # pylint: disable=unused-variable
+        SiteBranding.objects.create(
             site=site,
             theme_name=sitename
         )

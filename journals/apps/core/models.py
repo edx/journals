@@ -96,14 +96,14 @@ class SiteConfiguration(models.Model):
         null=False,
         blank=False,
         default={
-            "SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY":"",
-            "SOCIAL_AUTH_EDX_OIDC_SECRET":"",
-            "SOCIAL_AUTH_EDX_OIDC_URL_ROOT":"",
-            "SOCIAL_AUTH_EDX_OIDC_ISSUER":"",
-            "SOCIAL_AUTH_EDX_OIDC_KEY":"",
-            "SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT":"",
-            "SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL":"",
-            "SOCIAL_AUTH_EDX_OIDC_ISSUERS":[""]
+            "SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY": "",
+            "SOCIAL_AUTH_EDX_OIDC_SECRET": "",
+            "SOCIAL_AUTH_EDX_OIDC_URL_ROOT": "",
+            "SOCIAL_AUTH_EDX_OIDC_ISSUER": "",
+            "SOCIAL_AUTH_EDX_OIDC_KEY": "",
+            "SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT": "",
+            "SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL": "",
+            "SOCIAL_AUTH_EDX_OIDC_ISSUERS": [""]
         }
     )
 
