@@ -26,5 +26,9 @@ DB_OVERRIDES = dict(
     PORT=environ.get('DB_MIGRATION_PORT', DATABASES['default']['PORT']),
 )
 
+WAGTAILSEARCH_BACKENDS['default'].update({
+    'URLS': ['http://localhost:9200']
+})
+
 for override, value in DB_OVERRIDES.items():
     DATABASES['default'][override] = value

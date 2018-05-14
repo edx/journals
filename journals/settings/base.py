@@ -309,7 +309,7 @@ WAGTAILSEARCH_BACKENDS = {
     'default': {
         'BACKEND': 'journals.apps.search.backend',
         'URLS': ['http://journals.elasticsearch:9200'],
-        'INDEX': 'wagtail',
+        'INDEX': 'journals',
         'TIMEOUT': 5,
         'OPTIONS': {},
         'INDEX_SETTINGS': {},
