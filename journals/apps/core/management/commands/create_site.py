@@ -115,6 +115,10 @@ class Command(BaseCommand):
         lms_public_root_url
     ):
         ''' Builds JSON based OAuth settings for site config '''
+
+        # If public url isn't provided (because it's the same), use normal root url
+        lms_public_root_url = lms_public_root_url or lms_root_url
+
         settings = {
             "SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY": client_secret,
             "SOCIAL_AUTH_EDX_OIDC_SECRET": client_secret,
@@ -139,20 +143,20 @@ class Command(BaseCommand):
         oauth_settings = self.build_oauth_settings(
             options.get('client_id', 'journals-key-' + site.site_name),
             options.get('client_secret', 'journals-secret-' + site.site_name),
-            options.get('lms_root_url'),
-            options.get('lms_public_root_url'),
+            options.get('lms_root_url', ''),
+            options.get('lms_public_root_url', ''),
         )
 
         # If the journal endpoint isn't provided, fallback on rewriting the discovery endpoint with the journal path
         discovery_journal_api_url = options.get(
             'discovery_journal_api_url',
-            urljoin(options.get('discovery_api_url'), '/journal/api/v1')
+            urljoin(options.get('discovery_api_url', ''), '/journal/api/v1')
         )
 
         # Same as above, but with ecommerce.
         ecommerce_journal_api_url = options.get(
             'ecommerce_journal_api_url',
-            urljoin(options.get('ecommerce_api_url'), '/journal/api/v1')
+            urljoin(options.get('ecommerce_api_url', ''), '/journal/api/v1')
         )
 
         fields = {
