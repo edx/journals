@@ -26,5 +26,10 @@ DB_OVERRIDES = dict(
     PORT=environ.get('DB_MIGRATION_PORT', DATABASES['default']['PORT']),
 )
 
+WAGTAILSEARCH_BACKENDS['default'].update({
+    'URLS': [ELASTICSEARCH_URL],
+    'INDEX_NAME': ELASTICSEARCH_INDEX_NAME,
+})
+
 for override, value in DB_OVERRIDES.items():
     DATABASES['default'][override] = value
