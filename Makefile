@@ -29,6 +29,7 @@ help:
 	@echo "  quality_python             run PEP8 and Pylint"
 	@echo "  quality_js                 run eslint"
 	@echo "  requirements               install requirements for local development"
+	@echo "  static               		make static assets"
 	@echo "  test_python                run python unit tests and generate coverage report"
 	@echo "  test_js                    run javascript unit tests and generate coverage report"
 	@echo "  test_js_dev                run javascript unit tests in development/debug mode and generate coverage report"
@@ -56,6 +57,9 @@ requirements: requirements.js
 
 production-requirements:
 	pip install -qr requirements.txt --exists-action w
+
+static:
+	python manage.py collectstatic --noinput
 
 test_python: clean
 	py.test --cov-config .coveragerc --cov-report term-missing:skip-covered --cov=$(APP_NAME) --ignore=e2e --cov-fail-under=$(MIN_COVERAGE) --rootdir=$(TEST_ROOT)
