@@ -12,10 +12,31 @@ ALLOWED_HOSTS = ['*']
 
 LOGGING['handlers']['local']['level'] = 'INFO'
 
+# Keep track of the names of settings that represent dicts. Instead of overriding the values in base.py,
+# the values read from disk should UPDATE the pre-configured dicts.
+DICT_UPDATE_KEYS = ('JWT_AUTH',)
+
+# This may be overridden by the YAML in JOURNALS_CFG, but it should be here as a default.
+MEDIA_STORAGE_BACKEND = {}
+
 CONFIG_FILE = get_env_setting('JOURNALS_CFG')
+
 with open(CONFIG_FILE, encoding='utf-8') as f:
     config_from_yaml = yaml.load(f)
+
+    # Remove the items that should be used to update dicts, and apply them separately rather
+    # than pumping them into the local vars.
+    dict_updates = {key: config_from_yaml.pop(key, None) for key in DICT_UPDATE_KEYS}
+
+    for key, value in dict_updates.items():
+        if value:
+            vars()[key].update(value)
+
     vars().update(config_from_yaml)
+    vars().update(MEDIA_STORAGE_BACKEND)
+
+if 'EXTRA_APPS' in locals():
+    INSTALLED_APPS += EXTRA_APPS
 
 DB_OVERRIDES = dict(
     PASSWORD=environ.get('DB_MIGRATION_PASS', DATABASES['default']['PASSWORD']),
