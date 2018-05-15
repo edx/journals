@@ -35,9 +35,6 @@ with open(CONFIG_FILE, encoding='utf-8') as f:
     vars().update(config_from_yaml)
     vars().update(MEDIA_STORAGE_BACKEND)
 
-if 'EXTRA_APPS' in locals():
-    INSTALLED_APPS += EXTRA_APPS
-
 DB_OVERRIDES = dict(
     PASSWORD=environ.get('DB_MIGRATION_PASS', DATABASES['default']['PASSWORD']),
     ENGINE=environ.get('DB_MIGRATION_ENGINE', DATABASES['default']['ENGINE']),
