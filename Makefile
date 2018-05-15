@@ -29,6 +29,7 @@ help:
 	@echo "  quality_python             run PEP8 and Pylint"
 	@echo "  quality_js                 run eslint"
 	@echo "  requirements               install requirements for local development"
+	@echo "  static                     make static assets for production"
 	@echo "  test_python                run python unit tests and generate coverage report"
 	@echo "  test_js                    run javascript unit tests and generate coverage report"
 	@echo "  test_js_dev                run javascript unit tests in development/debug mode and generate coverage report"
@@ -53,6 +54,9 @@ requirements.js:
 
 requirements: requirements.js
 	pip install -qr requirements/local.txt --exists-action w
+
+static: ## Gather all static assets for production
+	python manage.py collectstatic --noinput
 
 production-requirements:
 	pip install -qr requirements.txt --exists-action w
