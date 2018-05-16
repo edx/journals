@@ -95,6 +95,10 @@ class Command(BaseCommand):
             '--ecommerce-journal-api-url',
             help='Journal endpoint of ecommerce (defaults to /journal/api/v1 on ecommerce domain)'
         )
+        parser.add_argument(
+            '--ecommerce-public-url-root',
+            help='Ecommerce public root url'
+        )
 
     def create_index_page(self, sitename):
         '''create_index_page'''
@@ -141,35 +145,36 @@ class Command(BaseCommand):
         '''
         # All optional fields
         oauth_settings = self.build_oauth_settings(
-            options.get('client_id', 'journals-key-' + site.site_name),
-            options.get('client_secret', 'journals-secret-' + site.site_name),
-            options.get('lms_root_url', ''),
-            options.get('lms_public_root_url', ''),
+            options.get('client-id', 'journals-key-' + site.site_name),
+            options.get('client-secret', 'journals-secret-' + site.site_name),
+            options.get('lms-root-url', ''),
+            options.get('lms-public-root-url', ''),
         )
 
         # If the journal endpoint isn't provided, fallback on rewriting the discovery endpoint with the journal path
         discovery_journal_api_url = options.get(
-            'discovery_journal_api_url',
-            urljoin(options.get('discovery_api_url', ''), '/journal/api/v1')
+            'discovery-journal-api-url',
+            urljoin(options.get('discovery-api-url', ''), '/journal/api/v1')
         )
 
         # Same as above, but with ecommerce.
         ecommerce_journal_api_url = options.get(
-            'ecommerce_journal_api_url',
-            urljoin(options.get('ecommerce_api_url', ''), '/journal/api/v1')
+            'ecommerce-journal-api-url',
+            urljoin(options.get('ecommerce-api-url', ''), '/journal/api/v1')
         )
 
         fields = {
-            'lms_root_url': options.get('lms_root_url'),
-            'lms_public_root_url': options.get('lms_public_root_url'),
-            'discovery_api_url': options.get('discovery_api_url'),
-            'ecommerce_api_url': options.get('ecommerce_api_url'),
-            'discovery_partner_id': options.get('discovery_partner_id'),
-            'ecommerce_partner_id': options.get('ecommerce_partner_id'),
-            'currency_codes': options.get('currency_codes'),
+            'lms_root_url': options.get('lms-root-url'),
+            'lms_public_root_url': options.get('lms-public-root-url'),
+            'discovery_api_url': options.get('discovery-api-url'),
+            'ecommerce_api_url': options.get('ecommerce-api-url'),
+            'discovery_partner_id': options.get('discovery-partner-id'),
+            'ecommerce_partner_id': options.get('ecommerce-partner-id'),
+            'currency_codes': options.get('currency-codes'),
             'oauth_settings': oauth_settings,
             'discovery_journal_api_url': discovery_journal_api_url,
             'ecommerce_journal_api_url': ecommerce_journal_api_url,
+            'ecommerce_public_root_url': options.get('ecommerce-public-root-url'),
         }
 
         # If another site config exists, use it's values as defaults
