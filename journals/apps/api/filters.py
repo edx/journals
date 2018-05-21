@@ -7,6 +7,16 @@ class JournalAccessFilter(filters.FilterSet):
     '''Filter for JournalAccess'''
     user = filters.CharFilter(name='user__username')
     get_latest = filters.BooleanFilter(name='get_latest', method='filter_latest')
+    ignore_revoked = filters.BooleanFilter(name='ignore_revoked', method='filter_revoked')
+
+    def filter_revoked(self, queryset, name, value):  # pylint: disable=unused-argument
+        """
+        If ignore_revoked is true, remove all revoked access records from queryset.
+        """
+        if value:
+            return queryset.filter(revoked=False)
+        else:
+            return queryset
 
     def filter_latest(self, queryset, name, value):  # pylint: disable=unused-argument
         """
@@ -43,7 +53,9 @@ class JournalAccessFilter(filters.FilterSet):
         # user: returns access records only for that user
         # get_latest_journals: if true, only returns one journal access record per journal.
         #   selects journal with latest expiration date
+        # ignore_revoked: if true, won't return access records that have been revoked
         fields = (
             'user',
             'get_latest',
+            'ignore_revoked'
         )
