@@ -52,11 +52,11 @@ class Command(BaseCommand):
             required=True
         )
         parser.add_argument(
-            '--lms-root-url',
-            help='Root URL for LMS for API calls'
+            '--lms-url-root',
+            help='Root URL for LMS for API calls',
         )
         parser.add_argument(
-            '--lms-public-root-url',
+            '--lms-public-url-root-override',
             help='Public facing root URL for LMS (only needed if different than lms-root-url'
         )
         parser.add_argument(
@@ -95,6 +95,10 @@ class Command(BaseCommand):
             '--ecommerce-journal-api-url',
             help='Journal endpoint of ecommerce (defaults to /journal/api/v1 on ecommerce domain)'
         )
+        parser.add_argument(
+            '--ecommerce-public-url-root',
+            help='Ecommerce public root url'
+        )
 
     def create_index_page(self, sitename):
         '''create_index_page'''
@@ -111,24 +115,20 @@ class Command(BaseCommand):
         self,
         client_id,
         client_secret,
-        lms_root_url,
-        lms_public_root_url
+        lms_url_root,
+        lms_public_url_root_override
     ):
         ''' Builds JSON based OAuth settings for site config '''
-
-        # If public url isn't provided (because it's the same), use normal root url
-        lms_public_root_url = lms_public_root_url or lms_root_url
-
         settings = {
             "SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY": client_secret,
             "SOCIAL_AUTH_EDX_OIDC_SECRET": client_secret,
-            "SOCIAL_AUTH_EDX_OIDC_URL_ROOT": urljoin(lms_root_url, '/oauth2'),
-            "SOCIAL_AUTH_EDX_OIDC_ISSUER": urljoin(lms_root_url, '/oauth2'),
+            "SOCIAL_AUTH_EDX_OIDC_URL_ROOT": urljoin(lms_url_root, '/oauth2'),
+            "SOCIAL_AUTH_EDX_OIDC_ISSUER": urljoin(lms_url_root, '/oauth2'),
             "SOCIAL_AUTH_EDX_OIDC_KEY": client_id,
-            "SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT": urljoin(lms_public_root_url, 'oauth2'),
-            "SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL": urljoin(lms_public_root_url, 'logout'),
+            "SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT": urljoin(lms_public_url_root_override, 'oauth2'),
+            "SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL": urljoin(lms_public_url_root_override, 'logout'),
             "SOCIAL_AUTH_EDX_OIDC_ISSUERS": [
-                lms_root_url
+                lms_url_root
             ]
         }
         return settings
@@ -139,12 +139,23 @@ class Command(BaseCommand):
         the values to use as default values. It then overwrites any values with command line
         overrides in `options`.
         '''
-        # All optional fields
+        # If another site config exists, use it's values as defaults
+        site_configs = SiteConfiguration.objects.all()
+        if site_configs:
+            site_config = site_configs[0]
+            site_config.pk = None
+            site_config.site = site
+        else:
+            site_config = SiteConfiguration(site=site)
+
+        lms_url_root = options.get('lms_url_root', site_config.lms_url_root)
+        lms_public_url_root_override = options.get('lms_public_url_root_override', lms_url_root)
+
         oauth_settings = self.build_oauth_settings(
-            options.get('client_id', 'journals-key-' + site.site_name),
-            options.get('client_secret', 'journals-secret-' + site.site_name),
-            options.get('lms_root_url', ''),
-            options.get('lms_public_root_url', ''),
+            client_id=options.get('client_id', 'journals-key-' + site.site_name),
+            client_secret=options.get('client_secret', 'journals-secret-' + site.site_name),
+            lms_url_root=lms_url_root,
+            lms_public_url_root_override=lms_public_url_root_override
         )
 
         # If the journal endpoint isn't provided, fallback on rewriting the discovery endpoint with the journal path
@@ -160,8 +171,8 @@ class Command(BaseCommand):
         )
 
         fields = {
-            'lms_root_url': options.get('lms_root_url'),
-            'lms_public_root_url': options.get('lms_public_root_url'),
+            'lms_url_root': lms_url_root,
+            'lms_public_url_root_override': lms_public_url_root_override,
             'discovery_api_url': options.get('discovery_api_url'),
             'ecommerce_api_url': options.get('ecommerce_api_url'),
             'discovery_partner_id': options.get('discovery_partner_id'),
@@ -170,16 +181,8 @@ class Command(BaseCommand):
             'oauth_settings': oauth_settings,
             'discovery_journal_api_url': discovery_journal_api_url,
             'ecommerce_journal_api_url': ecommerce_journal_api_url,
+            'ecommerce_public_url_root': options.get('ecommerce_public_url_root'),
         }
-
-        # If another site config exists, use it's values as defaults
-        site_configs = SiteConfiguration.objects.all()
-        if site_configs:
-            site_config = site_configs[0]
-            site_config.pk = None
-            site_config.site = site
-        else:
-            site_config = SiteConfiguration(site=site)
 
         for key in fields:
             if fields[key]:
