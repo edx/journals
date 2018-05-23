@@ -162,6 +162,9 @@ class JournalAccess(TimeStampedModel):
     user = models.ForeignKey(User)
     journal = models.ForeignKey(Journal)
     expiration_date = models.DateField()
+    order_number = models.CharField(max_length=128, null=True)
+    revoked = models.BooleanField(default=False, null=False)
+    revoked_date = models.DateField(null=True)
 
     def __str__(self):
         return str(self.uuid)
@@ -177,12 +180,14 @@ class JournalAccess(TimeStampedModel):
         ).filter(
             journal=journal
         ).filter(
+            revoked=False
+        ).filter(
             expiration_date__gte=datetime.date.today()
         )
         return True if access_items else False
 
     @classmethod
-    def create_journal_access(cls, user, journal):
+    def create_journal_access(cls, user, journal, order_number=None):
         """ Creates new journal access for user """
         expiration_date = datetime.datetime.now() + journal.access_length
 
@@ -191,8 +196,24 @@ class JournalAccess(TimeStampedModel):
             journal=journal,
             expiration_date=expiration_date,
         )
+        if order_number:
+            access.order_number = order_number
+
         access.save()
         return access
+
+    @classmethod
+    def revoke_journal_access(cls, order_number):
+        """ Revokes access for the access record associated with the given order number """
+        access_record = cls.objects.get(order_number=order_number)
+
+        # if access is already revoked it doesn't make sense to revoke access again, and change the revoked date
+        if not access_record.revoked:
+            access_record.revoked = True
+            access_record.revoked_date = datetime.datetime.now()
+
+        access_record.save()
+        return access_record
 
 
 class JournalDocument(AbstractDocument):
