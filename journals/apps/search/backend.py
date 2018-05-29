@@ -3,13 +3,15 @@ Search backend module
 """
 from __future__ import absolute_import, unicode_literals
 
+from django.conf import settings
+
 from elasticsearch.helpers import bulk
 from wagtail.wagtailsearch.backends.elasticsearch5 import (
     Elasticsearch5Index, Elasticsearch5Mapping, Elasticsearch5SearchBackend,
     Elasticsearch5SearchQuery, Elasticsearch5SearchResults)
 from wagtail.wagtailsearch.index import class_is_indexed
 
-JOURNAL_DOCUMENT_INDEX_NAME = 'wagtail__journals_journaldocument'
+JOURNAL_DOCUMENT_INDEX_NAME = '{}__journals_journaldocument'.format(settings.WAGTAILSEARCH_BACKENDS['default']['INDEX'])
 JOURNAL_DOCUMENT_TYPE = 'wagtaildocs_abstractdocument_journals_journaldocument'
 JOURNAL_DOCUMENT_ATTACHMENT_CONTENT_FIELD = 'attachment.content'
 INGEST_ATTACHMENT_INDEX = '_ingest'
