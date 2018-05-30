@@ -1,7 +1,7 @@
 journals  |Travis|_ |Codecov|_
 ===================================================
 .. |Travis| image:: https://travis-ci.org/edx/journals.svg?branch=master
-.. _Travis: https://travis-ci.org/edx/journals
+.. _Travis: https://travis-ci.org/edx/journals blah blah
 
 .. |Codecov| image:: http://codecov.io/github/edx/journals/coverage.svg?branch=master
 .. _Codecov: http://codecov.io/github/edx/journals?branch=master
