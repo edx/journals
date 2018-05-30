@@ -68,4 +68,4 @@ Journal Configuration
 3. Verify Journal is running by going to http://localhost:18606. You should see “edx Index” page by default showing one Journal “Demo Journal”
 
 4. To edit the Demo Journal, first login as ``username:staff@example.com`` ``password:edx``, then click the CMS link in the header. This will bring you into Wagtail CMS environment. 
-sdfasdfasdf
+
