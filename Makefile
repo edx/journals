@@ -1,7 +1,7 @@
 APP_NAME=journals
 NODE_BIN=./node_modules/.bin
 TEST_ROOT=test_root
-MIN_COVERAGE=40
+MIN_COVERAGE=30
 SELENIUM_BROWSER ?= firefox
 SELENIUM_HOST ?= edx.devstack.firefox
 JS_TEST_BROWSER ?= FirefoxDocker
