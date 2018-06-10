@@ -31,6 +31,9 @@ class User(AbstractUser):
     def get_full_name(self):
         return self.full_name or super(User, self).get_full_name()
 
+    def can_access_admin(self):
+        return self.has_perm('wagtailadmin.access_admin')
+
     @python_2_unicode_compatible
     def __str__(self):
         return str(self.username)

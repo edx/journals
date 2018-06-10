@@ -172,7 +172,7 @@ class JournalAccess(TimeStampedModel):
     @classmethod
     def user_has_access(cls, user, journal):
         """ Checks if the user has access to this journal """
-        if user.is_staff:
+        if user.can_access_admin:
             return True
 
         access_items = cls.objects.filter(

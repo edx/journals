@@ -15,7 +15,7 @@
             <li class="nav-item active">
                 <a class="nav-link" href="/">Home</a>
             </li>
-            {% if user.is_authenticated and user.is_staff %}
+            {% if user.is_authenticated and user.can_access_admin %}
             <li class="nav-item active">
                 <a class="nav-link" href="/cms">CMS</a>
             </li>
