@@ -2,7 +2,7 @@
 
 <nav id="header" class="navbar navbar-expand-lg navbar-light">
     <a class="navbar-brand" href="/">
-        {% with apps.theming.SiteBranding as branding %}
+        {% with settings.theming.SiteBranding as branding %}
         {% if branding.site_logo %}
             <img src="{{branding.site_logo.file.url}}" alt='Site Logo'>
         {% else %}
