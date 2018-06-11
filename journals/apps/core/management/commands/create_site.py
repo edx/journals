@@ -99,6 +99,11 @@ class Command(BaseCommand):
             '--ecommerce-public-url-root',
             help='Ecommerce public root url'
         )
+        parser.add_argument(
+            '--theme-name',
+            dest='theme_name',
+            help='Name of theme to use'
+        )
 
     def create_index_page(self, sitename):
         '''create_index_page'''
@@ -257,6 +262,9 @@ class Command(BaseCommand):
         sitename = options['sitename']
         hostname = options['hostname']
         port = options['port']
+        theme_name = options['theme_name']
+        if not theme_name:
+            theme_name = sitename
 
         # Create Index Page
         index_page = self.create_index_page(sitename)
@@ -275,7 +283,7 @@ class Command(BaseCommand):
         # Create site branding with theme name
         SiteBranding.objects.create(
             site=site,
-            theme_name=sitename
+            theme_name=theme_name
         )
 
         # Create collection for images and documents
