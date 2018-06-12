@@ -1,7 +1,7 @@
 # Packages required for testing
 -r base.txt
 
-bok-choy==0.7.2
+bok-choy==0.7.3
 django-dynamic-fixture==2.0.0
 django-nose==1.4.5
 edx-lint==0.5.5
