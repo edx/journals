@@ -53,6 +53,16 @@ class JournalRichTextBlock(blocks.RichTextBlock):
 
 class JournalRawHTMLBlock(blocks.RawHTMLBlock):
     '''JournalRawHTMLBlock component'''
+    def value_for_form(self, value):
+        """
+        Strips dangerous tags from value
+        """
+        soup = parser(six.text_type(value), 'html.parser')
+        forbidden_tags = soup.find_all(["script", "link", "frame", "iframe"])
+        for tag in forbidden_tags:
+            tag.extract()
+        return str(soup)
+
     def get_searchable_content(self, value):
         return [parser(six.text_type(value), 'html.parser').get_text()]
 

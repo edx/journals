@@ -276,8 +276,8 @@ class Video(index.Indexed, models.Model):
 # This has to be below the Video model because XBlockVideoBlock imported below imports the Video model.
 # pylint: disable=wrong-import-position
 from .blocks import (
-    JournalRichTextBlock, JournalImageChooserBlock, PDFBlock, XBlockVideoBlock,
-    PDF_BLOCK_TYPE, VIDEO_BLOCK_TYPE, IMAGE_BLOCK_TYPE, RICH_TEXT_BLOCK_TYPE,
+    JournalRichTextBlock, JournalImageChooserBlock, JournalRawHTMLBlock, PDFBlock, XBlockVideoBlock,
+    PDF_BLOCK_TYPE, VIDEO_BLOCK_TYPE, IMAGE_BLOCK_TYPE, RICH_TEXT_BLOCK_TYPE, RAW_HTML_BLOCK_TYPE,
     STREAM_DATA_DOC_FIELD, STREAM_DATA_TYPE_FIELD)  # noqa
 
 
@@ -435,6 +435,7 @@ class JournalPage(Page):
         (RICH_TEXT_BLOCK_TYPE, JournalRichTextBlock(
             features=['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image']
         )),
+        (RAW_HTML_BLOCK_TYPE, JournalRawHTMLBlock()),
         (IMAGE_BLOCK_TYPE, JournalImageChooserBlock()),
         (PDF_BLOCK_TYPE, PDFBlock()),
         (VIDEO_BLOCK_TYPE, XBlockVideoBlock()),
