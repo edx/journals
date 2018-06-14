@@ -71,6 +71,13 @@ class Command(BaseCommand):
             '--theme-name', site_data.get('theme_dir_name')
         )
 
+    def _create_org(self, site_data):
+        call_command(
+            'create_org',
+            '--key', site_data.get('organization'),
+            '--sitename', site_data.get('sitename')
+        )
+
     def find(self, pattern, path):
         """
         Matched the given pattern in given path and returns the list of matching files
@@ -123,3 +130,6 @@ class Command(BaseCommand):
         for site_name, site_data in all_sites.items():
             logger.info('Creating %s Site', site_name)
             self._create_site(site_data, port)
+            if site_data.get('organization'):
+                logger.info('Creating %s Organization', site_data.get('organization'))
+                self._create_org(site_data)
