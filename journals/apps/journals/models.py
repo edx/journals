@@ -53,7 +53,7 @@ class JournalManager(models.Manager):
 
         if organization:
             journal = self.create(
-                name=name, organization=organization, access_length=access_length)
+                name=name, organization=organization, access_length=access_length
             )
             return journal
         else:
