@@ -53,7 +53,7 @@ class JournalManager(models.Manager):
 
         if organization:
             journal = self.create(
-                name=name, organization=organization, access_length=access_length)
+                name=name, organization=organization, access_length=datetime.timedelta(days=access_length)
             )
             return journal
         else:
@@ -79,7 +79,7 @@ class Journal(models.Model):
         on_delete=models.CASCADE,
         null=False
     )
-    access_length = models.IntegerField(null=True, help_text='number of days valid after purchase', default=365)
+    access_length = models.DurationField()
     objects = JournalManager()
 
     class Meta(object):
@@ -120,7 +120,7 @@ class JournalMetaData(object):
             'price': self.price,
             'currency': self.currency,
             'sku': self.sku,
-            'access_length': self.journal.access_length,
+            'access_length': self.journal.access_length.days,
             'card_image_url': self.journal_about_page.card_image_absolute_url,
             'short_description': self.journal_about_page.short_description,
             'full_description': self.journal_about_page.long_description,
@@ -189,7 +189,7 @@ class JournalAccess(TimeStampedModel):
     @classmethod
     def create_journal_access(cls, user, journal, order_number=None):
         """ Creates new journal access for user """
-        expiration_date = datetime.datetime.now() + datetime.timedelta(days=journal.access_length)
+        expiration_date = datetime.datetime.now() + journal.access_length
 
         access = cls.objects.create(
             user=user,
