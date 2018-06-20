@@ -6,6 +6,7 @@ from journals.apps.core.models import User
 from journals.apps.journals.models import Journal, JournalAccess
 from journals.apps.api.serializers import JournalAccessSerializer
 from journals.apps.api.filters import JournalAccessFilter
+from journals.apps.api.pagination import LargeResultsSetPagination
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
 
@@ -20,6 +21,7 @@ class JournalAccessViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     permission_classes = (IsAdminUser,)
     filter_class = JournalAccessFilter
+    pagination_class = LargeResultsSetPagination
 
     def create(self, request, *args, **kwargs):
         '''create a JournalAccess entry'''
