@@ -1,9 +1,9 @@
 """ Custom blocks """
 from django import forms
 from django.utils import six
-from wagtail.wagtailcore import blocks
-from wagtail.wagtaildocs.blocks import DocumentChooserBlock
-from wagtail.wagtailimages.blocks import ImageChooserBlock
+from wagtail.core import blocks
+from wagtail.documents.blocks import DocumentChooserBlock
+from wagtail.images.blocks import ImageChooserBlock
 from bs4 import BeautifulSoup as parser
 
 from .models import Video

@@ -6,7 +6,7 @@ from hashlib import md5
 from django.core.management.base import BaseCommand, CommandError
 from journals.apps.journals.models import Journal, JournalIndexPage, JournalAboutPage, JournalMetaData
 from slumber.exceptions import HttpClientError
-from wagtail.wagtailcore.models import Page
+from wagtail.core.models import Page
 
 
 class Command(BaseCommand):

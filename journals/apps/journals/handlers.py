@@ -1,7 +1,7 @@
 """
 Handlers for journal page signals
 """
-from wagtail.wagtailcore.signals import page_published, page_unpublished
+from wagtail.core.signals import page_published, page_unpublished
 from .models import JournalAboutPage, JournalPage
 
 

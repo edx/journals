@@ -2,8 +2,8 @@
 from __future__ import absolute_import, unicode_literals
 
 from django.shortcuts import render
-from wagtail.wagtailsearch.backends import get_search_backend
-from wagtail.wagtailsearch.models import Query
+from wagtail.search.backends import get_search_backend
+from wagtail.search.models import Query
 
 from journals.apps.journals.models import JournalDocument, JournalPage, Video
 

@@ -10,11 +10,11 @@ import journals.apps.journals.blocks
 import model_utils.fields
 import taggit.managers
 import uuid
-import wagtail.wagtailcore.blocks
-import wagtail.wagtailcore.fields
-import wagtail.wagtailcore.models
-import wagtail.wagtaildocs.blocks
-import wagtail.wagtailsearch.index
+import wagtail.core.blocks
+import wagtail.core.fields
+import wagtail.core.models
+import wagtail.documents.blocks
+import wagtail.search.index
 
 
 class Migration(migrations.Migration):
@@ -68,7 +68,7 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(max_length=255, verbose_name='title')),
                 ('file', models.FileField(upload_to='documents', verbose_name='file')),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='created at')),
-                ('collection', models.ForeignKey(default=wagtail.wagtailcore.models.get_root_collection_id, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailcore.Collection', verbose_name='collection')),
+                ('collection', models.ForeignKey(default=wagtail.core.models.get_root_collection_id, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailcore.Collection', verbose_name='collection')),
                 ('tags', taggit.managers.TaggableManager(blank=True, help_text=None, through='taggit.TaggedItem', to='taggit.Tag', verbose_name='tags')),
                 ('uploaded_by_user', models.ForeignKey(blank=True, editable=False, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL, verbose_name='uploaded by user')),
             ],
@@ -76,13 +76,13 @@ class Migration(migrations.Migration):
                 'verbose_name': 'document',
                 'abstract': False,
             },
-            bases=(wagtail.wagtailsearch.index.Indexed, models.Model),
+            bases=(wagtail.search.index.Indexed, models.Model),
         ),
         migrations.CreateModel(
             name='JournalIndexPage',
             fields=[
                 ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.Page')),
-                ('intro', wagtail.wagtailcore.fields.RichTextField(blank=True)),
+                ('intro', wagtail.core.fields.RichTextField(blank=True)),
             ],
             options={
                 'abstract': False,
@@ -93,7 +93,7 @@ class Migration(migrations.Migration):
             name='JournalPage',
             fields=[
                 ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.Page')),
-                ('body', wagtail.wagtailcore.fields.StreamField((('rich_text', journals.apps.journals.blocks.JournalRichTextBlock(features=['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image'])), ('raw_html', journals.apps.journals.blocks.JournalRawHTMLBlock()), ('image', journals.apps.journals.blocks.JournalImageChooserBlock()), ('pdf', wagtail.wagtailcore.blocks.StructBlock((('title', wagtail.wagtailcore.blocks.CharBlock()), ('doc', wagtail.wagtaildocs.blocks.DocumentChooserBlock())))), ('table_of_content', wagtail.wagtailcore.blocks.StructBlock(())), ('xblock_video', wagtail.wagtailcore.blocks.StructBlock((('name', wagtail.wagtailcore.blocks.CharBlock()), ('video', journals.apps.journals.blocks.VideoChooserBlock(required=True)))))), blank=True)),
+                ('body', wagtail.core.fields.StreamField((('rich_text', journals.apps.journals.blocks.JournalRichTextBlock(features=['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image'])), ('raw_html', journals.apps.journals.blocks.JournalRawHTMLBlock()), ('image', journals.apps.journals.blocks.JournalImageChooserBlock()), ('pdf', wagtail.core.blocks.StructBlock((('title', wagtail.core.blocks.CharBlock()), ('doc', wagtail.documents.blocks.DocumentChooserBlock())))), ('table_of_content', wagtail.core.blocks.StructBlock(())), ('xblock_video', wagtail.core.blocks.StructBlock((('name', wagtail.core.blocks.CharBlock()), ('video', journals.apps.journals.blocks.VideoChooserBlock(required=True)))))), blank=True)),
                 ('documents', models.ManyToManyField(to='journals.JournalDocument')),
             ],
             options={
@@ -110,7 +110,7 @@ class Migration(migrations.Migration):
                 ('view_url', models.URLField(max_length=512)),
                 ('transcript_url', models.URLField(max_length=512)),
             ],
-            bases=(wagtail.wagtailsearch.index.Indexed, models.Model),
+            bases=(wagtail.search.index.Indexed, models.Model),
         ),
         migrations.AddField(
             model_name='journalpage',

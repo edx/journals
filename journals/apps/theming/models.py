@@ -1,7 +1,7 @@
 '''Models for Site-Aware Settings'''
 from django.db import models
-from wagtail.wagtailadmin.edit_handlers import FieldPanel
-from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
+from wagtail.admin.edit_handlers import FieldPanel
+from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.contrib.settings.models import BaseSetting, register_setting
 
 

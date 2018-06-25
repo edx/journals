@@ -9,7 +9,7 @@ from journals.apps.journals.models import JournalIndexPage
 from journals.apps.core.models import SiteConfiguration
 from journals.apps.theming.models import SiteBranding
 
-from wagtail.wagtailcore.models import Page, Site, Collection, GroupPagePermission, GroupCollectionPermission
+from wagtail.core.models import Page, Site, Collection, GroupPagePermission, GroupCollectionPermission
 
 PERMISSIONS = {
     'Editors': {

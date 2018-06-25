@@ -5,7 +5,7 @@ import itertools
 from urllib.parse import urlsplit, urlunsplit
 
 from django.core.management.base import BaseCommand
-from wagtail.wagtailcore.models import Site
+from wagtail.core.models import Site
 
 from journals.apps.journals.models import Video
 

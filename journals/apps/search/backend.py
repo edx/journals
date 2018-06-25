@@ -6,10 +6,10 @@ from __future__ import absolute_import, unicode_literals
 from django.conf import settings
 
 from elasticsearch.helpers import bulk
-from wagtail.wagtailsearch.backends.elasticsearch5 import (
+from wagtail.search.backends.elasticsearch5 import (
     Elasticsearch5Index, Elasticsearch5Mapping, Elasticsearch5SearchBackend,
-    Elasticsearch5SearchQuery, Elasticsearch5SearchResults)
-from wagtail.wagtailsearch.index import class_is_indexed
+    Elasticsearch5SearchQueryCompiler, Elasticsearch5SearchResults)
+from wagtail.search.index import class_is_indexed
 
 JOURNAL_DOCUMENT_INDEX_NAME = '{}__journals_journaldocument'.format(settings.WAGTAILSEARCH_BACKENDS['default']['INDEX'])
 JOURNAL_DOCUMENT_TYPE = 'wagtaildocs_abstractdocument_journals_journaldocument'
@@ -150,7 +150,7 @@ class JournalsearchIndex(Elasticsearch5Index):
             super(JournalsearchIndex, self).add_items(model, items)
 
 
-class JournalsearchSearchQuery(Elasticsearch5SearchQuery):
+class JournalsearchSearchQuery(Elasticsearch5SearchQueryCompiler):
     '''Journal specific backend for SearchQuery'''
     def __init__(self, *args, **kwargs):
 

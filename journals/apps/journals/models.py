@@ -19,13 +19,13 @@ from model_utils.models import TimeStampedModel
 from jsonfield.fields import JSONField
 from slumber.exceptions import HttpClientError, HttpNotFoundError
 
-from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
-from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
-from wagtail.wagtailcore.fields import RichTextField, StreamField
-from wagtail.wagtailcore.models import Page
-from wagtail.wagtaildocs.models import AbstractDocument, Document
-from wagtail.wagtailimages.models import Image
-from wagtail.wagtailsearch import index
+from wagtail.admin.edit_handlers import FieldPanel, StreamFieldPanel
+from wagtail.images.edit_handlers import ImageChooserPanel
+from wagtail.core.fields import RichTextField, StreamField
+from wagtail.core.models import Page
+from wagtail.documents.models import AbstractDocument, Document
+from wagtail.images.models import Image
+from wagtail.search import index
 
 from journals.apps.core.models import User
 from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS

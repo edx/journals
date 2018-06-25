@@ -4,9 +4,9 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 import journals.apps.journals.blocks
-import wagtail.wagtailcore.blocks
-import wagtail.wagtailcore.fields
-import wagtail.wagtaildocs.blocks
+import wagtail.core.blocks
+import wagtail.core.fields
+import wagtail.documents.blocks
 
 
 class Migration(migrations.Migration):
@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='journalpage',
             name='body',
-            field=wagtail.wagtailcore.fields.StreamField((('rich_text', journals.apps.journals.blocks.JournalRichTextBlock(features=['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image'])), ('image', journals.apps.journals.blocks.JournalImageChooserBlock()), ('pdf', wagtail.wagtailcore.blocks.StructBlock((('title', wagtail.wagtailcore.blocks.CharBlock()), ('doc', wagtail.wagtaildocs.blocks.DocumentChooserBlock())))), ('xblock_video', wagtail.wagtailcore.blocks.StructBlock((('name', wagtail.wagtailcore.blocks.CharBlock()), ('video', journals.apps.journals.blocks.VideoChooserBlock(required=True)))))), blank=True),
+            field=wagtail.core.fields.StreamField((('rich_text', journals.apps.journals.blocks.JournalRichTextBlock(features=['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image'])), ('image', journals.apps.journals.blocks.JournalImageChooserBlock()), ('pdf', wagtail.core.blocks.StructBlock((('title', wagtail.core.blocks.CharBlock()), ('doc', wagtail.documents.blocks.DocumentChooserBlock())))), ('xblock_video', wagtail.core.blocks.StructBlock((('name', wagtail.core.blocks.CharBlock()), ('video', journals.apps.journals.blocks.VideoChooserBlock(required=True)))))), blank=True),
         ),
     ]
