@@ -596,3 +596,54 @@ class JournalPage(Page):
 
         structure["children"] = [child.specific.get_nested_children() for child in children]
         return structure
+
+
+class WagtailModelManager(object):
+    """
+    Class to have utility methods for wagtail models
+    """
+
+    @staticmethod
+    def get_user_pages(user, pages=None):
+        """
+        Args:
+            user: instance of User mode
+            pages: queryset of pages to filter
+        Returns: wagtail pages queryset where given user has add, edit, publish or lock permissions
+        if pages queryset is provided filter is applied on that.
+        """
+        if not pages:
+            pages = Page.objects.all()
+
+        return pages.filter(
+            group_permissions__group__in=user.groups.all(),
+            group_permissions__permission_type__in=['add', 'edit', 'publish', 'lock']
+        )
+
+    @staticmethod
+    def get_user_images(user):
+        """
+        Args:
+            user: instance of User model
+        Returns: wagtail images queryset where given user has add or change permissions
+
+        """
+        # inline import to avoid AppRegistryNotReady: Models aren't loaded yet exception
+        from wagtail.wagtailimages.permissions import permission_policy as image_permission_policy
+        return image_permission_policy.instances_user_has_any_permission_for(
+            user, ['add', 'change']
+        )
+
+    @staticmethod
+    def get_user_documents(user):
+        """
+        Args:
+            user: instance of User model
+        Returns: wagtail documents queryset where given user has add or change permissions
+
+        """
+        # inline import to avoid AppRegistryNotReady: Models aren't loaded yet exception
+        from wagtail.wagtaildocs.permissions import permission_policy as document_permission_policy
+        return document_permission_policy.instances_user_has_any_permission_for(
+            user, ['add', 'change']
+        )
