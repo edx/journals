@@ -685,3 +685,20 @@ class WagtailModelManager(object):
         return document_permission_policy.instances_user_has_any_permission_for(
             user, ['add', 'change']
         )
+
+
+class UserPageVisit(models.Model):
+    """
+    Record the datetime at which user visited the page.
+    """
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    page = models.ForeignKey('wagtailcore.Page', null=True, on_delete=models.SET_NULL)
+    visited_at = models.DateTimeField(auto_now=True, db_index=True)
+    stale = models.BooleanField(
+        default=False,
+        help_text=_(
+            'Marked the object stale if the published date of visited page is later than visited at.')
+    )
+
+    class Meta:
+        unique_together = ("user", "page")

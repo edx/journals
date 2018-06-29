@@ -1,20 +1,25 @@
-'''API for Journals'''
+""" API for Journals """
+
 import logging
+
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django_filters.rest_framework import DjangoFilterBackend
-from journals.apps.core.models import User
-from journals.apps.journals.models import Journal, JournalAccess
-from journals.apps.api.serializers import JournalAccessSerializer
-from journals.apps.api.filters import JournalAccessFilter
-from journals.apps.api.pagination import LargeResultsSetPagination
 from rest_framework import viewsets
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework import generics
+
+from journals.apps.api.filters import JournalAccessFilter, UserPageVisitFilter
+from journals.apps.api.pagination import LargeResultsSetPagination
+from journals.apps.api.permissions import UserPageVisitPermission
+from journals.apps.api.serializers import JournalAccessSerializer, UserPageVisitSerializer
+from journals.apps.core.models import User
+from journals.apps.journals.models import Journal, JournalAccess, UserPageVisit
 
 logger = logging.getLogger(__name__)
 
 
 class JournalAccessViewSet(viewsets.ModelViewSet):
-    '''API for JournalAccess model'''
+    """API for JournalAccess model"""
     lookup_field = 'uuid'
     queryset = JournalAccess.objects.all().order_by('-created')
     serializer_class = JournalAccessSerializer
@@ -62,3 +67,15 @@ class JournalAccessViewSet(viewsets.ModelViewSet):
                     access_record.journal,
                     access_record.order_number)
         return HttpResponse()
+
+
+class UserPageVisitView(generics.ListCreateAPIView):
+    """API view for UserPageVisit model"""
+    serializer_class = UserPageVisitSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = UserPageVisitFilter
+    permission_classes = (IsAuthenticated, UserPageVisitPermission)
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return UserPageVisit.objects.filter(user_id=user_id).order_by("-visited_at")

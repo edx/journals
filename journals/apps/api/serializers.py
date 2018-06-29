@@ -1,7 +1,9 @@
-'''Journal serializers'''
+""" Journal serializers """
+
 from rest_framework import serializers
+
 from journals.apps.core.models import User
-from journals.apps.journals.models import Journal, JournalAccess, JournalAboutPage, Organization
+from journals.apps.journals.models import Journal, JournalAccess, JournalAboutPage, Organization, UserPageVisit
 
 
 class JournalAboutPageSerializer(serializers.ModelSerializer):
@@ -44,4 +46,19 @@ class JournalAccessSerializer(serializers.ModelSerializer):
             'journal',
             'user',
             'expiration_date'
+        )
+
+
+class UserPageVisitSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the "UserPageVisit" model.
+    """
+
+    class Meta(object):
+        model = UserPageVisit
+        fields = (
+            'user',
+            'page',
+            'visited_at',
+            'stale'
         )
