@@ -17,7 +17,7 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 
 from jsonfield.fields import JSONField
-from slumber.exceptions import HttpClientError, HttpNotFoundError
+from slumber.exceptions import HttpClientError, HttpNotFoundError, HttpServerError
 
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -353,7 +353,7 @@ class JournalAboutPage(Page):
                         error=err.content
                     )
                 )
-            except HttpClientError as err:
+            except (HttpClientError, HttpServerError) as err:
                 logging.error("Error updating {service_name} after JournalAboutPage publish: {error}".format(
                     service_name=service_name,
                     error=err.content
