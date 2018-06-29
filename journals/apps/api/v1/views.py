@@ -3,20 +3,18 @@ import logging
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django_filters.rest_framework import DjangoFilterBackend
 from journals.apps.core.models import User
-from journals.apps.journals.models import Journal, JournalAccess, UserPageVisit
-from journals.apps.api.serializers import JournalAccessSerializer, UserPageVisitSerializer
+from journals.apps.journals.models import Journal, JournalAccess
+from journals.apps.api.serializers import JournalAccessSerializer
 from journals.apps.api.filters import JournalAccessFilter
 from journals.apps.api.pagination import LargeResultsSetPagination
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
-from rest_framework.decorators import detail_route
-from rest_framework.response import Response
 
 logger = logging.getLogger(__name__)
 
 
 class JournalAccessViewSet(viewsets.ModelViewSet):
-    """API for JournalAccess model"""
+    '''API for JournalAccess model'''
     lookup_field = 'uuid'
     queryset = JournalAccess.objects.all().order_by('-created')
     serializer_class = JournalAccessSerializer
@@ -64,30 +62,3 @@ class JournalAccessViewSet(viewsets.ModelViewSet):
                     access_record.journal,
                     access_record.order_number)
         return HttpResponse()
-
-
-class UserPageVisitViewSet(viewsets.ModelViewSet):
-    """API for UserPageVisit model"""
-    lookup_field = 'user_id'
-    serializer_class = UserPageVisitSerializer
-    queryset = UserPageVisit.objects.all()
-    permission_classes = (IsAdminUser,)
-
-    def get_queryset(self):
-        page_id = self.request.GET.get('page_id')
-        if page_id:
-            return self.queryset.filter(page_id=page_id)
-        return self.queryset
-
-    def retrieve(self, request, *args, **kwargs):   # pylint: disable=invalid-name,unused-argument
-        user_id = kwargs['user_id']
-        serializer = self.serializer_class(self.queryset.filter(user_id=user_id), many=True)
-        return Response(serializer.data)
-
-    @detail_route(url_path='lastvisit')
-    def user_last_visited_page(self, request, user_id):  # pylint: disable=invalid-name,unused-argument
-        """
-        Returns the user's last visited page.
-        """
-        queryset = self.queryset.filter(user_id=user_id).order_by("-visited_at")[0]
-        return Response(self.serializer_class(queryset).data)
