@@ -596,3 +596,16 @@ class JournalPage(Page):
 
         structure["children"] = [child.specific.get_nested_children() for child in children]
         return structure
+
+
+class UserPageVisit(models.Model):
+    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    page = models.ForeignKey('wagtailcore.Page', null=True, on_delete=models.SET_NULL)
+    visited_at = models.DateTimeField(auto_now=True)
+    stale = models.BooleanField(
+        default=False,
+        help_text=_('Marked the object stale if the published date of visited page is later than visited at.')
+    )
+
+    class Meta:
+        unique_together = ("user", "page")

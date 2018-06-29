@@ -1,7 +1,9 @@
 '''Journal serializers'''
 from rest_framework import serializers
 from journals.apps.core.models import User
-from journals.apps.journals.models import Journal, JournalAccess, JournalAboutPage, Organization
+from journals.apps.journals.models import Journal, JournalAccess, JournalAboutPage, Organization, UserPageVisit
+
+from wagtail.wagtailcore.models import Page
 
 
 class JournalAboutPageSerializer(serializers.ModelSerializer):
@@ -44,4 +46,21 @@ class JournalAccessSerializer(serializers.ModelSerializer):
             'journal',
             'user',
             'expiration_date'
+        )
+
+
+class UserPageVisitSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the "UserPageVisit" model.
+    """
+    user = serializers.SlugRelatedField(slug_field='username', queryset=User.objects.all())
+    page = serializers.SlugRelatedField(slug_field='title', queryset=Page.objects.all())
+
+    class Meta(object):
+        model = UserPageVisit
+        fields = (
+            'user',
+            'page',
+            'visited_at',
+            'stale'
         )
