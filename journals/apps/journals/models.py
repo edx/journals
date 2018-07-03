@@ -20,6 +20,7 @@ from jsonfield.fields import JSONField
 from slumber.exceptions import HttpClientError, HttpNotFoundError
 
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
+from wagtail.wagtailadmin.navigation import get_explorable_root_page
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailcore.fields import RichTextField, StreamField
 from wagtail.wagtailcore.models import Page
@@ -612,13 +613,17 @@ class WagtailModelManager(object):
         Returns: wagtail pages queryset where given user has add, edit, publish or lock permissions
         if pages queryset is provided filter is applied on that.
         """
-        if not pages:
-            pages = Page.objects.all()
+        root_page = get_explorable_root_page(user)
 
-        return pages.filter(
-            group_permissions__group__in=user.groups.all(),
-            group_permissions__permission_type__in=['add', 'edit', 'publish', 'lock']
-        )
+        if root_page:
+            user_pages = Page.objects.descendant_of(root_page, inclusive=True)
+            if pages:
+                user_pages = user_pages.filter(pk__in=pages)
+
+        else:
+            user_pages = Page.objects.none()
+
+        return user_pages
 
     @staticmethod
     def get_user_images(user):
