@@ -32,21 +32,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'wagtail.wagtailforms',
-    'wagtail.wagtailredirects',
-    'wagtail.wagtailembeds',
-    'wagtail.wagtailsites',
-    'wagtail.wagtailusers',
-    'wagtail.wagtailsnippets',
-    'wagtail.wagtaildocs',
-    'wagtail.wagtailimages',
-    'wagtail.wagtailsearch',
-    'wagtail.wagtailadmin',
-    'wagtail.wagtailcore',
-    'wagtail.contrib.settings',
     'modelcluster',
     'taggit',
-
 )
 
 THIRD_PARTY_APPS = (
@@ -64,8 +51,24 @@ PROJECT_APPS = (
     'journals.apps.theming'
 )
 
+WAGTAIL_APPS = (
+    'wagtail.wagtailforms',
+    'wagtail.wagtailredirects',
+    'wagtail.wagtailembeds',
+    'wagtail.wagtailsites',
+    'wagtail.wagtailusers',
+    'wagtail.wagtailsnippets',
+    'wagtail.wagtaildocs',
+    'wagtail.wagtailimages',
+    'wagtail.wagtailsearch',
+    'wagtail.wagtailadmin',
+    'wagtail.wagtailcore',
+    'wagtail.contrib.settings',
+)
+
 INSTALLED_APPS += THIRD_PARTY_APPS
 INSTALLED_APPS += PROJECT_APPS
+INSTALLED_APPS += WAGTAIL_APPS
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',

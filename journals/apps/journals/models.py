@@ -23,7 +23,8 @@ from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailadmin.navigation import get_explorable_root_page
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailcore.fields import RichTextField, StreamField
-from wagtail.wagtailcore.models import Page
+from wagtail.wagtailcore.models import Collection, Page
+from wagtail.wagtailcore.permission_policies.collections import CollectionOwnershipPermissionPolicy
 from wagtail.wagtaildocs.models import AbstractDocument, Document
 from wagtail.wagtailimages.models import Image
 from wagtail.wagtailsearch import index
@@ -608,7 +609,7 @@ class WagtailModelManager(object):
     def get_user_pages(user, pages=None):
         """
         Args:
-            user: instance of User mode
+            user: instance of User model
             pages: queryset of pages to filter
         Returns: wagtail pages queryset where given user has add, edit, publish or lock permissions
         if pages queryset is provided filter is applied on that.
@@ -624,6 +625,26 @@ class WagtailModelManager(object):
             user_pages = Page.objects.none()
 
         return user_pages
+
+    @staticmethod
+    def get_user_collections(user, collections=None):
+        """
+        Args:
+            user: instance of User model
+            collections: queryset of collections to filter
+        Returns: wagtail collections queryset where given user has add, change permissions
+        if collections queryset is provided filter is applied on that.
+        """
+        if not collections:
+            collections = Collection.objects.all()
+
+        collection_permission_policy = CollectionOwnershipPermissionPolicy(
+            Document, owner_field_name='uploaded_by_user'
+        )
+        user_collections = collection_permission_policy.collections_user_has_any_permission_for(
+            user, ['add', 'change']
+        )
+        return collections.filter(pk__in=user_collections)
 
     @staticmethod
     def get_user_images(user):
