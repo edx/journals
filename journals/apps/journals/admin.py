@@ -1,6 +1,18 @@
 """ Journals admin module """
 from django.contrib import admin
-from .models import Journal, JournalAboutPage, JournalAccess, Organization
+
+from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register
+
+
+from journals.apps.journals.models import (
+    Journal,
+    JournalAboutPage,
+    JournalAccess,
+    Organization,
+    Video,
+)
+from journals.apps.journals.permissions import VideoPermissionHelper
+from journals.apps.journals.views import VideoIndexView
 
 
 # Custom admin pages
@@ -23,3 +35,21 @@ class JournalAccessAdmin(admin.ModelAdmin):
 
 # Default admin pages below
 admin.site.register(Organization)
+
+
+class VideoModelAdmin(ModelAdmin):
+    """
+    Video model admin
+    """
+    model = Video
+    menu_label = 'Videos'
+    menu_icon = 'media'
+    menu_order = 400
+    add_to_settings_menu = False
+    exclude_from_explorer = False
+    permission_helper_class = VideoPermissionHelper
+    index_view_class = VideoIndexView
+    form_fields_exclude = ('collection', 'block_id', 'source_course_run',)
+
+
+modeladmin_register(VideoModelAdmin)

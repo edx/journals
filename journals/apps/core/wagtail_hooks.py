@@ -8,6 +8,7 @@ from wagtail.wagtaildocs.permissions import permission_policy as document_permis
 from wagtail.wagtailimages.wagtail_hooks import ImagesSummaryItem
 from wagtail.wagtailimages.permissions import permission_policy as image_permission_policy
 
+from journals.apps.journals.forms import GroupVideoPermissionFormSet
 from journals.apps.journals.models import WagtailModelManager
 
 
@@ -89,3 +90,8 @@ def images_with_add_or_change_permissions_only(images, request):  # pylint: disa
     return image_permission_policy.instances_user_has_any_permission_for(
         request.user, ['add', 'change']
     )
+
+
+@hooks.register('register_group_permission_panel')
+def register_video_permissions_panel():
+    return GroupVideoPermissionFormSet
