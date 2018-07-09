@@ -28,6 +28,7 @@ from wagtail.wagtailcore.permission_policies.collections import CollectionOwners
 from wagtail.wagtaildocs.models import AbstractDocument, Document
 from wagtail.wagtailimages.models import Image
 from wagtail.wagtailsearch import index
+from wagtail.api import APIField
 
 from journals.apps.core.models import User
 from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
@@ -311,6 +312,10 @@ class JournalAboutPage(Page):
     parent_page_types = ['JournalIndexPage']
     subpage_types = ['JournalPage']
 
+    api_fields = [
+        APIField('get_journal_structure')
+    ]
+
     def get_context(self, request, *args, **kwargs):
         # Update context to include only published pages
         context = super(JournalAboutPage, self).get_context(request, args, kwargs)
@@ -400,6 +405,32 @@ class JournalAboutPage(Page):
     def root_journal_page_url(self):
         descendants = self.get_descendants()
         return descendants[0].full_url if descendants else '#'
+
+    def get_journal_structure(self):
+        """ Returns hierarchy of the journal as a dict """
+        structure = {
+            "journal_structure": [
+                journal_page.specific.get_nested_children()
+                for journal_page
+                in self.get_children()
+            ]
+        }
+
+        return structure
+
+    def get_nested_children(self):
+        """ Return dict hierarchy with self as root """
+        structure = {
+            "title": self.title,
+            "children": None,
+            "id": self.id
+        }
+        children = self.get_children()
+        if not children:
+            return structure
+
+        structure["children"] = [child.specific.get_nested_children() for child in children]
+        return structure
 
 
 class JournalIndexPage(Page):
