@@ -28,7 +28,9 @@ from wagtail.wagtailcore.permission_policies.collections import CollectionOwners
 from wagtail.wagtaildocs.models import AbstractDocument, Document
 from wagtail.wagtailimages.models import Image
 from wagtail.wagtailsearch import index
+from wagtail.api import APIField
 
+from journals.apps.journals.journal_page_helper import JournalPageMixin
 from journals.apps.core.models import User
 from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 
@@ -283,7 +285,7 @@ from .blocks import (
     STREAM_DATA_DOC_FIELD, STREAM_DATA_TYPE_FIELD)  # noqa
 
 
-class JournalAboutPage(Page):
+class JournalAboutPage(Page, JournalPageMixin):
     """
     Represents both the base journal with it's metadata and the journal
     marketing page that displays that information.
@@ -310,6 +312,10 @@ class JournalAboutPage(Page):
 
     parent_page_types = ['JournalIndexPage']
     subpage_types = ['JournalPage']
+
+    api_fields = [
+        APIField('structure')
+    ]
 
     def get_context(self, request, *args, **kwargs):
         # Update context to include only published pages
@@ -401,6 +407,17 @@ class JournalAboutPage(Page):
         descendants = self.get_descendants()
         return descendants[0].full_url if descendants else '#'
 
+    @property
+    def structure(self):
+        """ Returns hierarchy of the journal as a dict """
+        journal_structure = [
+            journal_page.specific.get_nested_children()
+            for journal_page
+            in self.get_children()
+        ]
+
+        return journal_structure
+
 
 class JournalIndexPage(Page):
     """
@@ -425,7 +442,7 @@ class JournalIndexPage(Page):
     ]
 
 
-class JournalPage(Page):
+class JournalPage(Page, JournalPageMixin):
     """
     A page inside a journal. These can be nested indefinitely. Restricted to
     users who purchased access to the journal.
@@ -572,32 +589,14 @@ class JournalPage(Page):
 
     def get_journal_structure(self):
         """ Returns the heirarchy of the journal as a dict """
-        journal_about_page = self.get_journal_about_page()
         structure = {
-            "journal_structure": [
-                journal_page.specific.get_nested_children()
-                for journal_page
-                in journal_about_page.get_children()
-            ]
+            "journal_structure": self.get_journal_about_page().structure
         }
+
         return structure
 
     def get_json_journal_structure(self):
         return json.dumps(self.get_journal_structure())
-
-    def get_nested_children(self):
-        '''get nested children'''
-        structure = {
-            "title": self.title,
-            "url": self.url,
-            "children": None
-        }
-        children = self.get_children()
-        if not children:
-            return structure
-
-        structure["children"] = [child.specific.get_nested_children() for child in children]
-        return structure
 
 
 class WagtailModelManager(object):
