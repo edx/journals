@@ -52,6 +52,7 @@ PROJECT_APPS = (
 )
 
 WAGTAIL_APPS = (
+    'wagtail.api.v2',
     'wagtail.wagtailforms',
     'wagtail.wagtailredirects',
     'wagtail.wagtailembeds',

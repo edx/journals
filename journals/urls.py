@@ -21,9 +21,10 @@ from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
 from wagtail.wagtailadmin import urls as wagtailadmin_urls
-from wagtail.wagtaildocs import urls as wagtaildocs_urls
 from wagtail.wagtailcore import urls as wagtail_urls
+from wagtail.wagtaildocs import urls as wagtaildocs_urls
 
+from journals.apps.api.wagtail.urls import wagtail_router
 from journals.apps.core import views as core_views
 from journals.apps.search import views as search_views
 
@@ -32,6 +33,7 @@ admin.autodiscover()
 urlpatterns = auth_urlpatterns + [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include('journals.apps.api.urls', namespace='api')),
+    url(r'^api/v1/content/', include(wagtail_router.urls)),
     # Use the same auth views for all logins, including those originating from the browseable API.
     url(r'^api-auth/', include(auth_urlpatterns, namespace='rest_framework')),
     url(r'^auto_auth/$', core_views.AutoAuth.as_view(), name='auto_auth'),
