@@ -118,7 +118,7 @@ class JournalMetaData(object):
             'uuid': str(self.journal.uuid),
             'partner': self.journal.organization.site.siteconfiguration.discovery_partner_id,
             'organization': self.journal.organization.name,
-            'title': self.journal.name,
+            'title': self.journal_about_page.title,
             'price': self.price,
             'currency': self.currency,
             'sku': self.sku,
@@ -135,7 +135,7 @@ class JournalMetaData(object):
         return {
             'structure': 'standalone',
             'product_class': 'Journal',
-            'title': self.journal.name,
+            'title': self.journal_about_page.title,
             'expires': self.expires,
             'attribute_values': [
                 {
