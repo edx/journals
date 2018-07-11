@@ -370,6 +370,10 @@ class JournalAboutPage(Page):
             "slug": self.slug
         }
 
+        if self.journal:
+            self.journal.name = self.title
+            self.journal.save()
+
         update_service(
             self.site.siteconfiguration.discovery_journal_api_client,
             discovery_data,

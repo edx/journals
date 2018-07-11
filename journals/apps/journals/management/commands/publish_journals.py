@@ -44,6 +44,7 @@ class Command(BaseCommand):
         try:
             journal = Journal.objects.create_journal(name, org, access_length)
             journal_about_page = self._update_wagtail_pages(journal, create=True, publish=publish)
+            journal.refresh_from_db()  # since we are updating journal object in signals.
 
             journal_meta_data = JournalMetaData(
                 journal_about_page,
