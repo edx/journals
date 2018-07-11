@@ -32,6 +32,7 @@ from wagtail.wagtailsearch import index
 from wagtail.wagtailsearch.queryset import SearchableQuerySetMixin
 
 from journals.apps.journals.journal_page_helper import JournalPageMixin
+from journals.apps.journals.utils import get_image_url
 from journals.apps.core.models import User
 from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 
@@ -294,7 +295,7 @@ from .blocks import (
     STREAM_DATA_DOC_FIELD, STREAM_DATA_TYPE_FIELD)  # noqa
 
 
-class JournalAboutPage(Page, JournalPageMixin):
+class JournalAboutPage(JournalPageMixin, Page):
     """
     Represents both the base journal with it's metadata and the journal
     marketing page that displays that information.
@@ -323,7 +324,13 @@ class JournalAboutPage(Page, JournalPageMixin):
     subpage_types = ['JournalPage']
 
     api_fields = [
-        APIField('structure')
+        APIField('short_description'),
+        APIField('long_description'),
+        APIField('card_image_url'),
+        APIField('hero_image_url'),
+        APIField('custom_content'),
+        APIField('structure'),
+
     ]
 
     def get_context(self, request, *args, **kwargs):
@@ -402,14 +409,34 @@ class JournalAboutPage(Page, JournalPageMixin):
         )
 
     @property
+    def hero_image_url(self):
+        """
+        Get the relative url for the hero Image
+        """
+        if not self.hero_image:
+            return ''
+
+        return get_image_url(self.hero_image)
+
+    @property
+    def card_image_url(self):
+        """
+        Get the relative url for the card Image
+        """
+        if not self.card_image:
+            return ''
+
+        return get_image_url(self.card_image)
+
+    @property
     def card_image_absolute_url(self):
         if not self.card_image:
             return ''
-        is_absolute_url = bool(urlparse(self.card_image.file.url).netloc)  # pylint: disable=no-member
+        is_absolute_url = bool(urlparse(self.card_image_url).netloc)
         if is_absolute_url:
-            return self.card_image.file.url  # pylint: disable=no-member
+            return self.card_image_url
         else:
-            return urljoin(self.site.root_url, self.card_image.file.url)  # pylint: disable=no-member
+            return urljoin(self.site.root_url, self.card_image_url)
 
     @property
     def site(self):
@@ -432,7 +459,7 @@ class JournalAboutPage(Page, JournalPageMixin):
         return journal_structure
 
 
-class JournalIndexPage(Page):
+class JournalIndexPage(JournalPageMixin, Page):
     """
     The marketing page that shows all the journals available on a given site.
     Publicly available.
@@ -454,8 +481,28 @@ class JournalIndexPage(Page):
         index.SearchField('search_description', partial_match=True)
     ]
 
+    api_fields = [
+        APIField('intro'),
+        APIField('hero_image_url')
+    ]
 
-class JournalPage(Page, JournalPageMixin):
+    @property
+    def hero_image_url(self):
+        if self.hero_image:
+            return get_image_url(self.hero_image)
+        else:
+            return ''
+
+    @property
+    def site(self):
+        about_page = self.get_first_child()
+        if about_page:
+            return about_page.specific.site
+        else:
+            return None
+
+
+class JournalPage(JournalPageMixin, Page):
     """
     A page inside a journal. These can be nested indefinitely. Restricted to
     users who purchased access to the journal.
@@ -484,6 +531,10 @@ class JournalPage(Page, JournalPageMixin):
     search_fields = Page.search_fields + [
         index.SearchField('body', partial_match=True),
         index.SearchField('search_description', partial_match=True)
+    ]
+
+    api_fields = [
+        APIField('body'),
     ]
 
     def update_related_objects(self, clear=False):
@@ -576,14 +627,19 @@ class JournalPage(Page, JournalPageMixin):
     def serve(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
             return HttpResponseRedirect('/login/')
-        journal = self.get_parent_journal()
+        journal = self.get_journal()
         has_access = JournalAccess.user_has_access(request.user, journal)
         if not has_access:
             raise PermissionDenied
         return super(JournalPage, self).serve(request, args, kwargs)
 
-    def get_parent_journal(self):
-        """ Moves up tree of pages until it finds an about page and returns it's linked journal """
+    @property
+    def site(self):
+        return self.get_journal().organization.site
+
+    def get_journal(self):
+        """ Get journal associated with this page """
+        # TOOD - store journal in model so we don't have to search parents hierarchy
         journal_about = self.get_journal_about_page()
         return journal_about.journal
 

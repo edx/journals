@@ -106,6 +106,10 @@ class Command(BaseCommand):
             dest='theme_name',
             help='Name of theme to use'
         )
+        parser.add_argument(
+            '--frontend-url',
+            help='Frontend app URL for Journals app',
+        )
 
     def create_index_page(self, sitename):
         '''create_index_page'''
@@ -173,6 +177,8 @@ class Command(BaseCommand):
             urljoin(options.get('ecommerce_api_url', ''), '/journal/api/v1')
         )
 
+        frontend_url = options.get('frontend_url', site_config.frontend_url)
+
         fields = {
             'lms_url_root': lms_url_root,
             'lms_public_url_root_override': lms_public_url_root_override,
@@ -185,6 +191,7 @@ class Command(BaseCommand):
             'discovery_journal_api_url': discovery_journal_api_url,
             'ecommerce_journal_api_url': ecommerce_journal_api_url,
             'ecommerce_public_url_root': options.get('ecommerce_public_url_root'),
+            'frontend_url': frontend_url,
         }
 
         for key in fields:
