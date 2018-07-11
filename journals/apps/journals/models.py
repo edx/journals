@@ -270,6 +270,9 @@ class Video(CollectionMember, index.Indexed, models.Model):
         index.FilterField('source_course_run'),
     ]
 
+    def get_action_url_name(self, action):
+        return '%s_%s_modeladmin_%s' % (self._meta.app_label, self._meta.object_name.lower(), action)
+
     def transcript(self):
         '''
         Read the transcript from the transcript url to provide
@@ -698,19 +701,25 @@ class WagtailModelManager(object):
         return user_pages
 
     @staticmethod
-    def get_user_collections(user, collections=None):
+    def get_user_collections(user, collection_type, collections=None):
         """
         Args:
             user: instance of User model
+            collection_type: string for filtering collections base on their type
             collections: queryset of collections to filter
         Returns: wagtail collections queryset where given user has add, change permissions
         if collections queryset is provided filter is applied on that.
         """
+        model_mapping = {
+            'documents': {"model": Document, "owner_field": "uploaded_by_user"},
+            'images': {"model": Image, "owner_field": "uploaded_by_user"},
+            'videos': {"model": Video, "owner_field": "source_course_run"},
+        }
         if not collections:
             collections = Collection.objects.all()
 
         collection_permission_policy = CollectionOwnershipPermissionPolicy(
-            Document, owner_field_name='uploaded_by_user'
+            model_mapping[collection_type]["model"], owner_field_name=model_mapping[collection_type]["owner_field"]
         )
         user_collections = collection_permission_policy.collections_user_has_any_permission_for(
             user, ['add', 'change']

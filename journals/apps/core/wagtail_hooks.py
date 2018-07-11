@@ -1,6 +1,10 @@
 """
 Wagtail hooks to customize wagtail operations for journals
 """
+from django.contrib.staticfiles.templatetags.staticfiles import static
+from django.core import urlresolvers
+from django.utils.html import format_html, format_html_join
+
 from wagtail.wagtailadmin.site_summary import PagesSummaryItem
 from wagtail.wagtailcore import hooks
 from wagtail.wagtaildocs.wagtail_hooks import DocumentsSummaryItem
@@ -89,6 +93,28 @@ def images_with_add_or_change_permissions_only(images, request):  # pylint: disa
 
     return image_permission_policy.instances_user_has_any_permission_for(
         request.user, ['add', 'change']
+    )
+
+
+@hooks.register('insert_editor_js')
+def editor_js():
+    """
+    Method to insert video relate JS snippet in page editor
+    """
+    js_files = [
+        static('js/video/chooser/video-chooser.js'),
+    ]
+    js_includes = format_html_join(
+        '\n', '<script src="{0}"></script>',
+        ((filename, ) for filename in js_files)
+    )
+    return js_includes + format_html(
+        """
+        <script>
+            window.chooserUrls.videoChooser = '{0}';
+        </script>
+        """,
+        urlresolvers.reverse('journals:video_chooser')
     )
 
 
