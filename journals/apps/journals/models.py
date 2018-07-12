@@ -191,9 +191,10 @@ class JournalAccess(TimeStampedModel):
         return True if access_items else False
 
     @classmethod
-    def create_journal_access(cls, user, journal, order_number=None):
+    def create_journal_access(cls, user, journal, order_number=None, expiration_date=None):
         """ Creates new journal access for user """
-        expiration_date = datetime.datetime.now() + datetime.timedelta(days=journal.access_length)
+        if not expiration_date:
+            expiration_date = datetime.datetime.now() + datetime.timedelta(days=journal.access_length)
 
         access = cls.objects.create(
             user=user,

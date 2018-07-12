@@ -1,0 +1,44 @@
+{% extends 'admin/base.html' %}
+{% load i18n admin_modify formadmin_filters admin_urls%}
+
+{% block title %} Import Users {% endblock %}
+
+{% block extrastyle %}
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/forms.css">
+{% endblock %}
+{% block branding %}<h1 id="site-name"><a href="{% url 'admin:index' %}">Django administration</a></h1>{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+  <a href="{% url 'admin:index' %}">{% trans "Home" %}</a>
+  &rsaquo; <a href="{% url 'admin:app_list' app_label=opts.app_label %}">{{ opts.app_config.verbose_name }}</a>
+  &rsaquo; {% if has_change_permission %}
+    <a href="{% url opts|admin_urlname:'changelist' %}">{{ opts.verbose_name_plural|capfirst }}</a>
+  {% else %}
+    {{ opts.verbose_name_plural|capfirst }}
+  {% endif %}
+  &rsaquo;
+   {% trans "Import Users" %}
+
+</div>
+{% endblock %}
+
+
+{% block content %}
+       <h1>Import Users</h1>
+       <div id="content-main">
+          <form enctype="multipart/form-data" action="." method="POST" id="journal_form" novalidate="">
+             {% csrf_token %}
+               {{ journal_access_form|as_django_admin }}
+                <div class="submit-row">
+                   <input type="submit" value="Save" class="default" name="_save">
+                </div>
+
+                <script type="text/javascript" id="django-admin-form-add-constants" src="/static/admin/js/change_form.js"></script>
+                <script type="text/javascript" id="django-admin-prepopulated-fields-constants" src="/static/admin/js/prepopulate_init.js" data-prepopulated-fields="[]"></script>
+          </form>
+       </div>
+       <br class="clear">
+
+
+{% endblock %}
