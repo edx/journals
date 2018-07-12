@@ -57,6 +57,10 @@ LOGGING['handlers']['local'] = {
     'class': 'logging.NullHandler',
 }
 
+CORS_ORIGIN_WHITELIST = (
+    'localhost:1991'
+)
+
 #####################################################################
 # Lastly, see if the developer has any local overrides.
 if os.path.isfile(join(dirname(abspath(__file__)), 'private.py')):
