@@ -41,6 +41,7 @@ THIRD_PARTY_APPS = (
     'social_django',
     'waffle',
     'django_filters',
+    'corsheaders',
 )
 
 PROJECT_APPS = (
@@ -73,6 +74,7 @@ INSTALLED_APPS += WAGTAIL_APPS
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -324,3 +326,5 @@ WAGTAILDOCS_DOCUMENT_MODEL = 'journals.JournalDocument'
 WAGTAIL_FRONTEND_LOGIN_URL = LOGIN_URL
 
 THEME_DIR = '/edx/app/journals/themes/'
+
+CORS_ALLOW_CREDENTIALS = True
