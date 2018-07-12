@@ -2,10 +2,13 @@
 
 import random
 import string
+
 import factory
 from factory.fuzzy import FuzzyText
-from journals.apps.core.models import User
 from wagtail.wagtailcore.models import Page
+
+from journals.apps.core.models import User
+from journals.apps.journals.models import JournalAboutPage, JournalPage
 
 USER_PASSWORD = 'password'
 
@@ -41,3 +44,32 @@ class PageFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Page
+
+
+class JournalAboutPageFactory(factory.DjangoModelFactory):
+    """ Model factory for JournalAboutPage model """
+
+    slug = FuzzyText()
+    title = FuzzyText(prefix='page-title')
+    path = random_string_generator()
+    depth = 1
+    numchild = 0
+    custom_content = random_string_generator(size=250)
+    short_description = FuzzyText(prefix='about-page-short-description')
+
+    class Meta:
+        model = JournalAboutPage
+
+
+class JournalPageFactory(factory.DjangoModelFactory):
+    """ Model factory for JournalPage model """
+
+    slug = FuzzyText()
+    title = FuzzyText(prefix='page-title')
+    path = random_string_generator()
+    depth = 1
+    numchild = 0
+    body = random_string_generator(size=250)
+
+    class Meta:
+        model = JournalPage
