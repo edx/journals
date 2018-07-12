@@ -106,7 +106,7 @@ class Command(BaseCommand):
                 journal_about_page.specific.save()
         else:
             journal_about_page = JournalAboutPage(
-                title='{} About Page'.format(journal.name),
+                title=journal.name,
                 journal=journal,
                 short_description='{} description'.format(journal.name),
                 long_description=''
