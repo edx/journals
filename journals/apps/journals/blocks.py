@@ -1,12 +1,14 @@
 """ Custom blocks """
 from django import forms
 from django.utils import six
+from django.utils.safestring import mark_safe
 from wagtail.wagtailcore import blocks
 from wagtail.wagtaildocs.blocks import DocumentChooserBlock
 from wagtail.wagtailimages.blocks import ImageChooserBlock
 from bs4 import BeautifulSoup as parser
 
 from .models import Video
+from journals.apps.journals.utils import make_md5_hash
 
 PDF_BLOCK_TYPE = 'pdf'
 VIDEO_BLOCK_TYPE = 'xblock_video'
@@ -37,6 +39,10 @@ class PDFBlock(blocks.StructBlock):
     '''PDFBlock component'''
     title = blocks.CharBlock()
     doc = DocumentChooserBlock()
+
+    def render(self, value, context=None):
+        return mark_safe('<span id="{}"></span>'.format(make_md5_hash(value.get('doc').id))) \
+               + super(PDFBlock, self).render(value, context)
 
     def get_searchable_content(self, value):
         return ['Document: ' + value.get('title')]

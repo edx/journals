@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static wagtailcore_tags %}
+{% load wagtail_tags %}
 
 {% block body_class %}template-searchresults{% endblock %}
 
@@ -27,7 +28,7 @@
                                 <ul>
                                 {% for key, value in hit.search_results_metadata.items %} 
                                     {% for val in value %}
-                                    <li><div id="content-highlight">{{val|safe}}</div></li>
+                                    <li><div id="content-highlight"><a href="{% pageurl search_display.journal_page %}#{{ hit.id|md5hash }}">{{val|safe}}</a></div></li>
                                     {% endfor %}
                                 {% endfor %}
                                 </ul>
