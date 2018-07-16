@@ -3,6 +3,7 @@ This module has those template tags/filters which we use in Wagtail template ove
 """
 from django import template
 
+from journals.apps.journals.blocks import SPAN_ID_FORMATTER
 from journals.apps.journals.models import WagtailModelManager
 from journals.apps.journals.utils import make_md5_hash
 
@@ -24,5 +25,5 @@ def collections_user_has_access(collections, request):
 
 
 @register.filter(name='md5hash')
-def md5hash(value):
-    return make_md5_hash(value)
+def md5hash(value, block_type):
+    return SPAN_ID_FORMATTER.format(block_type=block_type, hash_id=make_md5_hash(value))
