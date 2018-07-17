@@ -1,5 +1,5 @@
 '''Filter class for Journals'''
-from journals.apps.journals.models import JournalAccess
+from journals.apps.journals.models import JournalAccess, UserPageVisit
 from django_filters import rest_framework as filters
 
 
@@ -59,3 +59,22 @@ class JournalAccessFilter(filters.FilterSet):
             'get_latest',
             'ignore_revoked'
         )
+
+
+class UserPageVisitFilter(filters.FilterSet):
+    """ Filter for UserPageVisit """
+    page_id = filters.CharFilter(name='page_id')
+    last_visit = filters.BooleanFilter(name='last_visit', method='get_last_visit')
+
+    def get_last_visit(self, queryset, name, value):  # pylint: disable=unused-argument
+        """
+        If last_visit is true, return the last page that user visited.
+        """
+        return [queryset.first()] if value else queryset
+
+    class Meta:
+        model = UserPageVisit
+        fields = [
+            'page_id',
+            'last_visit'
+        ]
