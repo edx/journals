@@ -56,8 +56,11 @@ class JournalManager(models.Manager):
         organization = Organization.objects.get(name=org_name)
 
         if organization:
-            journal = self.create(
-                name=name, organization=organization, access_length=access_length
+            journal, _ = self.get_or_create(
+                name=name, organization=organization,
+                defaults={
+                    'access_length': access_length
+                }
             )
             return journal
         else:

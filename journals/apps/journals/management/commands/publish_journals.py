@@ -99,23 +99,27 @@ class Command(BaseCommand):
             site.save()
 
         # create/update JournalAboutPage
-        journal_about_page = index_page.get_first_child()
-        if not create:
-            if journal_about_page and isinstance(journal_about_page.specific, JournalAboutPage):
-                journal_about_page.specific.journal = journal
-                journal_about_page.specific.save()
-        else:
+        journal_about_page = None
+        pages = index_page.get_descendants(inclusive=False).specific()
+        for page in pages:
+            if isinstance(page, JournalAboutPage):
+                journal_about_page = page
+
+        if not journal_about_page:
             journal_about_page = JournalAboutPage(
                 title=journal.name,
-                journal=journal,
                 short_description='{} description'.format(journal.name),
                 long_description=''
             )
             index_page.add_child(instance=journal_about_page)
-            if publish:
-                journal_about_page.save_revision().publish()
-            else:
-                journal_about_page.unpublish()
+
+        journal_about_page.journal = journal
+        journal_about_page.save()
+
+        if publish:
+            journal_about_page.save_revision().publish()
+        else:
+            journal_about_page.unpublish()
 
         return journal_about_page
 
