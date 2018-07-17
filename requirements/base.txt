@@ -17,3 +17,4 @@ wagtail>=1.13,<1.14
 django-cors-headers==2.3.0
 django-object-actions==0.10.0
 unicodecsv==0.14.1
+django-form-admin==0.5.1
