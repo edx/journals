@@ -5,7 +5,7 @@ import itertools
 from urllib.parse import urlsplit, urlunsplit
 
 from django.core.management.base import BaseCommand
-from wagtail.wagtailcore.models import Site
+from wagtail.wagtailcore.models import Collection, Site
 
 from journals.apps.journals.models import Video
 
@@ -52,6 +52,22 @@ class Command(BaseCommand):
         )
         return course_runs
 
+    def get_collection_for_site(self, site):
+        """
+        Args:
+            site: site object
+
+        Returns: Collection associated with given site
+        """
+        site_collection_name = site.site_name
+        collection = Collection.objects.filter(name=site_collection_name).first()
+        if not collection:
+            collection = Collection(name=site_collection_name)
+            root_collection = Collection.get_first_root_node()
+            root_collection.add_child(instance=collection)
+
+        return collection
+
     def get_videos_for_site(self, site):
         '''get_videos for given site'''
         if not hasattr(site, 'siteconfiguration'):
@@ -87,8 +103,10 @@ class Command(BaseCommand):
         block_collections = itertools.chain.from_iterable(
             [self.get_videos_for_site(site) for site in Site.objects.all()]
         )
+
         for block_collection in block_collections:
             site = block_collection.get('site')
+            collection = self.get_collection_for_site(site)
             course_run = block_collection.get('course_run')
             blocks = block_collection.get('blocks')
 
@@ -100,6 +118,7 @@ class Command(BaseCommand):
 
                 view_url = self.rewrite_url_for_external_use(view_url, site)
                 self.stdout.write("Creating/updating video block {}".format(block_id))
+
                 Video.objects.update_or_create(
                     block_id=block_id,
                     defaults={
@@ -107,6 +126,7 @@ class Command(BaseCommand):
                         'display_name': display_name,
                         'view_url': view_url,
                         'transcript_url': transcript_url,
-                        'source_course_run': course_run
+                        'source_course_run': course_run,
+                        'collection': collection
                     }
                 )

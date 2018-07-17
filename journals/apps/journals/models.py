@@ -19,16 +19,17 @@ from model_utils.models import TimeStampedModel
 from jsonfield.fields import JSONField
 from slumber.exceptions import HttpClientError, HttpNotFoundError
 
+from wagtail.api import APIField
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailadmin.navigation import get_explorable_root_page
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailcore.fields import RichTextField, StreamField
-from wagtail.wagtailcore.models import Collection, Page
+from wagtail.wagtailcore.models import Collection, CollectionMember, Page
 from wagtail.wagtailcore.permission_policies.collections import CollectionOwnershipPermissionPolicy
 from wagtail.wagtaildocs.models import AbstractDocument, Document
 from wagtail.wagtailimages.models import Image
 from wagtail.wagtailsearch import index
-from wagtail.api import APIField
+from wagtail.wagtailsearch.queryset import SearchableQuerySetMixin
 
 from journals.apps.journals.journal_page_helper import JournalPageMixin
 from journals.apps.core.models import User
@@ -244,7 +245,11 @@ class JournalDocument(AbstractDocument):
         return contents
 
 
-class Video(index.Indexed, models.Model):
+class VideoQuerySet(SearchableQuerySetMixin, models.QuerySet):
+    pass
+
+
+class Video(CollectionMember, index.Indexed, models.Model):
     '''
     Video model
     '''
@@ -253,11 +258,15 @@ class Video(index.Indexed, models.Model):
     view_url = models.URLField(max_length=255)
     transcript_url = models.URLField(max_length=255)
     source_course_run = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    search_fields = [
+    objects = VideoQuerySet.as_manager()
+
+    search_fields = CollectionMember.search_fields + [
         index.SearchField('display_name', partial_match=True),
         index.SearchField('transcript', partial_match=False, es_extra=LARGE_TEXT_FIELD_SEARCH_PROPS),
-        index.FilterField('id')
+        index.FilterField('id'),
+        index.FilterField('source_course_run'),
     ]
 
     def transcript(self):

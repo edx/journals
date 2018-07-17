@@ -16,17 +16,19 @@ PERMISSIONS = {
         'page_permissions': ['add', 'edit'],
         'collection_permissions': [
             'add_image', 'change_image',
+            'add_video', 'change_video',
             'add_document', 'change_document'
         ],
-        'core_permissions': ['access_admin']
+        'core_permissions': ['access_admin', 'change_video']
     },
     'Moderators': {
         'page_permissions': ['add', 'edit', 'publish'],
         'collection_permissions': [
             'add_image', 'change_image', 'delete_image',
+            'add_video', 'change_video', 'delete_video',
             'add_document', 'change_document', 'delete_document'
         ],
-        'core_permissions': ['access_admin', 'change_sitebranding']
+        'core_permissions': ['access_admin', 'change_sitebranding', 'change_video', 'delete_video']
     }
 }
 
@@ -198,7 +200,6 @@ class Command(BaseCommand):
             name=name
         )
         root_collection.add_child(instance=collection)
-        collection.save()
         return collection
 
     def add_group_permissions_by_codename(self, group, codename, page=None, collection=None):
@@ -251,7 +252,7 @@ class Command(BaseCommand):
             - site
             - site config
             - theming config
-            - collection for documents and images
+            - collection for documents, videos and images
             - groups & permissions (collection names, root page, title)
         """
         # Required fields
@@ -282,7 +283,7 @@ class Command(BaseCommand):
             theme_name=theme_name
         )
 
-        # Create collection for images and documents
+        # Create collection for images, videos and documents
         collection = self.create_collection(sitename)
 
         # Create groups and permissions based of PERMISSIONS data
