@@ -473,6 +473,7 @@ class JournalPage(Page, JournalPageMixin):
         (VIDEO_BLOCK_TYPE, XBlockVideoBlock()),
     ], blank=True)
 
+    images = models.ManyToManyField(Image)
     videos = models.ManyToManyField(Video)
     documents = models.ManyToManyField(JournalDocument)
 
@@ -486,26 +487,28 @@ class JournalPage(Page, JournalPageMixin):
     ]
 
     def update_related_objects(self, clear=False):
-        '''
+        """
         Update the relationship of related objects (docs, videos)
         This gets called when page is published/unpublished
-        '''
+        """
         if not clear:
-            new_docs, new_videos, __ = self._get_related_objects(documents=True, videos=True, images=False)
+            new_docs, new_videos, new_images = self._get_related_objects(documents=True, videos=True, images=True)
         else:
             new_docs = set()
             new_videos = set()
+            new_images = set()
 
         self.documents.set(new_docs)  # pylint: disable=no-member
         self.videos.set(new_videos)  # pylint: disable=no-member
+        self.images.set(new_images)  # pylint: disable=no-member
 
     def _get_related_objects(self, documents=True, videos=True, images=True):
-        '''
+        """
         Find set of related objects found in page
         Returns:
         document set(), video set(), image set()
         each containg a list of corresponding objects models
-        '''
+        """
         doc_set = set()
         video_set = set()
         image_set = set()
@@ -532,10 +535,10 @@ class JournalPage(Page, JournalPageMixin):
         return context
 
     def get_prev_page(self):
-        '''
+        """
         Get the previous page for navigation. Search order is previous sibling's last descendant,
         previous sibling, then parent
-        '''
+        """
         prev_sib = self.get_prev_sibling()
         if prev_sib:
             last_child = prev_sib.specific.get_last_descendant()
@@ -545,10 +548,10 @@ class JournalPage(Page, JournalPageMixin):
         return parent if parent and isinstance(parent.specific, JournalPage) else None
 
     def get_next_page(self, children_and_sibs=True):
-        '''
+        """
         Get the next page for navigation. Search order is child, sibling then
         parent next sibling recursively
-        '''
+        """
         if children_and_sibs:
             next_child = self.get_first_child()
             next_sib = self.get_next_sibling()
@@ -564,9 +567,9 @@ class JournalPage(Page, JournalPageMixin):
         return next_sib if next_sib else parent.specific.get_next_page(children_and_sibs=False)
 
     def get_last_descendant(self):
-        '''
+        """
         get the last descendant of this page
-        '''
+        """
         children = self.get_descendants()
         return children[len(children) - 1] if children else None
 
@@ -585,7 +588,7 @@ class JournalPage(Page, JournalPageMixin):
         return journal_about.journal
 
     def get_journal_about_page(self):
-        '''return about_page for journal'''
+        """return about_page for journal"""
         journal_about = None
         parent = self.get_parent()
         journal_about = parent.specific

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static wagtailcore_tags %}
+{% load wagtail_tags %}
 
 {% block body_class %}template-searchresults{% endblock %}
 
@@ -18,18 +19,26 @@
                         {% for hit in search_display.get_hit_list_sorted %}
                             {% if hit.score > 0 and hit.search_results_metadata %}
                                 {% if hit.is_page %}
-                                <h7>Page Contents</h7>
+                                    <h7>Page Contents</h7>
                                 {% elif hit.is_doc %}
-                                <h7>Document: {{hit.title}}</h7>
+                                    <h7>Document:
+                                        <a href="{% pageurl search_display.journal_page %}#{{ hit.id|fragment_identifier:'doc' }}">{{hit.title}}</a>
+                                    </h7>
                                 {% elif hit.is_video %}
-                                <h7>Video: {{hit.title}}</h7>
+                                    <h7>Video:
+                                        <a href="{% pageurl search_display.journal_page %}#{{ hit.id|fragment_identifier:'xblock_video' }}">{{hit.display_name}}</a>
+                                    </h7>
+                                {% elif hit.is_image %}
+                                    <h7>Image:
+                                        <a href="{% pageurl search_display.journal_page %}#{{ hit.id|fragment_identifier:'image' }}">{{hit.title}}</a>
+                                    </h7>
                                 {% endif %}
                                 <ul>
-                                {% for key, value in hit.search_results_metadata.items %} 
-                                    {% for val in value %}
-                                    <li><div id="content-highlight">{{val|safe}}</div></li>
+                                    {% for key, value in hit.search_results_metadata.items %}
+                                        {% for val in value %}
+                                            <li><div id="content-highlight">{{val|safe}}</div></li>
+                                        {% endfor %}
                                     {% endfor %}
-                                {% endfor %}
                                 </ul>
                                 <br>
                             {% endif %}

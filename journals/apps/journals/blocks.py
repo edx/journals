@@ -1,11 +1,13 @@
 """ Custom blocks """
+from bs4 import BeautifulSoup as parser
 from django import forms
 from django.utils import six
+from django.utils.safestring import mark_safe
 from wagtail.wagtailcore import blocks
 from wagtail.wagtaildocs.blocks import DocumentChooserBlock
 from wagtail.wagtailimages.blocks import ImageChooserBlock
-from bs4 import BeautifulSoup as parser
 
+from journals.apps.journals.utils import make_md5_hash
 from .models import Video
 
 PDF_BLOCK_TYPE = 'pdf'
@@ -16,9 +18,17 @@ RAW_HTML_BLOCK_TYPE = 'raw_html'
 STREAM_DATA_TYPE_FIELD = 'type'
 STREAM_DATA_DOC_FIELD = 'doc'
 
+BLOCK_SPAN_ID_FORMATTER = '{block_type}-{block_id}'
+BLOCK_FORMATTER = '{block_prefix} {block}'
+
+
+def get_block_prefix(block_type, block_id):
+    return '<span id="{}"></span>'.format(BLOCK_SPAN_ID_FORMATTER).format(block_type=block_type,
+                                                                          block_id=make_md5_hash(block_id))
+
 
 class VideoChooserBlock(blocks.ChooserBlock):
-    '''VideoChooserBlock component'''
+    """VideoChooserBlock component"""
     target_model = Video
     widget = forms.Select
 
@@ -34,9 +44,16 @@ class VideoChooserBlock(blocks.ChooserBlock):
 
 
 class PDFBlock(blocks.StructBlock):
-    '''PDFBlock component'''
+    """PDFBlock component"""
     title = blocks.CharBlock()
     doc = DocumentChooserBlock()
+
+    @mark_safe
+    def render(self, value, context=None):
+        return BLOCK_FORMATTER.format(
+            block_prefix=get_block_prefix(STREAM_DATA_DOC_FIELD, value.get(STREAM_DATA_DOC_FIELD).id),
+            block=super(PDFBlock, self).render(value, context)
+        )
 
     def get_searchable_content(self, value):
         return ['Document: ' + value.get('title')]
@@ -46,13 +63,13 @@ class PDFBlock(blocks.StructBlock):
 
 
 class JournalRichTextBlock(blocks.RichTextBlock):
-    '''JournalRichTextBlock component'''
+    """JournalRichTextBlock component"""
     def get_searchable_content(self, value):
         return [parser(value.source, 'html.parser').get_text(' ')]
 
 
 class JournalRawHTMLBlock(blocks.RawHTMLBlock):
-    '''JournalRawHTMLBlock component'''
+    """JournalRawHTMLBlock component"""
     def value_for_form(self, value):
         """
         Strips dangerous tags from value
@@ -68,7 +85,7 @@ class JournalRawHTMLBlock(blocks.RawHTMLBlock):
 
 
 class XBlockVideoBlock(blocks.StructBlock):
-    '''XBlockVideoBlock component'''
+    """XBlockVideoBlock component"""
     BLOCK_TYPE = 'xblock_video'
     STREAM_DATA_FIELD = 'video'
 
@@ -85,8 +102,22 @@ class XBlockVideoBlock(blocks.StructBlock):
     class Meta:
         template = 'blocks/xblockvideo.html'
 
+    @mark_safe
+    def render(self, value, context=None):
+        return BLOCK_FORMATTER.format(
+            block_prefix=get_block_prefix(VIDEO_BLOCK_TYPE, value.get('video').id),
+            block=super(XBlockVideoBlock, self).render(value, context)
+        )
+
 
 class JournalImageChooserBlock(ImageChooserBlock):
-    '''JournalImageChooserBlock component'''
+    """ JournalImageChooserBlock component """
     def get_searchable_content(self, value):
         return ['Image: ' + value.title]
+
+    @mark_safe
+    def render(self, value, context=None):
+        return BLOCK_FORMATTER.format(
+            block_prefix=get_block_prefix(IMAGE_BLOCK_TYPE, value.id),
+            block=super(JournalImageChooserBlock, self).render(value, context)
+        )
