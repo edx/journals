@@ -750,7 +750,7 @@ class UserPageVisit(models.Model):
     """
     Record the datetime at which user visited the page.
     """
-    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    user = models.ForeignKey(User, null=True, related_name='visited_pages', on_delete=models.SET_NULL)
     page = models.ForeignKey('wagtailcore.Page', null=True, on_delete=models.SET_NULL)
     visited_at = models.DateTimeField(auto_now=True, db_index=True)
     stale = models.BooleanField(

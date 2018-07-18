@@ -4,7 +4,7 @@ from django.conf.urls import url
 
 from journals.apps.api.v1.preview.views import get_page_preview
 from journals.apps.api.v1.theming.views import SiteBrandingViewSet
-from journals.apps.api.v1.views import JournalAccessViewSet, UserPageVisitView
+from journals.apps.api.v1.views import CurrentUserView, JournalAccessViewSet, UserPageVisitView
 
 
 router = DefaultRouter()
@@ -22,5 +22,10 @@ urlpatterns += [
     url(
         r'^preview/(?P<cache_key>.+)/$',
         get_page_preview
+    ),
+    url(
+        r'^users/current',
+        CurrentUserView.as_view(),
+        name="currentuser"
     ),
 ]

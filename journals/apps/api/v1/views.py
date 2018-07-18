@@ -12,7 +12,7 @@ from rest_framework import generics
 from journals.apps.api.filters import JournalAccessFilter, UserPageVisitFilter
 from journals.apps.api.pagination import LargeResultsSetPagination
 from journals.apps.api.permissions import UserPageVisitPermission
-from journals.apps.api.serializers import JournalAccessSerializer, UserPageVisitSerializer
+from journals.apps.api.serializers import JournalAccessSerializer, UserPageVisitSerializer, UserSerializer
 from journals.apps.core.models import User
 from journals.apps.journals.models import Journal, JournalAccess, UserPageVisit
 
@@ -96,3 +96,12 @@ class ManualPageSerializerViewSet(viewsets.GenericViewSet):
         # is added to this mapping. This is used by the Admin API which appends a
         # summary of the used types to the response.
         self.seen_types = OrderedDict()
+
+
+class CurrentUserView(generics.RetrieveAPIView):
+    """API view for the User model"""
+    model = User
+    serializer_class = UserSerializer
+
+    def get_object(self):
+        return User.objects.get(pk=self.request.user.pk)
