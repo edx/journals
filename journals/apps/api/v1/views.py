@@ -2,6 +2,7 @@
 
 import logging
 
+from collections import OrderedDict
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
@@ -14,6 +15,7 @@ from journals.apps.api.permissions import UserPageVisitPermission
 from journals.apps.api.serializers import JournalAccessSerializer, UserPageVisitSerializer
 from journals.apps.core.models import User
 from journals.apps.journals.models import Journal, JournalAccess, UserPageVisit
+
 
 logger = logging.getLogger(__name__)
 
@@ -79,3 +81,18 @@ class UserPageVisitView(generics.ListCreateAPIView):
     def get_queryset(self):
         user_id = self.kwargs['user_id']
         return UserPageVisit.objects.filter(user_id=user_id).order_by("-visited_at")
+
+
+class ManualPageSerializerViewSet(viewsets.GenericViewSet):
+    """
+    This class is used as a template viewset and needed
+    for manually serializing a JournalPage object (i.e. not through REST API)
+    """
+    def __init__(self, *args, **kwargs):
+        super(ManualPageSerializerViewSet, self).__init__(*args, **kwargs)
+
+        # seen_types is a mapping of type name strings (format: "app_label.ModelName")
+        # to model classes. When an object is serialised in the API, its model
+        # is added to this mapping. This is used by the Admin API which appends a
+        # summary of the used types to the response.
+        self.seen_types = OrderedDict()

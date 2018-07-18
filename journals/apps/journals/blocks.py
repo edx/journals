@@ -9,6 +9,7 @@ from wagtail.wagtailimages.blocks import ImageChooserBlock
 
 from journals.apps.journals.utils import make_md5_hash
 from .models import Video
+from .utils import get_image_url
 
 PDF_BLOCK_TYPE = 'pdf'
 VIDEO_BLOCK_TYPE = 'xblock_video'
@@ -61,6 +62,16 @@ class PDFBlock(blocks.StructBlock):
     class Meta:
         template = 'blocks/pdf.html'
 
+    def get_api_representation(self, value, context=None):
+        block_title = value.get('title')
+        document = value.get('doc')
+        return {
+            'block_title': block_title,
+            'doc_id': document.id,
+            'doc_title': document.title,
+            'url': document.file.url,
+        }
+
 
 class JournalRichTextBlock(blocks.RichTextBlock):
     """JournalRichTextBlock component"""
@@ -99,6 +110,17 @@ class XBlockVideoBlock(blocks.StructBlock):
     def get_searchable_content(self, value):
         return ['Video: ' + value.get('name')]
 
+    def get_api_representation(self, value, context=None):
+        block_title = value.get('name')
+        video = value.get('video')
+        return {
+            'block_title': block_title,
+            'video_id': video.id,
+            'display_name': video.display_name,
+            'view_url': video.view_url,
+            'transcript_url': video.transcript_url,
+        }
+
     class Meta:
         template = 'blocks/xblockvideo.html'
 
@@ -121,3 +143,12 @@ class JournalImageChooserBlock(ImageChooserBlock):
             block_prefix=get_block_prefix(IMAGE_BLOCK_TYPE, value.id),
             block=super(JournalImageChooserBlock, self).render(value, context)
         )
+
+    def get_api_representation(self, value, context=None):
+        return {
+            'title': value.title,
+            'width': value.width,
+            'height': value.height,
+            'image_id': value.id,
+            'url': get_image_url(value),
+        }

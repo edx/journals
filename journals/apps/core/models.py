@@ -135,6 +135,13 @@ class SiteConfiguration(models.Model):
         default='USD'
     )
 
+    frontend_url = models.URLField(
+        verbose_name=_('Frontend app base url'),
+        help_text=_("Root URL of frontend app for specific site (e.g. https://journalapp.edx.org)"),
+        null=False,
+        blank=False
+    )
+
     def build_lms_url(self, path=''):
         """
         Returns path joined with the appropriate LMS URL root for the current site.
