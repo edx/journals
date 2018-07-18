@@ -16,10 +16,20 @@ class SiteBrandingFilter(filters.FilterSet):
         # SiteBranding is associated with a Site and a SiteConfiguration is associated with a Site.
         # Find the SiteConfiguration with this frontend_url.
         # 'frontend_url' is a unique field so there should only by one site_configuration
-        site_configuration = SiteConfiguration.objects.get(frontend_url=value)
+        try:
+            site_configuration = SiteConfiguration.objects.get(frontend_url=value)
+        except SiteConfiguration.DoesNotExist:
+            # if there is no site configuration associated with that frontend_url return empty queryset
+            return queryset.none()
 
         # Return the SiteBranding associated with the same Site.
-        return queryset.filter(site_id=site_configuration.site_id)
+        try:
+            site_branding = queryset.filter(site_id=site_configuration.site_id)
+        except SiteBranding.DoesNotExist:
+            # if there is no site branding associated with that site return empty queryset
+            return queryset.none()
+
+        return site_branding
 
     class Meta:
         model = SiteBranding
