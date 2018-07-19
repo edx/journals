@@ -4,9 +4,8 @@ from __future__ import absolute_import, unicode_literals
 from django.shortcuts import render
 from wagtail.wagtailsearch.backends import get_search_backend
 from wagtail.wagtailsearch.models import Query
-from wagtail.wagtailimages.models import Image
 
-from journals.apps.journals.models import JournalDocument, JournalPage, Video
+from journals.apps.journals.models import JournalDocument, JournalImage, JournalPage, Video
 
 MATCH_PHRASE_START_CHAR = '\"'
 MATCH_PHRASE_END_CHAR = '\"'
@@ -43,7 +42,7 @@ class SearchDisplay:
         setattr(hit, 'is_page', isinstance(hit, JournalPage))
         setattr(hit, 'is_doc', isinstance(hit, JournalDocument))
         setattr(hit, 'is_video', isinstance(hit, Video))
-        setattr(hit, 'is_image', isinstance(hit, Image))
+        setattr(hit, 'is_image', isinstance(hit, JournalImage))
 
     def __repr__(self):
         return '<SearchDisplay max_score:%s get_hit_list_sorted:%s>' % (self.max_score, self.get_hit_list_sorted())
@@ -79,7 +78,7 @@ def search(request):
             ).annotate_score('score')
         )
         images_search_result = list(
-            Image.objects.all().search(clean_query, operator=search_operator).annotate_score('score')
+            JournalImage.objects.all().search(clean_query, operator=search_operator).annotate_score('score')
         )
 
         results = dict()
@@ -87,7 +86,7 @@ def search(request):
         for hit in page_search_results + doc_search_results + images_search_result + video_search_results:
             if isinstance(hit, JournalPage):
                 results[hit.id] = SearchDisplay(journal_page=hit)
-            elif isinstance(hit, (JournalDocument, Video, Image)):
+            elif isinstance(hit, (JournalDocument, Video, JournalImage)):
                 page_set = hit.journalpage_set.all().distinct()
                 for parent_page in page_set:
                     results.setdefault(parent_page.id, SearchDisplay(journal_page=parent_page)).add_hit(hit)

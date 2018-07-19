@@ -325,6 +325,7 @@ WAGTAILSEARCH_BACKENDS = {
 }
 
 WAGTAILDOCS_DOCUMENT_MODEL = 'journals.JournalDocument'
+WAGTAILIMAGES_IMAGE_MODEL = 'journals.JournalImage'
 WAGTAIL_FRONTEND_LOGIN_URL = LOGIN_URL
 
 THEME_DIR = '/edx/app/journals/themes/'
