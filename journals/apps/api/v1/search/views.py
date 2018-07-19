@@ -82,7 +82,7 @@ class SearchViewSet(APIView):
             clean_query = search_query  # TODO: do we need to do any cleansing of querystring?
 
             for about_page in about_pages:
-
+    
                 #  Only include pages beneath our root page that are live and public
                 base_page_query = JournalPage.objects.live().public().descendant_of(about_page)
 
