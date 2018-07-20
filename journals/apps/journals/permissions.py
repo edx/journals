@@ -23,15 +23,17 @@ class VideoPermissionHelper(PermissionHelper):
     def user_can_edit_obj(self, user, obj):
         """
         Check if user has edit permissions on videos
-        """
+        Since we are importing videos from studio we have to disable video `edit` feature
+        in wagtail admin to keep video entries in sync with studio.
+        To enable `edit` feature for videos we can use the code below
         return video_permission_policy.user_has_permission_for_instance(
             user, 'change', obj
         )
+        """
+        return False
 
     def user_can_delete_obj(self, user, obj):
         """
         Check if user has delete permissions on videos
         """
-        return video_permission_policy.user_has_permission_for_instance(
-            user, 'delete', obj
-        )
+        return False

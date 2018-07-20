@@ -326,6 +326,9 @@ class Video(CollectionMember, index.Indexed, models.Model):
     def get_action_url_name(self, action):
         return '%s_%s_modeladmin_%s' % (self._meta.app_label, self._meta.object_name.lower(), action)
 
+    def get_usage(self):
+        return JournalPage.objects.filter(videos=self)
+
     def transcript(self):
         '''
         Read the transcript from the transcript url to provide
@@ -785,7 +788,7 @@ class WagtailModelManager(object):
         """
         Args:
             user: instance of User model
-            collection_type: string for filtering collections base on their type
+            collection_type: string for filtering collections based on their type
             collections: queryset of collections to filter
         Returns: wagtail collections queryset where given user has add, change permissions
         if collections queryset is provided filter is applied on that.

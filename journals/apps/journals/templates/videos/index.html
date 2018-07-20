@@ -20,7 +20,8 @@
 
 {% block content %}
     {% trans "Videos" as doc_str %}
-    {% include "wagtailadmin/shared/header.html" with title=doc_str icon="media" search_url=action_url_name %}
+    {% trans "Import Videos" as import_videos_str %}
+    {% include "wagtailadmin/shared/header.html" with title=doc_str icon="media" search_url=action_url_name add_link="journals:import_videos" add_text=import_videos_str %}
     <div class="nice-padding">
         {% if collections %}
             <form class="image-search search-bar" action="{{ view.index_url }}" method="GET" novalidate>
