@@ -62,3 +62,17 @@ class UserPageVisitSerializer(serializers.ModelSerializer):
             'visited_at',
             'stale'
         )
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the "User" model.
+    """
+    visited_pages = UserPageVisitSerializer(many=True)
+
+    class Meta(object):
+        model = User
+        fields = (
+            'username',
+            'visited_pages',
+        )
