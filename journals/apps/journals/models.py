@@ -507,6 +507,14 @@ class JournalPage(JournalPageMixin, Page):
     A page inside a journal. These can be nested indefinitely. Restricted to
     users who purchased access to the journal.
     """
+    journal_about_page = models.ForeignKey(
+        JournalAboutPage,
+        null=True,
+        blank=True,
+        related_name='journal_pages',
+        on_delete=models.SET_NULL
+    )
+
     parent_page_types = ['JournalAboutPage', 'JournalPage']
     subpage_types = ['JournalPage']
 
@@ -552,6 +560,7 @@ class JournalPage(JournalPageMixin, Page):
         self.documents.set(new_docs)  # pylint: disable=no-member
         self.videos.set(new_videos)  # pylint: disable=no-member
         self.images.set(new_images)  # pylint: disable=no-member
+        self.journal_about_page = self._calculate_journal_about_page()
 
     def _get_related_objects(self, documents=True, videos=True, images=True):
         """
@@ -639,11 +648,17 @@ class JournalPage(JournalPageMixin, Page):
 
     def get_journal(self):
         """ Get journal associated with this page """
-        # TOOD - store journal in model so we don't have to search parents hierarchy
-        journal_about = self.get_journal_about_page()
+        journal_about = self._get_journal_about_page()
         return journal_about.journal
 
-    def get_journal_about_page(self):
+    def _get_journal_about_page(self):
+        """ Gets the journal about page field and calculates it if null """
+        if not self.journal_about_page:
+            self.journal_about_page = self._calculate_journal_about_page()
+            self.save()
+        return self.journal_about_page
+
+    def _calculate_journal_about_page(self):
         """return about_page for journal"""
         journal_about = None
         parent = self.get_parent()
@@ -662,7 +677,7 @@ class JournalPage(JournalPageMixin, Page):
     def get_journal_structure(self):
         """ Returns the heirarchy of the journal as a dict """
         structure = {
-            "journal_structure": self.get_journal_about_page().structure
+            "journal_structure": self._get_journal_about_page().structure
         }
 
         return structure
