@@ -9,7 +9,11 @@ from journals.apps.journals.templatetags.wagtail_tags import get_block_fragment_
 
 class SearchResults(object):
     """
+<<<<<<< 0b77493f18e64fe68c36105661167e2feddee0b5
     This class encapsulates SearchResults
+=======
+    This class encapsulates a SearchResult object
+>>>>>>> Add JournalImage, url tags and sorting
     """
     def __init__(self, search_meta_data, hit_list):
         """
@@ -43,7 +47,11 @@ class SearchHit(object):
 
     def _set_page_info(self, journal_page):
         """
+<<<<<<< 0b77493f18e64fe68c36105661167e2feddee0b5
         Set information about Page that hit was found on
+=======
+        Set members related to journalpage info
+>>>>>>> Add JournalImage, url tags and sorting
         """
         about_page = journal_page.get_journal_about_page()
         self.journal_about_page_id = about_page.id

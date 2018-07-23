@@ -27,6 +27,7 @@ from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailcore.fields import RichTextField, StreamField
 from wagtail.wagtailcore.models import Collection, CollectionMember, Page
 from wagtail.wagtailcore.permission_policies.collections import CollectionOwnershipPermissionPolicy
+
 from wagtail.wagtaildocs.models import AbstractDocument, Document
 from wagtail.wagtailimages.models import AbstractImage, AbstractRendition, Image
 from wagtail.wagtailsearch import index
