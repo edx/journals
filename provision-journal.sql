@@ -28,7 +28,8 @@ VALUES (
     'USD',
     'edx',
     'edx',
-    'http://edx.devstack.ecommerce:18130/journal/api/v1'
+    'http://edx.devstack.ecommerce:18130/journal/api/v1',
+    'http://localhost:1991'
 );
 UNLOCK TABLES;
 
