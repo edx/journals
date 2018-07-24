@@ -1,6 +1,8 @@
 '''Filter class for Journals'''
-from journals.apps.journals.models import JournalAccess, UserPageVisit
 from django_filters import rest_framework as filters
+from rest_framework.filters import BaseFilterBackend
+
+from journals.apps.journals.models import JournalAccess, JournalPage, UserPageVisit
 
 
 class JournalAccessFilter(filters.FilterSet):
@@ -78,3 +80,26 @@ class UserPageVisitFilter(filters.FilterSet):
             'page_id',
             'last_visit'
         ]
+
+
+class PageAuthorizationFilter(BaseFilterBackend):
+    """
+    Filter that only allows user to see pages they have access to.
+    """
+    def filter_queryset(self, request, queryset, view):
+        # TODO: Currently has additional DB calls for gettings authorized journals and authorized pages attached to
+        # the journals. This happens on every API call
+        authorized_journal_ids = JournalAccess.get_user_accessible_journal_ids(request.user)
+
+        authorized_journal_page_ids = JournalPage.objects.filter(
+            journal_about_page__journal__id__in=authorized_journal_ids
+        ).values_list('id', flat=True)
+
+        authorized_pages = (
+            queryset.not_type(JournalPage) |
+            queryset.type(JournalPage).filter(
+                id__in=authorized_journal_page_ids
+            )
+        )
+
+        return authorized_pages
