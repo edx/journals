@@ -34,6 +34,7 @@ urlpatterns = auth_urlpatterns + [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include('journals.apps.api.urls', namespace='api')),
     url(r'^api/v1/content/', include(wagtail_router.urls)),
+    url(r'^journals/', include('journals.apps.journals.urls', namespace='journals')),
     # Use the same auth views for all logins, including those originating from the browseable API.
     url(r'^api-auth/', include(auth_urlpatterns, namespace='rest_framework')),
     url(r'^auto_auth/$', core_views.AutoAuth.as_view(), name='auto_auth'),

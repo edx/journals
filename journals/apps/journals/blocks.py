@@ -1,6 +1,5 @@
 """ Custom blocks """
 from bs4 import BeautifulSoup as parser
-from django import forms
 from django.utils import six
 from django.utils.safestring import mark_safe
 from wagtail.wagtailcore import blocks
@@ -8,8 +7,9 @@ from wagtail.wagtaildocs.blocks import DocumentChooserBlock
 from wagtail.wagtailimages.blocks import ImageChooserBlock
 
 from journals.apps.journals.utils import make_md5_hash
-from .models import Video
-from .utils import get_image_url
+from journals.apps.journals.models import Video
+from journals.apps.journals.widgets import AdminVideoChooser
+from journals.apps.journals.utils import get_image_url
 
 PDF_BLOCK_TYPE = 'pdf'
 VIDEO_BLOCK_TYPE = 'xblock_video'
@@ -31,10 +31,10 @@ def get_block_prefix(block_type, block_id):
 class VideoChooserBlock(blocks.ChooserBlock):
     """VideoChooserBlock component"""
     target_model = Video
-    widget = forms.Select
+    widget = AdminVideoChooser
 
     class Meta:
-        icon = "icon"
+        icon = "media"
 
     # Return the key value for the select field
     def value_for_form(self, value):

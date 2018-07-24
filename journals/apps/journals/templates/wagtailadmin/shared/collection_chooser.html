@@ -9,7 +9,8 @@
             <div class="input">
                 <select id="collection_chooser_collection_id" name="collection_id">
                     <option value="">{% trans "All collections" %}</option>
-                    {% for collection in collections|with_permissions:request %}
+                    {% collections_user_has_access collections request as user_collections %}
+                    {% for collection in user_collections %}
                         <option value="{{ collection.id|unlocalize }}" {% if collection == current_collection %}selected="selected"{% endif %}>{{ collection.name }}</option>
                     {% endfor %}
                 </select>

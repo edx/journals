@@ -16,6 +16,7 @@
                 {% endif %}
             </th>
             <th>{% trans "View Url" %}</th>
+            <th>{% trans "Source Course" %}</th>
             <th>
                 {% if not is_searching %}
                     <a href="{{ view.index_url }}{% if not ordering == "-created_at" %}?ordering=-created_at{% endif %}" class="icon icon-arrow-down-after {% if  ordering == "-created_at" %}teal{% endif %}">
@@ -32,7 +33,7 @@
             <tr>
                 <td class="title">
                     {% if choosing %}
-                        <h2><a href="{% url 'wagtaildocs:document_chosen' doc.id %}" class="document-choice">{{ video.display_name }}</a></h2>
+                        <h2><a href="{% url 'journals:video_chosen' video.id %}" class="video-choice">{{ video.display_name }}</a></h2>
                     {% else %}
                         <h2>{{ video.display_name }}</h2>
                         <ul class="actions">
@@ -43,7 +44,8 @@
                         </ul>
                     {% endif %}
                 </td>
-                <td><a href="{{ video.view_url }}" class="nolink" download>{{ video.view_url }}</a></td>
+                <td><a href="{{ video.view_url }}" class="nolink" download>View Video</a></td>
+                <td>{{ video.source_course_run }}</td>
                 <td><div class="human-readable-date" title="{{ video.created_at|date:"d M Y H:i" }}">{% blocktrans with time_period=video.created_at|timesince %}{{ time_period }} ago{% endblocktrans %}</div></td>
             </tr>
         {% endfor %}

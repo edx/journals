@@ -1,0 +1,14 @@
+{% extends "wagtailadmin/widgets/chooser.html" %}
+{% load wagtailimages_tags %}
+
+{% block chooser_class %}video-chooser{% endblock %}
+
+{% block chosen_state_view %}
+    <span class="title">
+        {% if video %}
+            {{ video.display_name }}
+        {% endif %}
+    </span>
+{% endblock %}
+
+{% block edit_chosen_item_url %}{% if video %}{% url edit_view_name video.id %}{% endif %}{% endblock %}
