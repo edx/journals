@@ -31,6 +31,7 @@ class User(AbstractUser):
     def get_full_name(self):
         return self.full_name or super(User, self).get_full_name()
 
+    @property
     def can_access_admin(self):
         return self.has_perm('wagtailadmin.access_admin')
 
