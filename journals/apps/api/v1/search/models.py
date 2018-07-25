@@ -42,7 +42,7 @@ class SearchHit(object):
     def __init__(self, journal_page, component=None):
         """
         Args:
-            journal_page: JournalPage that contains the search hit
+            journal_page: JournalPage that contains the search hit, if None it will be calculated
             component: Specific object type that contains the hit (JournalImage, JournalDocument, Video)
             If none then hit is text found in the base JournalPage itself
         """
