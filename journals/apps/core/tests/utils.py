@@ -71,7 +71,7 @@ def child_path_gen(parent_path):
         yield parent_path + child_path_suffix
 
 
-def create_journal_about_page_factory(journal_structure, about_page_slug=None):
+def create_journal_about_page_factory(journal, journal_structure, about_page_slug=None):
     """
     Creates JournalAboutPageFactory and all of its sub pages that are defined in the journal_structure
 
@@ -92,6 +92,7 @@ def create_journal_about_page_factory(journal_structure, about_page_slug=None):
     children = journal_structure['structure']
     numchild = len(children)
     about_page_factory = JournalAboutPageFactory(
+        journal=journal,
         title=title,
         path=path,
         numchild=numchild,
@@ -105,13 +106,14 @@ def create_journal_about_page_factory(journal_structure, about_page_slug=None):
             journal_page=child,
             path=next(child_path),
             depth=depth + 1,
-            slug=child['title']
+            slug=child['title'],
+            journal_about_page=about_page_factory
         )
 
     return about_page_factory
 
 
-def create_nested_journal_pages(journal_page, path, depth, slug):
+def create_nested_journal_pages(journal_page, path, depth, slug, journal_about_page):
     """
     Creates a JournalPageFactory and all its sub pages that are defined in the journal_page
 
@@ -137,7 +139,8 @@ def create_nested_journal_pages(journal_page, path, depth, slug):
         path=path,
         numchild=numchild,
         depth=depth,
-        slug=slug
+        slug=slug,
+        journal_about_page=journal_about_page,
     )
 
     child_path = child_path_gen(path)
@@ -146,7 +149,8 @@ def create_nested_journal_pages(journal_page, path, depth, slug):
             journal_page=child,
             path=next(child_path),
             depth=depth + 1,
-            slug=child['title']
+            slug=child['title'],
+            journal_about_page=journal_about_page,
         )
 
 

@@ -2,6 +2,7 @@
 
 import random
 import string
+import uuid
 
 from urllib.parse import urljoin, urlsplit, urlunsplit
 
@@ -11,7 +12,7 @@ from faker import Faker
 from wagtail.wagtailcore.models import Page, Site
 from wagtail.wagtailimages.models import Image
 
-from journals.apps.journals.models import JournalAboutPage, JournalPage
+from journals.apps.journals.models import JournalAboutPage, JournalPage, Journal, JournalAccess, Organization
 from journals.apps.core.models import SiteConfiguration, User
 from journals.apps.theming.models import SiteBranding
 
@@ -89,6 +90,32 @@ class PageFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = Page
+
+
+class OrganizationFactory(factory.DjangoModelFactory):
+    """ Model factory for Organization model """
+    name = FuzzyText(prefix='org-name')
+
+    class Meta:
+        model = Organization
+
+
+class JournalFactory(factory.DjangoModelFactory):
+    """ Model factory for Journal model """
+    uuid = uuid.uuid4()
+    name = FuzzyText(prefix='journal-name')
+
+    class Meta:
+        model = Journal
+
+
+class JournalAccessFactory(factory.DjangoModelFactory):
+    """ Model factory for JournalAccess model """
+    uuid = uuid.uuid4()
+    revoked = False
+
+    class Meta:
+        model = JournalAccess
 
 
 class JournalAboutPageFactory(factory.DjangoModelFactory):

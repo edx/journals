@@ -1,13 +1,23 @@
 """ Test Cases for /api/v1/content/ APIs """
+import datetime
 import json
 
 from django.test import TestCase
 from django.urls import reverse
 
-from journals.apps.core.tests.factories import UserFactory, USER_PASSWORD
-from journals.apps.core.tests.utils import (TEST_JOURNAL_STRUCTURE,
-                                            create_journal_about_page_factory,
-                                            is_nested_json_equivalent)
+from journals.apps.core.tests.factories import (
+    JournalFactory,
+    JournalAccessFactory,
+    OrganizationFactory,
+    SiteFactory,
+    UserFactory,
+    USER_PASSWORD
+)
+from journals.apps.core.tests.utils import (
+    TEST_JOURNAL_STRUCTURE,
+    create_journal_about_page_factory,
+    is_nested_json_equivalent
+)
 
 
 class TestContentPagesAPI(TestCase):
@@ -18,7 +28,18 @@ class TestContentPagesAPI(TestCase):
 
         self.user = UserFactory()
         self.test_about_page_slug = 'journal-about-page-slug'
+        self.site = SiteFactory()
+        self.org = OrganizationFactory(site=self.site)
+        self.journal = JournalFactory(
+            organization=self.org
+        )
+        self.journal_access = JournalAccessFactory(
+            journal=self.journal,
+            user=self.user,
+            expiration_date=datetime.date.today() + datetime.timedelta(days=1)
+        )
         self.journal_about_page = create_journal_about_page_factory(
+            journal=self.journal,
             journal_structure=self.journal_test_data,
             about_page_slug=self.test_about_page_slug
         )

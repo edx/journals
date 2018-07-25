@@ -176,20 +176,36 @@ class JournalAccess(TimeStampedModel):
         return str(self.uuid)
 
     @classmethod
-    def user_has_access(cls, user, journal):
-        """ Checks if the user has access to this journal """
+    def get_user_accessible_journal_ids(cls, user):
+        """ Finds all journals that user has access to """
+        if user.is_anonymous:
+            return []
         if user.can_access_admin:
-            return True
+            return Journal.objects.all().values_list('id', flat=True)
+        return cls.get_active_access_for_user(user).values_list('journal__id', flat=True)
 
+    @classmethod
+    def get_active_access_for_user(cls, user):
+        """ Returns all non-revoked, non-expired access grants for the user """
         access_items = cls.objects.filter(
             user=user
-        ).filter(
-            journal=journal
         ).filter(
             revoked=False
         ).filter(
             expiration_date__gte=datetime.date.today()
         )
+        return access_items
+
+    @classmethod
+    def user_has_access(cls, user, journal):
+        """ Checks if the user has access to supplied journal """
+        if user.can_access_admin:
+            return True
+
+        access_items = cls.get_active_access_for_user(user).filter(
+            journal=journal
+        )
+
         return True if access_items else False
 
     @classmethod
