@@ -77,6 +77,9 @@ class SearchViewSet(APIView):
         if not about_pages:
             return SearchResults(search_meta, hit_list)
 
+        hit_list = []
+        search_meta = SearchMetaData()
+
         if search_query:
 
             clean_query = search_query  # TODO: do we need to do any cleansing of querystring?

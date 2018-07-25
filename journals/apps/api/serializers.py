@@ -131,3 +131,17 @@ class SearchResultsSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         pass
+
+
+class SearchResultsSerializer(serializers.Serializer):
+    """
+    Serializer for SearchResults
+    """
+    meta = SearchMetaDataSerializer()
+    hits = serializers.ListSerializer(child=SearchHitSerializer())
+
+    def create(self, validated_data):
+        pass
+
+    def update(self, instance, validated_data):
+        pass
