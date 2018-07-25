@@ -68,6 +68,7 @@ class Command(BaseCommand):
             '--discovery-journal-api-url', site_data.get('discovery_api_url_for_journal'),
             '--ecommerce-journal-api-url', site_data.get('ecomm_journal_api_url'),
             '--ecommerce-public-url-root', site_data.get('ecomm_public_base_url'),
+            '--frontend-url', site_data.get('frontend_url'),
             '--theme-name', site_data.get('theme_dir_name')
         )
 
