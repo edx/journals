@@ -562,6 +562,8 @@ class JournalPage(JournalPageMixin, Page):
 
     api_fields = [
         APIField('body'),
+        APIField('previous_page_id'),
+        APIField('next_page_id'),
     ]
 
     def update_related_objects(self, clear=False):
@@ -644,6 +646,16 @@ class JournalPage(JournalPageMixin, Page):
             return None
         next_sib = parent.get_next_sibling()
         return next_sib if next_sib else parent.specific.get_next_page(children_and_sibs=False)
+
+    @property
+    def previous_page_id(self):
+        page = self.get_prev_page()
+        return page.id if page else None
+
+    @property
+    def next_page_id(self):
+        page = self.get_next_page()
+        return page.id if page else None
 
     def get_last_descendant(self):
         """
