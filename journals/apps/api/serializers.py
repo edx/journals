@@ -102,6 +102,10 @@ class SearchHitSerializer(serializers.Serializer):
     page_id = serializers.IntegerField()
     page_title = serializers.CharField()
     page_path = serializers.CharField()
+<<<<<<< 92e54e0277907a4bc992520698e914afe6daaf5b
+=======
+    page_list_other = serializers.ListSerializer(child=serializers.IntegerField())
+>>>>>>> add function to search subtypes, more clear access check, other review comments
     journal_about_page_id = serializers.IntegerField()
     journal_id = serializers.IntegerField()
     journal_name = serializers.CharField()

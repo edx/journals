@@ -66,6 +66,15 @@ class SearchHit(object):
         self.page_id = journal_page.id
         self.page_title = journal_page.title
         self.page_path = journal_page.url_path  # TODO change this to list of parent page names WL-1720
+<<<<<<< 92e54e0277907a4bc992520698e914afe6daaf5b
+=======
+        self.page_list_other = []
+        # Setup enclosing Journal
+        about_page = journal_page.get_journal_about_page()
+        self.journal_about_page_id = about_page.id
+        self.journal_id = about_page.journal.id
+        self.journal_name = about_page.title
+>>>>>>> add function to search subtypes, more clear access check, other review comments
 
     def _set_type_info(self, component):
         """
