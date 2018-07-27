@@ -32,7 +32,7 @@ from wagtail.wagtailsearch import index
 from wagtail.wagtailsearch.queryset import SearchableQuerySetMixin
 
 from journals.apps.journals.journal_page_helper import JournalPageMixin
-from journals.apps.journals.utils import get_image_url
+from journals.apps.journals.utils import get_image_url, get_default_expiration_date
 from journals.apps.core.models import User
 from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 
@@ -95,6 +95,19 @@ class Journal(models.Model):
 
     def __str__(self):
         return self.name
+
+    @classmethod
+    def get_journal_by_id(cls, journal_id):
+        """
+        Returns the journal object with given id
+        if that id is valid else returns None
+        """
+        try:
+            journal = cls.objects.get(id=journal_id)
+        except cls.DoesNotExist:
+            logger.info("Journal with '{}' id does not exist".format(str(id)))
+            journal = None
+        return journal
 
 
 class JournalMetaData(object):
@@ -207,6 +220,30 @@ class JournalAccess(TimeStampedModel):
 
         access.save()
         return access
+
+    @classmethod
+    def bulk_create_journal_access(cls, usernames, journal, expiration_date=None):
+        """
+        Bulk create the JournalAccess on the given parameters
+
+        Args:
+            usernames (set): Set of valid usernames.
+            journal_id: Journal's id on which we want to give access to users.
+            expiration_date:  Journal access' expiration date for all the users.
+        """
+        journal_access_list = []
+        expiration_date = expiration_date if expiration_date else get_default_expiration_date(journal)
+        for username in usernames:
+            user = User.get_user_by_username(username)
+            if user:
+                journal_access_list.append(
+                    cls(
+                        user=user,
+                        journal=journal,
+                        expiration_date=expiration_date
+                    )
+                )
+        cls.objects.bulk_create(journal_access_list)
 
     @classmethod
     def revoke_journal_access(cls, order_number):

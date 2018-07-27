@@ -1,0 +1,7 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls %}
+{% block object-tools-items %}
+        <li>
+            <a href="{% url 'admin:import_users' original.pk %}" class="viewsitelink">{% trans "Import Users from CSV file" %}</a>
+        </li>
+{% endblock %}

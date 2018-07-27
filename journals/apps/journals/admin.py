@@ -1,8 +1,7 @@
 """ Journals admin module """
+from django.conf.urls import url
 from django.contrib import admin
-
 from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register
-
 
 from journals.apps.journals.models import (
     Journal,
@@ -12,7 +11,7 @@ from journals.apps.journals.models import (
     Video,
 )
 from journals.apps.journals.permissions import VideoPermissionHelper
-from journals.apps.journals.views import VideoIndexView
+from journals.apps.journals.views import VideoIndexView, JournalAccessView
 
 
 # Custom admin pages
@@ -23,8 +22,21 @@ class JournalAboutPageAdmin(admin.ModelAdmin):
 
 @admin.register(Journal)
 class JournalAdmin(admin.ModelAdmin):
+    """
+    Admin for Journal model.
+    """
     fields = ('uuid', 'journalaboutpage', 'name', 'access_length', 'organization', 'video_course_ids')
     readonly_fields = ('uuid', 'journalaboutpage')
+
+    def get_urls(self):
+        my_urls = [
+            url(
+                r'(?P<journal_id>[0-9]+)/actions/import_users/',
+                self.admin_site.admin_view(JournalAccessView.as_view()),
+                name='import_users'
+            ),
+        ]
+        return my_urls + super(JournalAdmin, self).get_urls()
 
 
 @admin.register(JournalAccess)
