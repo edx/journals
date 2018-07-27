@@ -1,0 +1,31 @@
+{% extends 'admin/change_form.html' %}
+{% load i18n admin_modify static admin_urls%}
+
+{% block title %} {% trans "Import Users" %} {% endblock %}
+
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ media }}
+    <script type="text/javascript" src="{% static 'admin/js/core.js'%}"></script>
+    <script type="text/javascript" src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+    <script type="text/javascript" src="{% static 'admin/js/jquery.init.js' %}"></script>
+    {{ journal_access_form.media }}
+{% endblock%}
+
+{% block content %}
+       <h1>Import Users</h1>
+       <div id="content-main">
+          <form enctype="multipart/form-data" action="." method="POST" id="journal_form" novalidate="">
+             {% csrf_token %}
+               {{ journal_access_form.as_p }}
+                <div class="submit-row">
+                   <input type="submit" value="{% trans 'Provide Journal Access' %}" class="default" name="_save">
+                </div>
+
+                <script type="text/javascript" id="django-admin-form-add-constants" src="{% static 'admin/js/change_form.js'%}"></script>
+                <script type="text/javascript" id="django-admin-prepopulated-fields-constants" src="{% static 'admin/js/prepopulate_init.js'%}" data-prepopulated-fields="[]"></script>
+          </form>
+       </div>
+       <br class="clear">
+{% endblock %}

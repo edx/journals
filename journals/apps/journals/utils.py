@@ -1,6 +1,8 @@
 """
 Utility methods for journals
 """
+import csv
+import datetime
 import hashlib
 import six
 
@@ -47,3 +49,26 @@ def get_image_url(image, rendition='original'):
         return image.get_rendition(rendition).file.url
     else:
         return image.file.url
+
+
+def get_default_expiration_date(journal):
+    """
+    Returns the default expiration date for journal access.
+    """
+    expiration_date = ""
+    if journal:
+        expiration_date = datetime.datetime.now() + datetime.timedelta(days=journal.access_length)
+    return expiration_date
+
+
+def parse_csv(file_stream):
+    """
+    Parse csv file and return a list containing all the usernames.
+    Arguments:
+         file_stream: input file
+    Yields:
+        list: CSV line parsed into a list.
+    """
+    csv_file = csv.reader(file_stream.read().decode('utf-8').splitlines())
+    for row in csv_file:
+        yield row[0]

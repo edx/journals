@@ -1,4 +1,5 @@
 """ Core models. """
+import logging
 from urllib.parse import urljoin
 
 from django.contrib.auth.models import AbstractUser
@@ -7,6 +8,10 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from edx_rest_api_client.client import EdxRestApiClient
 from jsonfield.fields import JSONField
+from requests.exceptions import ConnectionError, Timeout        # pylint:disable=redefined-builtin
+from slumber.exceptions import SlumberBaseException, HttpClientError, HttpNotFoundError
+
+log = logging.getLogger(__name__)
 
 
 class User(AbstractUser):
@@ -34,6 +39,52 @@ class User(AbstractUser):
     @property
     def can_access_admin(self):
         return self.has_perm('wagtailadmin.access_admin')
+
+    @classmethod
+    def get_user_by_username(cls, username):
+        """
+        Returns the user object with given username
+        if that username is valid else returns None
+        """
+        try:
+            user = cls.objects.get(username=username)
+        except cls.DoesNotExist:
+            log.info("User with '{}' username does not exist".format(username))
+            user = None
+        return user
+
+    @classmethod
+    def account_details(cls, request, usernames):
+        """
+        Returns the account details from LMS.
+
+        Args:
+            request (WSGIRequest): The request from which the LMS account API endpoint is created.
+            usernames: comma separated usernames, "username1,username2,username3"
+
+        Returns:
+            List of dictionaries of account details.
+
+        Raises:
+            ConnectionError, SlumberBaseException, Timeout, HttpClientError and  HttpNotFoundError
+            for failures in establishing a connection with the LMS account API endpoint.
+        """
+        try:
+            api = EdxRestApiClient(
+                request.site.siteconfiguration.build_lms_url('/api/user/v1'),
+                append_slash=False,
+                jwt=request.site.siteconfiguration.access_token
+            )
+            response = api.accounts().get(username=usernames)
+            return response
+        except (ConnectionError, SlumberBaseException, Timeout, HttpClientError, HttpNotFoundError) as exc:
+            log.exception(
+                'Failed to retrieve account details for {usernames} due to: {exception}'.format(
+                    usernames=usernames,
+                    exception=str(exc)
+                )
+            )
+            return []
 
     @python_2_unicode_compatible
     def __str__(self):
