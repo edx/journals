@@ -25,6 +25,7 @@ class SearchHit(object):
     """
     This class encapsulates a SearchHit object
     """
+<<<<<<< 34ab1405cda878ed62d10060029bf866258acd45
     def __init__(self, search_meta_data, hit_list):
         """
         Args:
@@ -39,10 +40,12 @@ class SearchHit(object):
     """
     This class encapsulates a SearchHit object
     """
+=======
+>>>>>>> optimizations for search
     def __init__(self, journal_page, component=None):
         """
         Args:
-            journal_page: JournalPage that contains the search hit, if None it will be calculated
+            journal_page: JournalPage that contains the search hit
             component: Specific object type that contains the hit (JournalImage, JournalDocument, Video)
             If none then hit is text found in the base JournalPage itself
         """
@@ -59,6 +62,7 @@ class SearchHit(object):
         """
         Set information about Page that hit was found on
         """
+<<<<<<< 34ab1405cda878ed62d10060029bf866258acd45
         about_page = journal_page.get_journal_about_page()
         self.journal_about_page_id = about_page.id
         self.journal_id = about_page.journal.id
@@ -70,11 +74,19 @@ class SearchHit(object):
 =======
         self.page_list_other = []
         # Setup enclosing Journal
+=======
+>>>>>>> optimizations for search
         about_page = journal_page.get_journal_about_page()
         self.journal_about_page_id = about_page.id
         self.journal_id = about_page.journal.id
         self.journal_name = about_page.title
+<<<<<<< 34ab1405cda878ed62d10060029bf866258acd45
 >>>>>>> add function to search subtypes, more clear access check, other review comments
+=======
+        self.page_id = journal_page.id
+        self.page_title = journal_page.title
+        self.page_path = journal_page.url_path  # TODO change this to list of parent page names WL-1720
+>>>>>>> optimizations for search
 
     def _set_type_info(self, component):
         """
