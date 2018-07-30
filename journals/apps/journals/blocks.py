@@ -47,7 +47,6 @@ class VideoChooserBlock(blocks.ChooserBlock):
 
 class PDFBlock(blocks.StructBlock):
     """PDFBlock component"""
-    title = blocks.CharBlock(required=False, help_text='Override Document Title')
     doc = DocumentChooserBlock()
     title = blocks.CharBlock(required=False, help_text='Override document title')
 
