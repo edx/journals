@@ -1,8 +1,8 @@
 """ Theming / Site Branding Serializers"""
 from rest_framework import serializers
-from wagtail.wagtailimages.models import Image
 
 from journals.apps.theming.models import SiteBranding
+from journals.apps.journals.models import JournalImage
 
 
 class SiteLogoSerializer(serializers.ModelSerializer):
@@ -11,7 +11,7 @@ class SiteLogoSerializer(serializers.ModelSerializer):
     """
 
     class Meta(object):
-        model = Image
+        model = JournalImage
         fields = (
             'title',
             'file',

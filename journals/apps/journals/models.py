@@ -20,6 +20,7 @@ from jsonfield.fields import JSONField
 from slumber.exceptions import HttpClientError, HttpNotFoundError
 
 from wagtail.api import APIField
+
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailadmin.navigation import get_explorable_root_page
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -27,7 +28,7 @@ from wagtail.wagtailcore.fields import RichTextField, StreamField
 from wagtail.wagtailcore.models import Collection, CollectionMember, Page
 from wagtail.wagtailcore.permission_policies.collections import CollectionOwnershipPermissionPolicy
 from wagtail.wagtaildocs.models import AbstractDocument, Document
-from wagtail.wagtailimages.models import Image
+from wagtail.wagtailimages.models import AbstractImage, AbstractRendition, Image
 from wagtail.wagtailsearch import index
 from wagtail.wagtailsearch.queryset import SearchableQuerySetMixin
 
@@ -282,7 +283,7 @@ class JournalDocument(AbstractDocument):
     '''
     search_fields = AbstractDocument.search_fields + [
         index.SearchField('data', partial_match=False),
-        index.FilterField('id')
+        index.FilterField('id'),
     ]
 
     admin_form_fields = Document.admin_form_fields
@@ -297,6 +298,32 @@ class JournalDocument(AbstractDocument):
         self.file.close()
         print('in get data for file=', self.file.name)
         return contents
+
+
+class JournalImage(AbstractImage):
+    '''
+    Override the base Image model so we can index the Image contents for search
+    and add additional fields
+    '''
+    caption = models.CharField(max_length=1024, blank=True)
+
+    search_fields = AbstractImage.search_fields + [
+        index.SearchField('caption', partial_match=True),
+        index.FilterField('id'),
+    ]
+
+    admin_form_fields = Image.admin_form_fields + (
+        'caption',
+    )
+
+
+class JournalImageRendition(AbstractRendition):
+    image = models.ForeignKey(JournalImage, related_name='renditions', on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = (
+            ('image', 'filter_spec', 'focal_point_key'),
+        )
 
 
 class VideoQuerySet(SearchableQuerySetMixin, models.QuerySet):
@@ -584,7 +611,7 @@ class JournalPage(JournalPageMixin, Page):
         (VIDEO_BLOCK_TYPE, XBlockVideoBlock()),
     ], blank=True)
 
-    images = models.ManyToManyField(Image)
+    images = models.ManyToManyField(JournalImage)
     videos = models.ManyToManyField(Video)
     documents = models.ManyToManyField(JournalDocument)
 
@@ -619,6 +646,7 @@ class JournalPage(JournalPageMixin, Page):
         self.videos.set(new_videos)  # pylint: disable=no-member
         self.images.set(new_images)  # pylint: disable=no-member
         self.journal_about_page = self._calculate_journal_about_page()
+        self.save()
 
     def _get_related_objects(self, documents=True, videos=True, images=True):
         """
@@ -639,7 +667,7 @@ class JournalPage(JournalPageMixin, Page):
             elif videos and block_type == VIDEO_BLOCK_TYPE:
                 video_set.add(Video.objects.get(id=data.get('value').get('video')))
             elif images and block_type == IMAGE_BLOCK_TYPE:
-                image_set.add(Image.objects.get(id=data.get('value')))
+                image_set.add(JournalImage.objects.get(id=data.get('value').get('image')))
 
         return doc_set, video_set, image_set
 
@@ -716,10 +744,10 @@ class JournalPage(JournalPageMixin, Page):
 
     def get_journal(self):
         """ Get journal associated with this page """
-        journal_about = self._get_journal_about_page()
+        journal_about = self.get_journal_about_page()
         return journal_about.journal
 
-    def _get_journal_about_page(self):
+    def get_journal_about_page(self):
         """ Gets the journal about page field and calculates it if null """
         if not self.journal_about_page:
             self.journal_about_page = self._calculate_journal_about_page()
@@ -745,7 +773,7 @@ class JournalPage(JournalPageMixin, Page):
     def get_journal_structure(self):
         """ Returns the heirarchy of the journal as a dict """
         structure = {
-            "journal_structure": self._get_journal_about_page().structure
+            "journal_structure": self.get_journal_about_page().structure
         }
 
         return structure

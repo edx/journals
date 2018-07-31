@@ -18,6 +18,7 @@ RICH_TEXT_BLOCK_TYPE = 'rich_text'
 RAW_HTML_BLOCK_TYPE = 'raw_html'
 STREAM_DATA_TYPE_FIELD = 'type'
 STREAM_DATA_DOC_FIELD = 'doc'
+STREAM_DATA_VIDEO_FIELD = 'video'
 
 BLOCK_SPAN_ID_FORMATTER = '{block_type}-{block_id}'
 BLOCK_FORMATTER = '{block_prefix} {block}'
@@ -46,29 +47,35 @@ class VideoChooserBlock(blocks.ChooserBlock):
 
 class PDFBlock(blocks.StructBlock):
     """PDFBlock component"""
-    title = blocks.CharBlock()
     doc = DocumentChooserBlock()
+    title = blocks.CharBlock(required=False, help_text='Override document title')
+
+    def get_title(self, value):
+        return value.get('title')
+
+    def get_doc(self, value):
+        return value.get(STREAM_DATA_DOC_FIELD)
 
     @mark_safe
     def render(self, value, context=None):
         return BLOCK_FORMATTER.format(
-            block_prefix=get_block_prefix(STREAM_DATA_DOC_FIELD, value.get(STREAM_DATA_DOC_FIELD).id),
+            block_prefix=get_block_prefix(PDF_BLOCK_TYPE, self.get_doc(value).id),
             block=super(PDFBlock, self).render(value, context)
         )
-
-    def get_searchable_content(self, value):
-        return ['Document: ' + value.get('title')]
 
     class Meta:
         template = 'blocks/pdf.html'
 
+    def get_searchable_content(self, value):
+        return [self.get_title(value)]
+
     def get_api_representation(self, value, context=None):
-        block_title = value.get('title')
-        document = value.get('doc')
+        block_title = self.get_title(value)
+        document = self.get_doc(value)
+
         return {
-            'block_title': block_title,
             'doc_id': document.id,
-            'doc_title': document.title,
+            'doc_title': block_title if block_title else document.title,
             'url': document.file.url,
         }
 
@@ -97,26 +104,29 @@ class JournalRawHTMLBlock(blocks.RawHTMLBlock):
 
 class XBlockVideoBlock(blocks.StructBlock):
     """XBlockVideoBlock component"""
-    BLOCK_TYPE = 'xblock_video'
-    STREAM_DATA_FIELD = 'video'
-
-    name = blocks.CharBlock()
     video = VideoChooserBlock(required=True)
+    title = blocks.CharBlock(required=False, help_text='Override video')
+
+    def get_title(self, value):
+        return value.get('title')
+
+    def get_video(self, value):
+        return value.get(STREAM_DATA_VIDEO_FIELD)
 
     def get_context(self, value, parent_context=None):
         context = super(XBlockVideoBlock, self).get_context(value, parent_context)
         return context
 
     def get_searchable_content(self, value):
-        return ['Video: ' + value.get('name')]
+        return [self.get_title(value)]
 
     def get_api_representation(self, value, context=None):
-        block_title = value.get('name')
-        video = value.get('video')
+        block_title = self.get_title(value)
+        video = self.get_video(value)
+
         return {
-            'block_title': block_title,
             'video_id': video.id,
-            'display_name': video.display_name,
+            'display_name': block_title if block_title else video.display_name,
             'view_url': video.view_url,
             'transcript_url': video.transcript_url,
         }
@@ -127,28 +137,62 @@ class XBlockVideoBlock(blocks.StructBlock):
     @mark_safe
     def render(self, value, context=None):
         return BLOCK_FORMATTER.format(
-            block_prefix=get_block_prefix(VIDEO_BLOCK_TYPE, value.get('video').id),
+            block_prefix=get_block_prefix(VIDEO_BLOCK_TYPE, self.get_video(value).id),
             block=super(XBlockVideoBlock, self).render(value, context)
         )
 
 
-class JournalImageChooserBlock(ImageChooserBlock):
+class JournalImageChooserBlock(blocks.StructBlock):
     """ JournalImageChooserBlock component """
-    def get_searchable_content(self, value):
-        return ['Image: ' + value.title]
+    image = ImageChooserBlock()
+    title = blocks.CharBlock(required=False, help_text='Override image title')
+    caption = blocks.RichTextBlock(
+        required=False,
+        help_text='Override image caption',
+        features=['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link']
+    )
+
+    def get_image(self, value):
+        return value.get('image')
+
+    def get_title(self, value):
+        return value.get('title')
+
+    def get_caption_text(self, value):
+        block = self.get_caption_block(value)
+        return block.source if block else block
+
+    def get_caption_block(self, value):
+        return value.get('caption')
+
+    def get_image_block(self):
+        return self.child_blocks.get('image')
 
     @mark_safe
     def render(self, value, context=None):
         return BLOCK_FORMATTER.format(
-            block_prefix=get_block_prefix(IMAGE_BLOCK_TYPE, value.id),
-            block=super(JournalImageChooserBlock, self).render(value, context)
+            block_prefix=get_block_prefix(IMAGE_BLOCK_TYPE, self.get_image(value).id),
+            block=self.get_image_block().render(self.get_image(value), context)
         )
 
+    def get_searchable_content(self, value):
+        block_caption = self.get_caption_block(value)
+        if block_caption:
+            searchable_caption = parser(six.text_type(self.get_caption_text(value)), 'html.parser').get_text()
+        else:
+            searchable_caption = None
+        return [self.get_title(value), searchable_caption]
+
     def get_api_representation(self, value, context=None):
+        block_title = self.get_title(value)
+        block_caption = self.get_caption_block(value)
+        image = self.get_image(value)
+
         return {
-            'title': value.title,
-            'width': value.width,
-            'height': value.height,
-            'image_id': value.id,
-            'url': get_image_url(value),
+            'title': block_title if block_title else image.title,
+            'width': image.width,
+            'height': image.height,
+            'image_id': image.id,
+            'url': get_image_url(image),
+            'caption': self.get_caption_text(value) if block_caption else image.caption,
         }
