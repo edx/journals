@@ -6,12 +6,25 @@ import datetime
 import hashlib
 import six
 
+BLOCK_SPAN_ID_FORMATTER = '{block_type}-{block_id}'
+
 
 def make_md5_hash(value):
     if value:
         value = str(value).encode('utf-8')
         return hashlib.md5(value).hexdigest()
     return value
+
+
+def get_span_id(block_type, block_id):
+    """
+    Args:
+        block_type: e:g "image", "doc" or "xblock_video" etc
+        block_id: Id of searched object for example Id of JournalDocument or Video or Image object
+
+    Returns: block fragment identifier e.g "image-c81e728d9d4c2f636f067f89cc14862c"
+    """
+    return BLOCK_SPAN_ID_FORMATTER.format(block_type=block_type, block_id=make_md5_hash(block_id))
 
 
 def get_cache_key(**kwargs):

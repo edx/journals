@@ -3,9 +3,8 @@ This module has those template tags/filters which we use in Wagtail template ove
 """
 from django import template
 
-from journals.apps.journals.blocks import BLOCK_SPAN_ID_FORMATTER
 from journals.apps.journals.models import WagtailModelManager
-from journals.apps.journals.utils import make_md5_hash
+from journals.apps.journals.utils import get_span_id
 
 
 register = template.Library()
@@ -55,4 +54,4 @@ def get_block_fragment_identifier(block_id, block_type):
 
     Returns: block fragment identifier e.g "image-c81e728d9d4c2f636f067f89cc14862c"
     """
-    return BLOCK_SPAN_ID_FORMATTER.format(block_type=block_type, block_id=make_md5_hash(block_id))
+    return get_span_id(block_type, block_id)

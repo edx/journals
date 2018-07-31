@@ -6,10 +6,9 @@ from wagtail.wagtailcore import blocks
 from wagtail.wagtaildocs.blocks import DocumentChooserBlock
 from wagtail.wagtailimages.blocks import ImageChooserBlock
 
-from journals.apps.journals.utils import make_md5_hash
 from journals.apps.journals.models import Video
 from journals.apps.journals.widgets import AdminVideoChooser
-from journals.apps.journals.utils import get_image_url
+from journals.apps.journals.utils import get_image_url, get_span_id
 
 PDF_BLOCK_TYPE = 'pdf'
 VIDEO_BLOCK_TYPE = 'xblock_video'
@@ -20,13 +19,11 @@ STREAM_DATA_TYPE_FIELD = 'type'
 STREAM_DATA_DOC_FIELD = 'doc'
 STREAM_DATA_VIDEO_FIELD = 'video'
 
-BLOCK_SPAN_ID_FORMATTER = '{block_type}-{block_id}'
 BLOCK_FORMATTER = '{block_prefix} {block}'
 
 
-def get_block_prefix(block_type, block_id):
-    return '<span id="{}"></span>'.format(BLOCK_SPAN_ID_FORMATTER).format(block_type=block_type,
-                                                                          block_id=make_md5_hash(block_id))
+def get_block_prefix(span_id):
+    return '<span id="{}"></span>'.format(span_id)
 
 
 class VideoChooserBlock(blocks.ChooserBlock):
@@ -59,7 +56,7 @@ class PDFBlock(blocks.StructBlock):
     @mark_safe
     def render(self, value, context=None):
         return BLOCK_FORMATTER.format(
-            block_prefix=get_block_prefix(PDF_BLOCK_TYPE, self.get_doc(value).id),
+            block_prefix=get_block_prefix(get_span_id(PDF_BLOCK_TYPE, self.get_doc(value).id)),
             block=super(PDFBlock, self).render(value, context)
         )
 
@@ -77,6 +74,7 @@ class PDFBlock(blocks.StructBlock):
             'doc_id': document.id,
             'doc_title': block_title if block_title else document.title,
             'url': document.file.url,
+            'span_id': get_span_id(PDF_BLOCK_TYPE, document.id)
         }
 
 
@@ -129,6 +127,7 @@ class XBlockVideoBlock(blocks.StructBlock):
             'display_name': block_title if block_title else video.display_name,
             'view_url': video.view_url,
             'transcript_url': video.transcript_url,
+            'span_id': get_span_id(VIDEO_BLOCK_TYPE, video.id)
         }
 
     class Meta:
@@ -137,7 +136,7 @@ class XBlockVideoBlock(blocks.StructBlock):
     @mark_safe
     def render(self, value, context=None):
         return BLOCK_FORMATTER.format(
-            block_prefix=get_block_prefix(VIDEO_BLOCK_TYPE, self.get_video(value).id),
+            block_prefix=get_block_prefix(get_span_id(VIDEO_BLOCK_TYPE, self.get_video(value).id)),
             block=super(XBlockVideoBlock, self).render(value, context)
         )
 
@@ -171,7 +170,7 @@ class JournalImageChooserBlock(blocks.StructBlock):
     @mark_safe
     def render(self, value, context=None):
         return BLOCK_FORMATTER.format(
-            block_prefix=get_block_prefix(IMAGE_BLOCK_TYPE, self.get_image(value).id),
+            block_prefix=get_block_prefix(get_span_id(IMAGE_BLOCK_TYPE, self.get_image(value).id)),
             block=self.get_image_block().render(self.get_image(value), context)
         )
 
@@ -195,4 +194,5 @@ class JournalImageChooserBlock(blocks.StructBlock):
             'image_id': image.id,
             'url': get_image_url(image),
             'caption': self.get_caption_text(value) if block_caption else image.caption,
+            'span_id': get_span_id(IMAGE_BLOCK_TYPE, image.id)
         }
