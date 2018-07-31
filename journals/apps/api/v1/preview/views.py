@@ -1,18 +1,27 @@
-""" API for to get Page preview from cache """
+""" API to fetch Page preview """
 from django.core.cache import cache
 from rest_framework import status
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from journals.apps.api.permissions import WagtailAdminPermission
 
 
-@api_view(['GET'])
-def get_page_preview(request, cache_key):  # pylint: disable=unused-argument
+class PreviewViewSet(APIView):
     """
-    Get requested Page object from cache
+    View to return Journal Previews via RestAPI.
+    Will return a serialized Page object in the same
+    format as fetching page from content api via
+    /api/v1/content/pages
     """
-    if cache_key:
-        data = cache.get(cache_key)
-        if data:
-            return Response(data)
+    permission_classes = (WagtailAdminPermission, )
 
-    return Response(status=status.HTTP_404_NOT_FOUND)
+    def get(self, request, cache_key):  # pylint: disable=unused-argument
+        """
+        Get requested Page object from cache
+        """
+        if cache_key:
+            data = cache.get(cache_key)
+            if data:
+                return Response(data)
+
+        return Response(status=status.HTTP_404_NOT_FOUND)

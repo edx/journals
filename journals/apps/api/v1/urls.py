@@ -2,7 +2,7 @@
 from rest_framework.routers import DefaultRouter
 from django.conf.urls import url
 
-from journals.apps.api.v1.preview.views import get_page_preview
+from journals.apps.api.v1.preview.views import PreviewViewSet
 from journals.apps.api.v1.theming.views import SiteBrandingViewSet
 from journals.apps.api.v1.search.views import SearchViewSet
 from journals.apps.api.v1.views import CurrentUserView, JournalAccessViewSet, UserPageVisitView
@@ -22,7 +22,8 @@ urlpatterns += [
     ),
     url(
         r'^preview/(?P<cache_key>.+)/$',
-        get_page_preview
+        PreviewViewSet.as_view(),
+        name="preview"
     ),
     url(
         r'^users/current',
