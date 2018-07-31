@@ -14,3 +14,14 @@ class UserPageVisitPermission(permissions.BasePermission):
         return (
             request.user.is_staff or request.user.id == int(view.kwargs['user_id'])
         )
+
+
+class WagtailAdminPermission(permissions.BasePermission):
+    """
+    Checks whether given user has permission to access Wagtail Admin
+    """
+
+    def has_permission(self, request, view):
+        return (
+            request.user.can_access_admin
+        )
