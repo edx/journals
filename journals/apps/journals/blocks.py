@@ -72,7 +72,7 @@ class PDFBlock(blocks.StructBlock):
 
         return {
             'doc_id': document.id,
-            'doc_title': block_title if block_title else document.title,
+            'title': block_title if block_title else document.title,
             'url': document.file.url,
             'span_id': get_span_id(PDF_BLOCK_TYPE, document.id)
         }
@@ -124,7 +124,7 @@ class XBlockVideoBlock(blocks.StructBlock):
 
         return {
             'video_id': video.id,
-            'display_name': block_title if block_title else video.display_name,
+            'title': block_title if block_title else video.display_name,
             'view_url': video.view_url,
             'transcript_url': video.transcript_url,
             'span_id': get_span_id(VIDEO_BLOCK_TYPE, video.id)
