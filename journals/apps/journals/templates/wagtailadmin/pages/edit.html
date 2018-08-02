@@ -1,0 +1,7 @@
+{% extends "wagtailadmin/pages/edit.html" %}
+{% load wagtailadmin_tags staticfiles %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="{% static 'js/wagtailadmin/overrides.js' %}"></script>
+{% endblock %}

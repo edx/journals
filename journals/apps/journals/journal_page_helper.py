@@ -9,7 +9,7 @@ from journals.apps.journals.utils import get_cache_key
 
 from wagtail.api.v2.endpoints import PagesAPIEndpoint
 
-FRONTEND_PREVIEW_PATH = '/preview'
+FRONTEND_PREVIEW_PATH = 'preview'
 
 
 class JournalPageMixin(object):
@@ -73,22 +73,24 @@ class JournalPageMixin(object):
         if not request.user.is_authenticated():
             return redirect('/login/')
 
+        # if page_ptr_id not set means the preview is for a new page that
+        # hasn't been created/saved yet
+        if not self.page_ptr_id:
+            self.page_ptr_id = 0
+            self.id = 0
+
         cache_key = get_cache_key(
             uuid=str(uuid.uuid4()),
-            page_id=int(self.id)
+            page_id=int(self.page_ptr_id)
         )
 
         page_data = self.get_serializer(request).data
 
         cache.set(cache_key, page_data, 300)  # cache for 5 minutes
 
-        # Get site associated with current journal page
-        site = self.site if self.site else request.site
-        frontend_url = site.siteconfiguration.frontend_url
-
         response = redirect(
-            '{frontend_url}{preview_path}/{key}'.format(
-                frontend_url=frontend_url,
+            '{frontend_url}/{preview_path}/{key}'.format(
+                frontend_url=request.site.siteconfiguration.frontend_url,
                 preview_path=FRONTEND_PREVIEW_PATH,
                 key=cache_key
             )
