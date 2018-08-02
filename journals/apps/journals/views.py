@@ -1,109 +1,21 @@
 """
 Views for journals app
 """
-import json
 import logging
-from io import StringIO
 
 from django.conf import settings
 from django.contrib import admin, messages
-from django.contrib.auth.decorators import login_required
-from django.core import management
-from django.core.exceptions import PermissionDenied
-from django.http import Http404, JsonResponse
-from django.shortcuts import get_object_or_404, render
-from django.template.defaultfilters import linebreaks
-from django.utils.decorators import method_decorator
+from django.http import Http404
+from django.shortcuts import render
 from django.urls import reverse
-from django.utils.translation import ugettext_lazy as _
-from django.views.generic import View, TemplateView
-
-from wagtail.contrib.modeladmin.views import WMABaseView
-from wagtail.utils.pagination import paginate
-from wagtail.wagtailadmin.forms import SearchForm
-from wagtail.wagtailcore.models import Collection
+from django.views.generic import View
 
 from journals.apps.core.models import User
-from journals.apps.journals.permissions import video_permission_policy
 from journals.apps.journals.forms import UsersJournalAccessForm
-from journals.apps.journals.models import Journal, JournalAccess, Organization
-from journals.apps.journals.utils import parse_csv, get_default_expiration_date
+from journals.apps.journals.models import Journal, JournalAccess
+from journals.apps.journals.utils import get_default_expiration_date, parse_csv
 
 log = logging.getLogger(__name__)
-
-
-class VideoIndexView(WMABaseView):
-
-    def get(self, request, *args, **kwargs):
-
-        videos = video_permission_policy.instances_user_has_any_permission_for(
-            request.user, ['change', 'delete']
-        )
-
-        # Ordering
-        if 'ordering' in request.GET and request.GET['ordering'] in [
-            'source_course_run', 'display_name', '-created_at'
-        ]:
-            ordering = request.GET['ordering']
-        else:
-            ordering = '-created_at'
-        videos = videos.order_by(ordering)
-
-        # Filter by collection
-        current_collection = None
-        collection_id = request.GET.get('collection_id')
-        if collection_id:
-            try:
-                current_collection = Collection.objects.get(id=collection_id)
-                videos = videos.filter(collection=current_collection)
-            except (ValueError, Collection.DoesNotExist):
-                pass
-
-        # Search
-        query_string = None
-        if 'q' in request.GET:
-            form = SearchForm(request.GET, placeholder=_("Search videos"))
-            if form.is_valid():
-                query_string = form.cleaned_data['q']
-                videos = videos.search(query_string)
-        else:
-            form = SearchForm(placeholder=_("Search videos"))
-
-        # Pagination
-        paginator, videos = paginate(request, videos)  # pylint: disable=unused-variable
-
-        collections = video_permission_policy.collections_user_has_any_permission_for(
-            request.user, ['add', 'change']
-        )
-        if len(collections) < 2:
-            collections = None
-        action_url_name = self.url_helper.get_action_url_name('index')
-
-        # Create response
-        if request.is_ajax():
-            return render(request, 'videos/results.html', {
-                'view': self,
-                'action_url_name': action_url_name,
-                'ordering': ordering,
-                'videos': videos,
-                'query_string': query_string,
-                'is_searching': bool(query_string),
-            })
-        else:
-            return render(request, 'videos/index.html', {
-                'view': self,
-                'action_url_name': action_url_name,
-                'ordering': ordering,
-                'videos': videos,
-                'query_string': query_string,
-                'is_searching': bool(query_string),
-
-                'search_form': form,
-                'popular_tags': [],
-                'user_can_add': False,
-                'collections': collections,
-                'current_collection': current_collection,
-            })
 
 
 class JournalAccessView(View):
@@ -208,105 +120,3 @@ class JournalAccessView(View):
                 )
             )
         return render(request, self.template, self.get_context(request, journal, journal_form=journal_access_form))
-
-
-class VideoImportView(TemplateView):
-    """
-    View to support video import feature
-    """
-
-    @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        if not self.check_action_permitted(request.user):
-            raise PermissionDenied
-        return super(VideoImportView, self).dispatch(request, *args, **kwargs)
-
-    def check_action_permitted(self, user):
-        """
-        Check only users with change permissions on videos can import videos
-        """
-        return video_permission_policy.user_has_permission(user, 'change')
-
-    def get(self, request, *args, **kwargs):
-        if request.user.is_superuser:
-            journals = Journal.objects.all()
-        else:
-            organization = get_object_or_404(Organization, site=request.site)
-            journals = organization.journal_set.all()
-
-        course_runs = {journal.id: journal.video_course_ids['course_runs'] for journal in journals}
-        collections = video_permission_policy.collections_user_has_any_permission_for(
-            request.user, ['add', 'change']
-        )
-        return render(request, 'videos/import_video.html', {
-            'view': self,
-            'collections': collections,
-            'course_runs': json.dumps(course_runs),
-            'journals': journals,
-        })
-
-    def post(self, request, *args, **kwargs):
-        """
-        Calls `gather_video` command to import videos fom lms
-        """
-        journal_id = int(request.POST.get('journal'))
-        collection_id = int(request.POST.get('collection'))
-        course_runs = request.POST.getlist('course_runs')
-        stdout, stderr = StringIO(), StringIO()
-        import_status = management.call_command(
-            'gather_videos',
-            journal_ids=[journal_id],
-            course_runs=course_runs,
-            collection_id=collection_id,
-            stdout=stdout, stderr=stderr
-        )
-        success_message = stdout.getvalue()
-
-        # strip import status message from stdout to avoid duplicate message
-        success_message = success_message.replace(import_status, '')
-        return JsonResponse({
-            'journal': journal_id,
-            'import_status': import_status,
-            'success_message': linebreaks(success_message),
-            'failure_message': linebreaks(stderr.getvalue()),
-        })
-
-
-class AdminCommandsView(TemplateView):
-    """
-    View to run management commands from wagtail admin
-    """
-    template_name = 'wagtailadmin/commands.html'
-    allowed_commands = ['update_index', 'fixtree']
-
-    @method_decorator(login_required)
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            raise PermissionDenied
-        return super(AdminCommandsView, self).dispatch(request, *args, **kwargs)
-
-    def get_context_data(self, **kwargs):
-        kwargs['allowed_commands'] = self.allowed_commands
-        return kwargs
-
-    def post(self, request, *args, **kwargs):
-        """
-        Runs given management command
-        """
-        management_command = request.POST.get('management_command')
-        stdout, stderr = StringIO(), StringIO()
-        if management_command not in self.allowed_commands:
-            stderr.write('Unknown command "%s"' % management_command)
-        else:
-            try:
-                management.call_command(
-                    management_command,
-                    stdout=stdout, stderr=stderr
-                )
-            except Exception as ex:  # pylint: disable=broad-except
-                stderr.write(str(ex))
-
-        return JsonResponse({
-            'success_message': linebreaks(stdout.getvalue()),
-            'failure_message': linebreaks(stderr.getvalue()),
-        })

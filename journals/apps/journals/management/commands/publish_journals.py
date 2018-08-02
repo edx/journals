@@ -4,9 +4,11 @@ from __future__ import unicode_literals
 from hashlib import md5
 
 from django.core.management.base import BaseCommand, CommandError
-from journals.apps.journals.models import Journal, JournalIndexPage, JournalAboutPage, JournalMetaData
 from slumber.exceptions import HttpClientError
 from wagtail.wagtailcore.models import Page
+
+from journals.apps.journals.models import Journal, JournalIndexPage, JournalAboutPage, JournalMetaData, Organization
+from journals.apps.journals.api_utils import update_service, delete_from_service
 
 
 class Command(BaseCommand):
@@ -15,6 +17,8 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('--create', help='The journal name')
+        parser.add_argument('--update', help='Provide journal uuid, this will update the name and status of Journal to '
+                                             'other services')
         parser.add_argument('--org', help='Organization name (from journals-service)')
         parser.add_argument('--price', help='Journal price')
         parser.add_argument('--currency', default='USD', help='Journal currency')
@@ -42,14 +46,16 @@ class Command(BaseCommand):
             raise CommandError('--price <Journal price> must be specified')
 
         try:
-            journal = Journal.objects.create_journal(name, org, access_length)
-            journal_about_page = self._update_wagtail_pages(journal, create=True, publish=publish)
+            journal, _ = Journal.objects.get_or_create(name=name, organization=Organization.objects.get(name=org),
+                                                       defaults={'access_length': access_length})
+            journal_about_page = self._update_wagtail_pages(journal, create=True)
 
             journal_meta_data = JournalMetaData(
                 journal_about_page,
                 price=price,
                 currency=currency,
-                sku=self._create_sku(journal)
+                sku=self._create_sku(journal),
+                publish=publish,
             )
 
         except Exception as err:
@@ -75,7 +81,7 @@ class Command(BaseCommand):
 
         return journal
 
-    def _update_wagtail_pages(self, journal, create=True, publish=True):
+    def _update_wagtail_pages(self, journal, create=True):
         '''create/update associated JournalIndexPage and JournalAboutPage'''
         site = journal.organization.site
         current_root = Page.objects.get(id=site.root_page_id)
@@ -91,8 +97,7 @@ class Command(BaseCommand):
             )
             root_page.add_child(instance=index_page)
 
-            if publish:
-                index_page.save_revision().publish()
+            index_page.save_revision().publish()
 
             # now set the site root page id to point to new_index_page
             site.root_page_id = index_page.id
@@ -112,11 +117,7 @@ class Command(BaseCommand):
                 long_description=''
             )
             index_page.add_child(instance=journal_about_page)
-            if publish:
-                journal_about_page.save_revision().publish()
-            else:
-                journal_about_page.unpublish()
-
+            journal_about_page.save_revision().publish()
         return journal_about_page
 
     def _create_sku(self, journal):
@@ -135,22 +136,68 @@ class Command(BaseCommand):
         '''update the discovery service'''
         if create:
             results = api_client.journals.post(data)
-            self.stdout.write(self.style.SUCCESS('Added record to discovery-service: {}'.format(results)))
+            self.stdout.write('Added record to discovery-service: {}'.format(results))
 
     def _update_ecommerce(self, api_client, data, create=True):
         '''update the discovery service'''
         if create:
             results = api_client.journals.post(data)
-            self.stdout.write(self.style.SUCCESS('Added record to ecommerce-service: {}'.format(results)))
+            self.stdout.write('Added record to ecommerce-service: {}'.format(results))
 
     def _handle_delete(self, options):
         '''handle deletion of Journal'''
         uuid_val = options['delete']
-        journal = Journal.objects.get(uuid=uuid_val)
-        if journal:
-            journal.delete()
-        else:
+        try:
+            journal = Journal.objects.get(uuid=uuid_val)
+        except Journal.DoesNotExist:
             raise CommandError('The journal with uuid=%s could not be found', uuid_val)
+
+        configuration = journal.organization.site.siteconfiguration
+
+        if delete_from_service(configuration.discovery_journal_api_client, journal.uuid, 'discovery'):
+            self.stdout.write('Successfully Deleted Journal UUID {} from '.format(journal.uuid))
+        else:
+            self.stderr.write('Error in deleting journal UUID {} from discovery service.'.format(journal.uuid))
+
+        if delete_from_service(configuration.ecommerce_journal_api_client, journal.uuid, 'ecommerce'):
+            self.stdout.write('Successfully Deleted Journal UUID {} from ecommerce'.format(journal.uuid))
+        else:
+            self.stderr.write('Error in deleting journal UUID {} from ecommerce service.'.format(journal.uuid))
+
+        try:
+            # before deleting journal, try to delete its JournalAboutPage object
+            journal.journalaboutpage.delete()
+        except JournalAboutPage.DoesNotExist:
+            pass
+
+        journal.delete()
+
+    def _handle_update(self, options):
+        """handle update of Journal name and status"""
+        uuid = options['update']
+        publish = options['publish']
+
+        try:
+            journal = Journal.objects.get(uuid=uuid)
+        except Journal.DoesNotExist:
+            raise CommandError('The journal with uuid=%s could not be found', uuid)
+
+        configuration = journal.organization.site.siteconfiguration
+
+        discovery_data = {
+            'status': 'active' if publish else 'inactive',
+            'title': journal.name
+        }
+        if update_service(configuration.discovery_journal_api_client, journal.uuid, discovery_data, 'discovery'):
+            self.stdout.write('Successfully updated discovery service for Journal UUID {}'.format(journal.uuid))
+        else:
+            self.stderr.write('Error in updating discovery service for Journal UUID {}'.format(journal.uuid))
+
+        ecommerce_data = {'title': journal.name}
+        if update_service(configuration.ecommerce_journal_api_client, journal.uuid, ecommerce_data, 'ecommerce'):
+            self.stdout.write('Successfully Updated ecommerce service for Journal UUID {}'.format(journal.uuid))
+        else:
+            self.stderr.write('Error in updating ecommerce service for Journal UUID {}'.format(journal.uuid))
 
         return journal
 
@@ -159,11 +206,10 @@ class Command(BaseCommand):
 
         if options['create']:
             journal = self._handle_create(options)
-            self.stdout.write(self.style.SUCCESS(
-                'Successfully created Journal {} uuid={}').format(journal.name, journal.uuid))
+            self.stdout.write('Successfully created Journal {} uuid={}'.format(journal.name, journal.uuid))
         elif options['delete']:
-            journal = self._handle_delete(options)
-            self.stdout.write(self.style.SUCCESS(
-                'Successfully deleted Journal {} uuid={}').format(journal.name, journal.uuid))
+            self._handle_delete(options)
+        elif options['update']:
+            self._handle_update(options)
         else:
             raise CommandError('The proper arguments were not supplied to the command')
