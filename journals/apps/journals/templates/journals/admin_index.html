@@ -1,0 +1,12 @@
+{% extends "wagtailadmin/base.html" %}
+{% load i18n %}
+{% block titletag %}Journals{% endblock %}
+
+{% block content %}
+    {% trans "Jouranls" as doc_str %}
+    {% trans "Create New Journal" as create_new_journal_str %}
+    {% include "wagtailadmin/shared/header.html" with title=doc_str icon="doc-full" add_link=create_url_name add_text=create_new_journal_str %}
+    <div class="nice-padding">
+        {% include "journals/list.html" %}
+    </div>
+{% endblock %}

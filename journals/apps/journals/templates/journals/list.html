@@ -1,0 +1,67 @@
+{% load i18n %}
+{% load wagtail_tags %}
+<table class="listing">
+    <col />
+    <col />
+    <col width="16%" />
+    <thead>
+        <tr class="table-headers">
+            <th>
+                <a href="{{ view.index_url }}{% if not ordering == "name" %}?ordering=name{% endif %}" class="icon icon-arrow-down-after {% if  ordering == "name" %}teal{% endif %}">
+                    {% trans "Name" %}
+                </a>
+            </th>
+
+            <th>
+                <a href="{{ view.index_url }}{% if not ordering == "organization" %}?ordering=organization{% endif %}" class="icon icon-arrow-down-after {% if  ordering == "organization" %}teal{% endif %}">
+                    {% trans "Organization" %}
+                </a>
+
+            </th>
+
+            <th>
+                Access Length
+            </th>
+            <th>
+                Price
+            </th>
+            <th>
+                status
+            </th>
+
+        </tr>
+    </thead>
+    <tbody>
+        {% for journal in journals %}
+            <tr>
+                <td class="title">
+
+                    <h2>{{ journal.name }}</h2>
+                    <ul class="actions">
+                        {% get_buttons_for_obj journal as buttons %}
+                        {% for button in buttons %}
+                            <li>{% include 'modeladmin/includes/button.html' %}</li>
+                        {% endfor %}
+                    </ul>
+
+                </td>
+                <td>
+                    {{ journal.organization }}
+                </td>
+
+                <td>
+                    {{ journal.access_length }}
+                </td>
+                <td>
+                    {{ journal.currency }} {{ journal.price|default:'Not Found' }}
+                </td>
+                <td>
+                    {{ journal.status|default:'Not Found' }}
+                </td>
+
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% include "wagtailadmin/shared/pagination_nav.html" with items=journals is_searching=is_searching %}

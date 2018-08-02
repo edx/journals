@@ -54,7 +54,7 @@ class Command(BaseCommand):
         return course_runs
 
     def get_video_course_runs_for_site(self, site):
-        '''get videos for course runs'''
+        """get videos for course runs"""
         orgs = site.organization_set.all()
         course_runs = itertools.chain.from_iterable(
             [self.get_video_course_runs_per_org(org) for org in orgs]

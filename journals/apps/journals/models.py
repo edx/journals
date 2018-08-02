@@ -7,35 +7,33 @@ import json
 import logging
 import uuid
 from urllib.parse import quote, urljoin, urlparse, urlsplit, urlunsplit
-import requests
 
-from django.db import models
+import requests
 from django.core.exceptions import PermissionDenied
+from django.db import models
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
-
-from model_utils.models import TimeStampedModel
-
 from jsonfield.fields import JSONField
 from slumber.exceptions import HttpClientError, HttpNotFoundError
 from taggit.managers import TaggableManager
 
+from model_utils.models import TimeStampedModel
 from wagtail.api import APIField
-
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailadmin.navigation import get_explorable_root_page
-from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailcore.fields import RichTextField, StreamField
 from wagtail.wagtailcore.models import Collection, CollectionMember, Page
 from wagtail.wagtailcore.permission_policies.collections import CollectionOwnershipPermissionPolicy
 from wagtail.wagtaildocs.models import AbstractDocument, Document
+from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailimages.models import AbstractImage, AbstractRendition, Image
 from wagtail.wagtailsearch import index
 from wagtail.wagtailsearch.queryset import SearchableQuerySetMixin
 
+from journals.apps.core.models import User
+from journals.apps.journals.api_utils import update_service
 from journals.apps.journals.journal_page_helper import JournalPageMixin
 from journals.apps.journals.utils import get_image_url, get_default_expiration_date
-from journals.apps.core.models import User
 from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 
 logger = logging.getLogger(__name__)
@@ -118,12 +116,13 @@ class JournalMetaData(object):
     discovery-service and ecommerce-service
     NOTE: this is not a database model, just an object wrapper for metadata
     '''
-    def __init__(self, journal_about_page, price, currency, sku):
+    def __init__(self, journal_about_page, price, currency, sku, publish):
         self.journal_about_page = journal_about_page
         self.journal = journal_about_page.journal
         self.price = price
         self.currency = currency
         self.sku = sku
+        self.publish = publish
 
         # add 10 years to current date, TODO not sure how to pass NULL to
         # ecommerce post
@@ -145,7 +144,7 @@ class JournalMetaData(object):
             'card_image_url': self.journal_about_page.card_image_absolute_url,
             'short_description': self.journal_about_page.short_description,
             'full_description': self.journal_about_page.long_description,
-            'status': 'active' if self.journal_about_page.live else 'inactive',
+            'status': 'active' if self.publish else 'inactive',
             'slug': self.journal_about_page.slug,
         }
 
@@ -458,23 +457,6 @@ class JournalAboutPage(JournalPageMixin, Page):
 
     def update_related_objects(self, deactivate=False):  # pylint: disable=missing-docstring
 
-        def update_service(client, data, service_name):
-            try:
-                client.journals(self.journal.uuid).patch(data)
-            except HttpNotFoundError as err:
-                # Only a WARN because this will often happen on JournalAboutPage creation.
-                logging.warning(
-                    "JournalAboutPage unable to update {service_name} because UUID doesn't exist: {error}".format(
-                        service_name=service_name,
-                        error=err.content
-                    )
-                )
-            except HttpClientError as err:
-                logging.error("Error updating {service_name} after JournalAboutPage publish: {error}".format(
-                    service_name=service_name,
-                    error=err.content
-                ))
-
         discovery_data = {
             "status": "active" if not deactivate else "inactive",
             "card_image_url": self.card_image_absolute_url,
@@ -490,12 +472,14 @@ class JournalAboutPage(JournalPageMixin, Page):
 
         update_service(
             self.site.siteconfiguration.discovery_journal_api_client,
+            self.journal.uuid,
             discovery_data,
             "discovery"
         )
 
         update_service(
             self.site.siteconfiguration.ecommerce_journal_api_client,
+            self.journal.uuid,
             {'title': self.title},
             'ecommerce'
         )
