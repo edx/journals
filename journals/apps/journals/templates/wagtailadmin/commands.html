@@ -1,0 +1,101 @@
+{% extends "wagtailadmin/base.html" %}
+{% load i18n %}
+{% block titletag %}{% trans "Run Management commands" %}{% endblock %}
+{% block extra_css %}
+    {{ block.super }}
+    <style>
+        .status-zone {
+            text-align: left;
+        }
+        .command-status span {
+            font-weight: bold;
+        }
+        .status-msg {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+
+    <script>
+        $(function() {
+            var $commandsElement = $('#commands-container');
+            var $successElement = $('.status-msg.success', $commandsElement);
+            var $failureElement = $('.status-msg.failure', $commandsElement);
+            var $statusElement = $('.command-status span', $commandsElement);
+
+            function resetMessages(){
+                $successElement.html('');
+                $failureElement.html('');
+                $statusElement.text('');
+            };
+
+            $commandsElement.on('change', '#id_management_command', function(e) {
+                resetMessages();
+            });
+
+            $commandsElement.on('submit', 'form', function(e) {
+                e.preventDefault();
+                if (confirm('Are you sure you want to run ' + $('#id_management_command').val() + ' command?')) {
+                    var $form = $(this);
+                    var $workingElement = $('span.working', $form);
+                    var $btnElement = $('button', $form);
+                    resetMessages();
+                    $btnElement.prop("disabled", true);
+                    $statusElement.text('Running');
+                    $workingElement.addClass('icon-spinner');
+
+                    $.post(this.action, $form.serialize(), function (data) {
+                        $successElement.html(data.success_message);
+                        $failureElement.html(data.failure_message);
+                    }).fail(function () {
+                        $failureElement.html('{% trans "There was an error while running command."%}');
+                        $statusElement.text('Failed');
+                    }).always(function () {
+                        $statusElement.text('Finished');
+                        $workingElement.removeClass('icon-spinner');
+                        $btnElement.prop("disabled", false);
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    {% trans "Run Management commands" as action_str %}
+    {% include "wagtailadmin/shared/header.html" with title=action_str icon="media-full-inverse" %}
+
+    <div class="nice-padding" id="commands-container">
+        <div class="drop-zone">
+            <form action="{% url 'run-admin-commands' %}" method="POST">
+                {% csrf_token %}
+                <ul class="fields">
+                    <li class="message">{{ action_str }}</li>
+                    <li>
+                        <label for="id_management_command">{% trans "Command:" %}</label>
+                        <div class="field-content">
+                            <select id="id_management_command" name="management_command">
+                                {% for command in allowed_commands %}
+                                    <option value="{{ command }}">{{ command }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="working icon"></span><button type="submit" class="button bicolor icon icon-cogs">{% trans "Run Command" %}</button>
+                    </li>
+                </ul>
+            </form>
+        </div>
+        <div><hr></div>
+        <div class="drop-zone status-zone">
+            <div class="command-status"><p>{% trans "Command Status:" %}&nbsp;<span></span></p></div>
+            <div class="status-msg success"></div>
+            <div class="status-msg failure"></div>
+        </div>
+    </div>
+{% endblock %}
