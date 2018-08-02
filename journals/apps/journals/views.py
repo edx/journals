@@ -1,16 +1,22 @@
 """
 Views for journals app
 """
+import json
 import logging
+from io import StringIO
 
-from django.contrib import admin
-from django.contrib import messages
-from django.views.generic import View
-from django.shortcuts import render
+from django.conf import settings
+from django.contrib import admin, messages
+from django.contrib.auth.decorators import login_required
+from django.core import management
+from django.core.exceptions import PermissionDenied
+from django.http import Http404, JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.template.defaultfilters import linebreaks
+from django.utils.decorators import method_decorator
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
-from django.conf import settings
-from django.http import Http404
+from django.views.generic import View, TemplateView
 
 from wagtail.contrib.modeladmin.views import WMABaseView
 from wagtail.utils.pagination import paginate
@@ -20,7 +26,7 @@ from wagtail.wagtailcore.models import Collection
 from journals.apps.core.models import User
 from journals.apps.journals.permissions import video_permission_policy
 from journals.apps.journals.forms import UsersJournalAccessForm
-from journals.apps.journals.models import Journal, JournalAccess
+from journals.apps.journals.models import Journal, JournalAccess, Organization
 from journals.apps.journals.utils import parse_csv, get_default_expiration_date
 
 log = logging.getLogger(__name__)
@@ -202,3 +208,65 @@ class JournalAccessView(View):
                 )
             )
         return render(request, self.template, self.get_context(request, journal, journal_form=journal_access_form))
+
+
+class VideoImportView(TemplateView):
+    """
+    View to support video import feature
+    """
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        if not self.check_action_permitted(request.user):
+            raise PermissionDenied
+        return super(VideoImportView, self).dispatch(request, *args, **kwargs)
+
+    def check_action_permitted(self, user):
+        """
+        Check only users with change permissions on videos can import videos
+        """
+        return video_permission_policy.user_has_permission(user, 'change')
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            journals = Journal.objects.all()
+        else:
+            organization = get_object_or_404(Organization, site=request.site)
+            journals = organization.journal_set.all()
+
+        course_runs = {journal.id: journal.video_course_ids['course_runs'] for journal in journals}
+        collections = video_permission_policy.collections_user_has_any_permission_for(
+            request.user, ['add', 'change']
+        )
+        return render(request, 'videos/import_video.html', {
+            'view': self,
+            'collections': collections,
+            'course_runs': json.dumps(course_runs),
+            'journals': journals,
+        })
+
+    def post(self, request, *args, **kwargs):
+        """
+        Calls `gather_video` command to import videos fom lms
+        """
+        journal_id = int(request.POST.get('journal'))
+        collection_id = int(request.POST.get('collection'))
+        course_runs = request.POST.getlist('course_runs')
+        stdout, stderr = StringIO(), StringIO()
+        import_status = management.call_command(
+            'gather_videos',
+            journal_ids=[journal_id],
+            course_runs=course_runs,
+            collection_id=collection_id,
+            stdout=stdout, stderr=stderr
+        )
+        success_message = stdout.getvalue()
+
+        # strip import status message from stdout to avoid duplicate message
+        success_message = success_message.replace(import_status, '')
+        return JsonResponse({
+            'journal': journal_id,
+            'import_status': import_status,
+            'success_message': linebreaks(success_message),
+            'failure_message': linebreaks(stderr.getvalue()),
+        })

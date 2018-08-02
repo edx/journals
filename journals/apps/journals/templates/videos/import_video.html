@@ -1,0 +1,150 @@
+{% extends "wagtailadmin/base.html" %}
+{% load i18n %}
+{% load wagtailimages_tags %}
+{% block titletag %}{% trans "Import Videos for a journal" %}{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <style>
+        .course-runs li {
+            margin: 6px;
+            text-align: left;
+        }
+        .course-runs label {
+            float: none;
+        }
+        .import-status {
+            text-align: left;
+        }
+        .import-status span {
+            font-weight: bold;
+        }
+        .status-msg {
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+        }
+    </style>
+{% endblock %}
+{% block extra_js %}
+    {{ block.super }}
+
+    <script>
+        $(function() {
+            var courseRuns = $.parseJSON('{{ course_runs|safe }}');
+            var $importElement = $('#import-videos-container');
+            function renderCourseRuns() {
+                var journalId = $('#id_import_video_journal').val();
+                var journalCourseRuns = $(courseRuns).prop(journalId);
+                var $courseRunsContainer = $('ul.course-runs', $importElement);
+                $('li', $courseRunsContainer).not(':first').remove();
+                $($courseRunsContainer).append('<li><hr /></li>');
+                $.each(journalCourseRuns, function(index, courseRun) {
+                    $($courseRunsContainer).append(
+                        '<li><input type="checkbox" name="course_runs" value="'+ courseRun +'" id="course_run_' + index +'"><label for="course_run_' + index +'">'+ courseRun +'</label></li>'
+                    );
+                });
+            };
+            function toggleCheckboxes(){
+                var select_all = $('#course_run_all').prop('checked');
+                $(".course-runs input").not('#course_run_all').prop('checked', select_all);
+            };
+            $importElement.on('change', '#course_run_all', function(e) {
+                toggleCheckboxes();
+            });
+            $importElement.on('change', '#id_import_video_journal', function(e) {
+                renderCourseRuns();
+                toggleCheckboxes()
+            });
+            renderCourseRuns();
+            $importElement.on('submit', 'form', function(e) {
+                var $form = $(this);
+                if ($(".course-runs input:checked", $form).length == 0) {
+                    alert('{% trans "Please select a course run" %}');
+                    return false;
+                }
+                var $successElement = $('.status-msg.success', $importElement);
+                var $failureElement = $('.status-msg.failure', $importElement);
+                var $statusElement = $('.import-status span', $importElement);
+                var $workingElement = $('span.working', $form);
+                var $btnElement = $('button', $form);
+                $btnElement.prop("disabled", true);
+                $statusElement.text('In Progress');
+                $successElement.html('');
+                $failureElement.html('');
+                e.preventDefault();
+                $workingElement.addClass('icon-spinner');
+                $.post(this.action, $form.serialize(), function(data) {
+                    $successElement.html(data.success_message);
+                    $failureElement.html(data.failure_message);
+                    $statusElement.text(data.import_status);
+                }).fail(function() {
+                    $failureElement.html('{% trans "Failed to import videos."%}');
+                    $statusElement.text('Failed');
+                }).always(function() {
+                    $workingElement.removeClass('icon-spinner');
+                    $btnElement.prop("disabled", false);
+                });
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    {% trans "Import Videos for a journal" as action_str %}
+    {% include "wagtailadmin/shared/header.html" with title=action_str icon="media-full-inverse" %}
+
+    <div class="nice-padding" id="import-videos-container">
+        <div class="drop-zone">
+            <form action="{% url 'journals:import_videos' %}" method="POST">
+                {% csrf_token %}
+                <ul class="fields">
+                    <li class="message">{% trans "Import Videos" %}</li>
+                    {% if journals %}
+                        <li>
+                            <label for="id_import_video_journal">{% trans "Add to journal:" %}</label>
+                            <div class="field-content">
+                                <select id="id_import_video_journal" name="journal">
+                                    {% for journal in journals %}
+                                        <option value="{{ journal.id }}">{{ journal.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </li>
+                    {% endif %}
+                    <li>
+                        <label for="id_import_video_collection">{% trans "Add to collection:" %}</label>
+                        <div class="field-content">
+                            <select id="id_import_video_collection" name="collection">
+                                {% for collection in collections %}
+                                    <option value="{{ collection.id }}">{{ collection.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </li>
+                    <li>
+                        <label>{% trans "Course runs:" %}</label>
+                        <div class="field-content">
+                            <ul class="field-content course-runs">
+                                <li>
+                                    <input type="checkbox" name="course_runs_all" value="" id="course_run_all">
+                                    <label for="course_run_all">All</label>
+                                    <span class="help">{% trans "Select course runs to import videos from" %}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="working icon"></span><button type="submit" class="button bicolor icon icon-plus">{% trans "Import Videos" %}</button>
+                    </li>
+                </ul>
+            </form>
+        </div>
+        <div><hr></div>
+        <div class="drop-zone status-zone">
+            <div class="import-status"><p>{% trans "Import Status:" %}&nbsp;<span></span></p></div>
+            <div class="status-msg success"></div>
+            <div class="status-msg failure"></div>
+        </div>
+    </div>
+{% endblock %}
