@@ -1,5 +1,6 @@
 """ Helpers for Journal Page Types """
 import uuid
+from urllib.parse import urljoin
 from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import redirect
@@ -101,6 +102,25 @@ class JournalPageMixin(object):
 
         return serializer
 
+    def serve(self, request, *args, **kwargs):
+        """
+        Override serve to redirect to frontend app
+        This gets called whenever a page is requested to be viewed live
+        from the Wagtail admin
+        """
+        if not settings.FRONTEND_ENABLED:
+            return super(JournalPageMixin, self).serve(request, args, kwargs)
+
+        response = redirect(
+            urljoin(
+                request.site.siteconfiguration.frontend_url,
+                self.get_frontend_page_path()
+            )
+        )
+
+        add_never_cache_headers(response)
+        return response
+
     def serve_preview(self, request, mode_name):
         """
         This method gets called from Wagtail when a page is previewed.
@@ -129,10 +149,12 @@ class JournalPageMixin(object):
         cache.set(cache_key, page_data, 300)  # cache for 5 minutes
 
         response = redirect(
-            '{frontend_url}/{preview_path}/{key}'.format(
-                frontend_url=request.site.siteconfiguration.frontend_url,
-                preview_path=FRONTEND_PREVIEW_PATH,
-                key=cache_key
+            urljoin(
+                request.site.siteconfiguration.frontend_url,
+                '{preview_path}/{key}'.format(
+                    preview_path=FRONTEND_PREVIEW_PATH,
+                    key=cache_key
+                )
             )
         )
         add_never_cache_headers(response)
