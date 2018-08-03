@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from journals.apps.api.permissions import WagtailAdminPermission
 
 
-class PreviewViewSet(APIView):
+class PreviewView(APIView):
     """
     View to return Journal Previews via RestAPI.
     Will return a serialized Page object in the same

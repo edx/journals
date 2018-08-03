@@ -46,7 +46,7 @@ OPERATOR_OR = 'or'
 OPERATOR_AND = 'and'
 
 
-class SearchViewSet(APIView):
+class SearchView(APIView):
     """
     View to return Journal SearchResults via RestAPI
     """
