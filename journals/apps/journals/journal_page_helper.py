@@ -15,7 +15,7 @@ FRONTEND_PREVIEW_PATH = 'preview'
 class JournalPageMixin(object):
     """ This class contains methods that are shared between Journal Page Types """
 
-    def get_nested_children(self):
+    def get_nested_children(self, live_only=True):
         """ Return dict hierarchy with self as root """
 
         # TODO: can remove "url" field once we move to seperated front end
@@ -29,7 +29,12 @@ class JournalPageMixin(object):
         if not children:
             return structure
 
-        structure["children"] = [child.specific.get_nested_children() for child in children]
+        structure["children"] = [
+            child.specific.get_nested_children(live_only=live_only)
+            for child in children
+            if not live_only or child.live
+        ]
+        
         return structure
 
     def get_serializer(self, request):
