@@ -1,6 +1,5 @@
 """ Helpers for Journal Page Types """
 import uuid
-import logging
 from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import redirect
