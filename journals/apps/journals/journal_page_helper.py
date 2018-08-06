@@ -9,7 +9,6 @@ from django.utils.cache import add_never_cache_headers
 from journals.apps.journals.utils import get_cache_key
 
 from wagtail.api.v2.endpoints import PagesAPIEndpoint
-logger = logging.getLogger(__name__)
 
 FRONTEND_PREVIEW_PATH = 'preview'
 
