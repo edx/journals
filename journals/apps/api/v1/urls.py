@@ -5,21 +5,17 @@ from django.conf.urls import url
 from journals.apps.api.v1.preview.views import PreviewView
 from journals.apps.api.v1.theming.views import SiteBrandingViewSet
 from journals.apps.api.v1.search.views import SearchView
-from journals.apps.api.v1.views import CurrentUserView, JournalAccessViewSet, UserPageVisitView
+from journals.apps.api.v1.views import CurrentUserView, JournalAccessViewSet, UserPageVisitViewSet
 
 
 router = DefaultRouter()
 router.register(r'journalaccess', JournalAccessViewSet, base_name='journalaccess')
 router.register(r'sitebranding', SiteBrandingViewSet, base_name='sitebranding')
+router.register(r'userpagevisits', UserPageVisitViewSet, base_name='userpagevisit')
 
 urlpatterns = router.urls
 
 urlpatterns += [
-    url(
-        r'^users/(?P<user_id>[\d]+)/pagevisits',
-        UserPageVisitView.as_view(),
-        name="userpagevisit"
-    ),
     url(
         r'^preview/(?P<cache_key>.+)/$',
         PreviewView.as_view(),

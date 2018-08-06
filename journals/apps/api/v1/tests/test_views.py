@@ -22,13 +22,18 @@ class TestUserPageVisitView(TestCase):
         self.user = UserFactory()
         self.page = PageFactory(path="002", numchild=1)
         self.other_page = PageFactory(path="002001", numchild=0)
-        self.path = reverse("api:v1:userpagevisit", kwargs={'user_id': self.user.id})
+        self.path = reverse('api:v1:userpagevisit-list')
         self.client.login(username=self.user.username, password='password')
 
     def _create_user_page_visit(self, user, page):
         """
-        Created the UserPageVisit's object with the given user and page objects.
+        Created the UserPageVisit's object with the given user and page objects. We temporarily change user to staff
+        because POSTs are protected and only staff can create posts for other users.
         """
+        staff_state = self.user.is_staff
+        self.user.is_staff = True
+        self.user.save()
+
         self.client.post(
             self.path,
             {
@@ -36,6 +41,9 @@ class TestUserPageVisitView(TestCase):
                 "page": page.id,
             }
         )
+
+        self.user.is_staff = staff_state
+        self.user.save()
 
     def _assert_user_page_visit(self, response, user, page):
         """
@@ -80,7 +88,7 @@ class TestUserPageVisitView(TestCase):
         """
         self._create_user_page_visit(self.user, self.page)
         self._create_user_page_visit(self.user, self.other_page)
-        path_with_parameters = "{path}/?page_id={page_id}".format(
+        path_with_parameters = "{path}?page_id={page_id}".format(
             path=self.path,
             page_id=self.other_page.id
         )
@@ -93,7 +101,7 @@ class TestUserPageVisitView(TestCase):
         """
         self._create_user_page_visit(self.user, self.other_page)
         self._create_user_page_visit(self.user, self.page)
-        path_with_parameters = "{path}/?last_visit=true".format(
+        path_with_parameters = "{path}?last_visit=true".format(
             path=self.path,
         )
         response = self.client.get(path_with_parameters)
@@ -125,12 +133,18 @@ class TestUserPageVisitView(TestCase):
         # non-staff user can not get any other user's visits
         other_user = UserFactory()
         self._create_user_page_visit(other_user, self.page)
-        path = reverse("api:v1:userpagevisit", kwargs={'user_id': other_user.id})
-        response = self.client.get(path)
-        self.assertEqual(response.status_code, 403)
+        path_with_parameters = "{path}?page_id={page_id}&user_id={user_id}".format(
+            path=self.path,
+            page_id=self.page.id,
+            user_id=other_user.id,
+        )
+        response = self.client.get(path_with_parameters)
+        self.assertEqual(response.status_code, 200)
+        response_data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(len(response_data), 0)
 
         # staff user can get any user's visits.
         self.user.is_staff = True
         self.user.save()
-        response = self.client.get(path)
+        response = self.client.get(path_with_parameters)
         self._assert_user_page_visit(response, other_user, self.page)

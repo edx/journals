@@ -46,3 +46,8 @@ DATABASES = {
     },
 }
 # END TEST DATABASE
+
+# Docker does not support the syslog socket at /dev/log. Rely on the console.
+LOGGING['handlers']['local'] = {
+    'class': 'logging.NullHandler',
+}

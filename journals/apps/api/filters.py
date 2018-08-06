@@ -66,6 +66,7 @@ class JournalAccessFilter(filters.FilterSet):
 class UserPageVisitFilter(filters.FilterSet):
     """ Filter for UserPageVisit """
     page_id = filters.CharFilter(name='page_id')
+    user_id = filters.CharFilter(name='user_id')
     last_visit = filters.BooleanFilter(name='last_visit', method='get_last_visit')
 
     def get_last_visit(self, queryset, name, value):  # pylint: disable=unused-argument
@@ -78,6 +79,7 @@ class UserPageVisitFilter(filters.FilterSet):
         model = UserPageVisit
         fields = [
             'page_id',
+            'user_id',
             'last_visit'
         ]
 

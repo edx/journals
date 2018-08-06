@@ -5,7 +5,7 @@ import logging
 from collections import OrderedDict
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework import generics
 
@@ -71,16 +71,42 @@ class JournalAccessViewSet(viewsets.ModelViewSet):
         return HttpResponse()
 
 
-class UserPageVisitView(generics.ListCreateAPIView):
-    """API view for UserPageVisit model"""
+class UserPageVisitViewSet(
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+    """API for UserPageVisit model. Disabled `retrieve` and `destroy` by excluding their mixins"""
     serializer_class = UserPageVisitSerializer
     filter_backends = (DjangoFilterBackend,)
     filter_class = UserPageVisitFilter
     permission_classes = (IsAuthenticated, UserPageVisitPermission)
 
     def get_queryset(self):
-        user_id = self.kwargs['user_id']
-        return UserPageVisit.objects.filter(user_id=user_id).order_by("-visited_at")
+        """ Only return user's results unless user if staff """
+        if self.request.user.is_staff:
+            return UserPageVisit.objects.all().order_by("-visited_at")
+        return UserPageVisit.objects.filter(user_id=self.request.user.id).order_by("-visited_at")
+
+    def create(self, request, *args, **kwargs):
+        """
+        Overriding to allow POST calls to endpoint to create OR update. We want to update items by a combination
+        of user_id and page_id POST data instead of the /<primary_key> URL pattern.
+        """
+        try:
+            user = int(request.data.get('user'))
+            page = int(request.data.get('page'))
+        except ValueError:
+            return HttpResponseBadRequest("Must supply user and page")
+
+        try:
+            visit = UserPageVisit.objects.get(user_id=user, page_id=page)
+        except UserPageVisit.DoesNotExist:
+            return super().create(request, *args, **kwargs)
+        else:
+            self.kwargs['pk'] = visit.id
+            return super().update(request, *args, **kwargs)
 
 
 class ManualPageSerializerViewSet(viewsets.GenericViewSet):
