@@ -535,12 +535,16 @@ class JournalAboutPage(JournalPageMixin, Page):
 
     @property
     def structure(self):
-        """ Returns hierarchy of the journal as a dict """
+        """ Returns hierarchy of published journal pages as a dict """
         journal_structure = [
-            journal_page.specific.get_nested_children(live_only=True)
-            for journal_page
-            in self.get_children()
-            if self.live
+            struct for struct in
+            (
+                journal_page.specific.get_nested_children(live_only=True)
+                for journal_page in self.get_children()
+                if self.get_descendants().live().count() > 0
+            )
+            if struct is not None
+
         ]
 
         return journal_structure
@@ -689,15 +693,18 @@ class JournalPage(JournalPageMixin, Page):
         Get the previous page for navigation. Search order is previous sibling's last descendant,
         previous sibling, then parent
         """
-        # prev_sib = self.get_prev_sibling()
-        prev_sib = self.get_prev_siblings().live().first() if live_only else self.get_prev_siblings().first()
+        prev_sib = self.get_prev_siblings().first()
         if prev_sib:
             last_child = prev_sib.specific.get_last_descendant(live_only=live_only)
             return last_child if last_child else prev_sib
 
-        parent = self.get_parent()
-        return parent if parent and (not live_only or parent.live) \
-            and isinstance(parent.specific, JournalPage) else None
+        prev_ancestor = self.get_ancestors().last()
+        if prev_ancestor and isinstance(prev_ancestor.specific, JournalPage):
+            return prev_ancestor if \
+                (not live_only or live_only and prev_ancestor.specific.live) else \
+                prev_ancestor.specific.get_prev_page(live_only=live_only)
+        else:
+            return None
 
     def get_next_page(self, children_and_sibs=True, live_only=True):
         """
@@ -706,20 +713,24 @@ class JournalPage(JournalPageMixin, Page):
         """
         if children_and_sibs:
             next_child = self.get_descendants().live().first() if live_only else self.get_descendants().first()
-            next_sib = self.get_next_siblings().live().first() if live_only else self.get_next_siblings().first()
+            if next_child:
+                return next_child
 
-            if next_child or next_sib:
-                return next_child or next_sib
+            next_sib = self.get_next_sibling()
+            if next_sib:
+                return next_sib if (not live_only or live_only and next_sib.live) \
+                    else next_sib.specific.get_next_page(children_and_sibs=True, live_only=live_only)
 
-        # no direct children or siblings, now lets recursively check parent's siblings
-        # import pdb; pdb.set_trace()
+        #  no direct children or siblings, now lets recursively check parent's siblings
         parent = self.get_parent()
-        # TODO: can a page be live if it's parent is not live? If so we need to find first live parent
-        if not isinstance(parent.specific, JournalPage) or (live_only and not parent.live):            
+        if not isinstance(parent.specific, JournalPage):
             return None
-        next_sib = parent.get_next_sibling().live() if live_only else parent.get_next_sibling()
-        return next_sib if next_sib \
-            else parent.specific.get_next_page(children_and_sibs=False, live_only=live_only)
+        next_sib = parent.get_next_sibling()
+        if next_sib:
+            return next_sib if (not live_only or live_only and next_sib.live) \
+                else next_sib.specific.get_next_page(children_and_sibs=True, live_only=live_only)
+        else:
+            return parent.specific.get_next_page(children_and_sibs=False, live_only=True)
 
     @property
     def previous_page_id(self):

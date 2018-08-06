@@ -1,5 +1,6 @@
 """ Helpers for Journal Page Types """
 import uuid
+import logging
 from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import redirect
@@ -8,6 +9,7 @@ from django.utils.cache import add_never_cache_headers
 from journals.apps.journals.utils import get_cache_key
 
 from wagtail.api.v2.endpoints import PagesAPIEndpoint
+logger = logging.getLogger(__name__)
 
 FRONTEND_PREVIEW_PATH = 'preview'
 
@@ -15,7 +17,7 @@ FRONTEND_PREVIEW_PATH = 'preview'
 class JournalPageMixin(object):
     """ This class contains methods that are shared between Journal Page Types """
 
-    def get_nested_children(self, live_only=True):
+    def get_nested_children_orig(self, live_only=True):
         """ Return dict hierarchy with self as root """
 
         # TODO: can remove "url" field once we move to seperated front end
@@ -25,6 +27,7 @@ class JournalPageMixin(object):
             "id": self.id,
             "url": self.url
         }
+
         children = self.get_children()
         if not children:
             return structure
@@ -32,9 +35,47 @@ class JournalPageMixin(object):
         structure["children"] = [
             child.specific.get_nested_children(live_only=live_only)
             for child in children
-            if not live_only or child.live
         ]
-        
+
+        return structure
+
+    def get_nested_children(self, live_only=True):
+        """ Return dict hierarchy with self as root """
+
+        # TODO: can remove "url" field once we move to seperated front end
+        if self.live:
+            structure = {
+                "title": self.title,
+                "children": None,
+                "id": self.id,
+                "url": self.url
+            }
+        else:
+            structure = None
+
+        children = self.get_children()
+        if not children or (live_only and self.get_descendants().live().count() == 0):
+            return structure
+
+        if structure:
+            structure["children"] = [
+                struct for struct in
+                (
+                    child.specific.get_nested_children(live_only=live_only)
+                    for child in children
+                )
+                if struct is not None
+            ]
+        else:
+            structure = [
+                struct for struct in
+                (
+                    child.specific.get_nested_children(live_only=live_only)
+                    for child in children
+                )
+                if struct is not None
+            ]
+
         return structure
 
     def get_serializer(self, request):
