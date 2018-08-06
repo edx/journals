@@ -586,7 +586,7 @@ class JournalIndexPage(JournalPageMixin, Page):
 
     @property
     def site(self):
-        about_page = self.get_first_child().live()
+        about_page = self.get_first_child()
         if about_page:
             return about_page.specific.site
         else:
