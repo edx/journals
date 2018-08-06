@@ -544,8 +544,8 @@ class JournalAboutPage(JournalPageMixin, Page):
                 if self.get_descendants().live().count() > 0
             )
             if struct is not None
-
         ]
+        journal_structure = self.flatten_children(journal_structure)
 
         return journal_structure
 

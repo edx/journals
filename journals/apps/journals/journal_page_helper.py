@@ -15,6 +15,22 @@ FRONTEND_PREVIEW_PATH = 'preview'
 class JournalPageMixin(object):
     """ This class contains methods that are shared between Journal Page Types """
 
+    def flatten_children(self, children):
+        """
+        Children should always be a list of dicts. In the case that a there is an unpublished page between two
+        published pages, the unpublished page will simply be a list of it's children, instead of a dict of it's
+        content, plus a children field. This flattens that list of children into the parent list children to keep
+        a valid tree structure.
+        """
+        flat_children = []
+        for child in children:
+            if isinstance(child, dict):
+                flat_children.append(child)
+            elif isinstance(child, list):
+                for subchild in child:
+                    flat_children.append(subchild)
+        return flat_children
+
     def get_nested_children(self, live_only=True):
         """ Return dict hierarchy with self as root """
 
@@ -34,7 +50,7 @@ class JournalPageMixin(object):
             return structure
 
         if structure:
-            structure["children"] = [
+            structure_children = [
                 struct for struct in
                 (
                     child.specific.get_nested_children(live_only=live_only)
@@ -42,6 +58,7 @@ class JournalPageMixin(object):
                 )
                 if struct is not None
             ]
+            structure["children"] = self.flatten_children(structure_children)
         else:
             structure = [
                 struct for struct in
@@ -51,6 +68,7 @@ class JournalPageMixin(object):
                 )
                 if struct is not None
             ]
+            structure = self.flatten_children(structure)
 
         return structure
 
