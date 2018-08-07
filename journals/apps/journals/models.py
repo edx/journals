@@ -378,6 +378,24 @@ class Video(CollectionMember, index.Indexed, models.Model):
                     url=self.transcript_url, err=err))
             return None
 
+    @property
+    def view_access_url(self):
+        '''
+        Return the url to access the video on LMS based on the Journal that the video
+        is found in.
+        '''
+        journal_page = JournalPage.objects.filter(videos=self).live().distinct().first()
+        journal_uuid = journal_page.get_journal().uuid if journal_page else 0
+
+        url = self.view_url.replace(
+            "xblock",
+            "journals/render_journal_block"
+        )
+        return "{url}?journal_uuid={journal_uuid}".format(
+            url=url,
+            journal_uuid=journal_uuid
+        )
+
     def __str__(self):
         return self.display_name
 

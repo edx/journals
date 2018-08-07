@@ -125,7 +125,7 @@ class XBlockVideoBlock(blocks.StructBlock):
         return {
             'video_id': video.id,
             'title': block_title if block_title else video.display_name,
-            'view_url': video.view_url,
+            'view_url': video.view_access_url,
             'transcript_url': video.transcript_url,
             'span_id': get_span_id(VIDEO_BLOCK_TYPE, video.id)
         }
