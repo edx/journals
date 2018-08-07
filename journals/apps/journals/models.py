@@ -549,6 +549,9 @@ class JournalAboutPage(JournalPageMixin, Page):
 
         return journal_structure
 
+    def get_frontend_page_path(self):
+        return '{about_page_id}/about'.format(about_page_id=self.id)
+
 
 class JournalIndexPage(JournalPageMixin, Page):
     """
@@ -591,6 +594,10 @@ class JournalIndexPage(JournalPageMixin, Page):
             return about_page.specific.site
         else:
             return None
+
+    def get_frontend_page_path(self):
+        # index page is just at / in frontend app
+        return ''
 
 
 class JournalPage(JournalPageMixin, Page):
@@ -751,6 +758,12 @@ class JournalPage(JournalPageMixin, Page):
             return self.get_descendants().live().last()
         else:
             return self.get_descendants().last()
+
+    def get_frontend_page_path(self):
+        return '{about_page_id}/pages/{page_id}'.format(
+            about_page_id=self.get_journal_about_page().id,
+            page_id=self.id
+        )
 
     def serve(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
