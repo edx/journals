@@ -15,7 +15,7 @@ class PreviewView(APIView):
     """
     permission_classes = (WagtailAdminPermission, )
 
-    def get(self, request, cache_key):  # pylint: disable=unused-argument
+    def get(self, request, cache_key):
         """
         Get requested Page object from cache
         """

@@ -535,12 +535,17 @@ class JournalAboutPage(JournalPageMixin, Page):
 
     @property
     def structure(self):
-        """ Returns hierarchy of the journal as a dict """
+        """ Returns hierarchy of published journal pages as a dict """
         journal_structure = [
-            journal_page.specific.get_nested_children()
-            for journal_page
-            in self.get_children()
+            struct for struct in
+            (
+                journal_page.specific.get_nested_children(live_only=True)
+                for journal_page in self.get_children()
+                if self.get_descendants().live().count() > 0
+            )
+            if struct is not None
         ]
+        journal_structure = self.flatten_children(journal_structure)
 
         return journal_structure
 
@@ -683,37 +688,50 @@ class JournalPage(JournalPageMixin, Page):
 
         return context
 
-    def get_prev_page(self):
+    def get_prev_page(self, live_only=True):
         """
         Get the previous page for navigation. Search order is previous sibling's last descendant,
         previous sibling, then parent
         """
-        prev_sib = self.get_prev_sibling()
+        prev_sib = self.get_prev_siblings().first()
         if prev_sib:
-            last_child = prev_sib.specific.get_last_descendant()
+            last_child = prev_sib.specific.get_last_descendant(live_only=live_only)
             return last_child if last_child else prev_sib
 
-        parent = self.get_parent()
-        return parent if parent and isinstance(parent.specific, JournalPage) else None
+        prev_ancestor = self.get_ancestors().last()
+        if prev_ancestor and isinstance(prev_ancestor.specific, JournalPage):
+            if prev_ancestor.specific.live or not live_only:
+                return prev_ancestor
+            return prev_ancestor.specific.get_prev_page(live_only=live_only)
+        return None
 
-    def get_next_page(self, children_and_sibs=True):
+    def get_next_page(self, children_and_sibs=True, live_only=True):
         """
         Get the next page for navigation. Search order is child, sibling then
         parent next sibling recursively
         """
         if children_and_sibs:
-            next_child = self.get_first_child()
+            next_child = self.get_descendants().live().first() if live_only else self.get_descendants().first()
+            if next_child:
+                return next_child
+
             next_sib = self.get_next_sibling()
+            if next_sib:
+                if next_sib.live or not live_only:
+                    return next_sib
+                return next_sib.specific.get_next_page(children_and_sibs=True, live_only=live_only)
 
-            if next_child or next_sib:
-                return next_child or next_sib
-
-        # no direct children or siblings, now lets recursively check parent's siblings
+        #  no direct children or siblings, now lets recursively check parent's siblings
         parent = self.get_parent()
         if not isinstance(parent.specific, JournalPage):
             return None
         next_sib = parent.get_next_sibling()
-        return next_sib if next_sib else parent.specific.get_next_page(children_and_sibs=False)
+
+        if next_sib:
+            if next_sib.live or not live_only:
+                return next_sib
+            return next_sib.specific.get_next_page(children_and_sibs=True, live_only=live_only)
+        return parent.specific.get_next_page(children_and_sibs=False, live_only=True)
 
     @property
     def previous_page_id(self):
@@ -725,12 +743,14 @@ class JournalPage(JournalPageMixin, Page):
         page = self.get_next_page()
         return page.id if page else None
 
-    def get_last_descendant(self):
+    def get_last_descendant(self, live_only=True):
         """
         get the last descendant of this page
         """
-        children = self.get_descendants()
-        return children[len(children) - 1] if children else None
+        if live_only:
+            return self.get_descendants().live().last()
+        else:
+            return self.get_descendants().last()
 
     def serve(self, request, *args, **kwargs):
         if not request.user.is_authenticated():
