@@ -1,10 +1,14 @@
 """
 Wagtail hooks to customize wagtail operations for journals
 """
+
+from django.conf.urls import url
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core import urlresolvers
 from django.utils.html import format_html, format_html_join
+from django.utils.translation import ugettext_lazy as _
 
+from wagtail.wagtailadmin.menu import MenuItem
 from wagtail.wagtailadmin.site_summary import PagesSummaryItem
 from wagtail.wagtailcore import hooks
 from wagtail.wagtaildocs.wagtail_hooks import DocumentsSummaryItem
@@ -14,6 +18,7 @@ from wagtail.wagtailimages.permissions import permission_policy as image_permiss
 
 from journals.apps.journals.forms import GroupVideoPermissionFormSet
 from journals.apps.journals.models import WagtailModelManager
+from journals.apps.journals.views import AdminCommandsView
 
 
 class JournalsPagesSummaryItem(PagesSummaryItem):
@@ -47,6 +52,11 @@ class JournalsDocumentsSummaryItem(DocumentsSummaryItem):
         context = super(JournalsDocumentsSummaryItem, self).get_context()
         context['total_docs'] = WagtailModelManager.get_user_documents(self.request.user).count()
         return context
+
+
+class CommandsMenuItem(MenuItem):
+    def is_shown(self, request):
+        return request.user.is_staff
 
 
 @hooks.register('construct_explorer_page_queryset')
@@ -121,3 +131,20 @@ def editor_js():
 @hooks.register('register_group_permission_panel')
 def register_video_permissions_panel():
     return GroupVideoPermissionFormSet
+
+
+@hooks.register('register_admin_urls')
+def register_admin_urls():
+    return [
+        url(r'^commands/$', AdminCommandsView.as_view(), name='run-admin-commands'),
+    ]
+
+
+@hooks.register('register_settings_menu_item')
+def register_run_commands_menu_item():
+    return CommandsMenuItem(
+        _('Run Commands'),
+        urlresolvers.reverse('run-admin-commands'),
+        classnames='icon icon-cogs',
+        order=1000
+    )

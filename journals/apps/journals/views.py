@@ -270,3 +270,43 @@ class VideoImportView(TemplateView):
             'success_message': linebreaks(success_message),
             'failure_message': linebreaks(stderr.getvalue()),
         })
+
+
+class AdminCommandsView(TemplateView):
+    """
+    View to run management commands from wagtail admin
+    """
+    template_name = 'wagtailadmin/commands.html'
+    allowed_commands = ['update_index', 'fixtree']
+
+    @method_decorator(login_required)
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            raise PermissionDenied
+        return super(AdminCommandsView, self).dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        kwargs['allowed_commands'] = self.allowed_commands
+        return kwargs
+
+    def post(self, request, *args, **kwargs):
+        """
+        Runs given management command
+        """
+        management_command = request.POST.get('management_command')
+        stdout, stderr = StringIO(), StringIO()
+        if management_command not in self.allowed_commands:
+            stderr.write('Unknown command "%s"' % management_command)
+        else:
+            try:
+                management.call_command(
+                    management_command,
+                    stdout=stdout, stderr=stderr
+                )
+            except Exception as ex:  # pylint: disable=broad-except
+                stderr.write(str(ex))
+
+        return JsonResponse({
+            'success_message': linebreaks(stdout.getvalue()),
+            'failure_message': linebreaks(stderr.getvalue()),
+        })
