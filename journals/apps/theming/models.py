@@ -9,7 +9,7 @@ from wagtail.contrib.settings.models import BaseSetting, register_setting
 class SiteBranding(BaseSetting):
     '''Model that contains branding related attributes'''
     site_logo = models.ForeignKey(
-        'wagtailimages.Image',
+        'journals.JournalImage',
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
