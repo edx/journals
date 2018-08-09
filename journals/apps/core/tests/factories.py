@@ -10,9 +10,15 @@ import factory
 from factory.fuzzy import FuzzyText
 from faker import Faker
 from wagtail.wagtailcore.models import Page, Site
-from wagtail.wagtailimages.models import Image
 
-from journals.apps.journals.models import JournalAboutPage, JournalPage, Journal, JournalAccess, Organization
+from journals.apps.journals.models import (
+    Journal,
+    JournalAboutPage,
+    JournalAccess,
+    JournalImage,
+    JournalPage,
+    Organization,
+)
 from journals.apps.core.models import SiteConfiguration, User
 from journals.apps.theming.models import SiteBranding
 
@@ -170,7 +176,7 @@ class ImageFactory(factory.DjangoModelFactory):
     collection_id = 1
 
     class Meta:
-        model = Image
+        model = JournalImage
 
 
 class SiteBrandingFactory(factory.DjangoModelFactory):
