@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from django.conf.urls import url
 
 from journals.apps.api.v1.preview.views import PreviewView
-from journals.apps.api.v1.theming.views import SiteBrandingViewSet
+from journals.apps.api.v1.theming.views import SiteBrandingViewSet, SiteInformationView
 from journals.apps.api.v1.search.views import SearchView
 from journals.apps.api.v1.views import CurrentUserView, JournalAccessViewSet, UserPageVisitViewSet
 
@@ -36,4 +36,9 @@ urlpatterns += [
         SearchView.as_view(),
         name='journal_search'
     ),
+    url(
+        r'^siteinfo/$',
+        SiteInformationView.as_view(),
+        name="siteinfo"
+    )
 ]

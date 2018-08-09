@@ -29,5 +29,5 @@ class SiteBrandingSerializer(serializers.ModelSerializer):
         read_only = True
         fields = (
             'theme_name',
-            'site_logo'
+            'site_logo',
         )
