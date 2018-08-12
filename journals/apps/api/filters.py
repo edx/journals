@@ -62,7 +62,7 @@ class JournalAccessFilter(filters.FilterSet):
             journal_pages = JournalPage.objects.filter(videos=Video.objects.get(block_id=value))
             journal_uuids = [journal_page.get_journal().uuid for journal_page in journal_pages]
             qs = queryset.filter(journal__uuid__in=journal_uuids)
-        except (JournalPage.DoesNotExist, Video.DoesNotExist):
+        except Video.DoesNotExist:
             pass
         return qs
 
