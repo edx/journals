@@ -75,6 +75,7 @@ INSTALLED_APPS += PROJECT_APPS
 INSTALLED_APPS += WAGTAIL_APPS
 
 MIDDLEWARE_CLASSES = (
+    'edx_django_utils.cache.middleware.RequestCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -88,6 +89,8 @@ MIDDLEWARE_CLASSES = (
     'waffle.middleware.WaffleMiddleware',
     'wagtail.wagtailcore.middleware.SiteMiddleware',
     'wagtail.wagtailredirects.middleware.RedirectMiddleware',
+    'edx_django_utils.cache.middleware.TieredCacheMiddleware',
+    'edx_rest_framework_extensions.middleware.RequestMetricsMiddleware',
 )
 
 ROOT_URLCONF = 'journals.urls'
