@@ -18,6 +18,7 @@ from model_utils.models import TimeStampedModel
 
 from jsonfield.fields import JSONField
 from slumber.exceptions import HttpClientError, HttpNotFoundError
+from taggit.managers import TaggableManager
 
 from wagtail.api import APIField
 
@@ -341,11 +342,16 @@ class Video(CollectionMember, index.Indexed, models.Model):
     source_course_run = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    tags = TaggableManager(help_text=None, blank=True, verbose_name=_('tags'))
+
     objects = VideoQuerySet.as_manager()
 
     search_fields = CollectionMember.search_fields + [
         index.SearchField('display_name', partial_match=True),
         index.SearchField('transcript', partial_match=False, es_extra=LARGE_TEXT_FIELD_SEARCH_PROPS),
+        index.RelatedFields('tags', [
+            index.SearchField('name', partial_match=True, boost=10),
+        ]),
         index.FilterField('id'),
         index.FilterField('source_course_run'),
     ]
