@@ -647,6 +647,7 @@ class JournalPage(JournalPageMixin, Page):
 
     api_fields = [
         APIField('body'),
+        APIField('bread_crumbs'),
         APIField('previous_page_id'),
         APIField('next_page_id'),
     ]
@@ -701,6 +702,13 @@ class JournalPage(JournalPageMixin, Page):
 
         return context
 
+    def get_bread_crumbs(self):
+        """
+        Get the ordered list of live ancestors to this page.
+        """
+        ancestors = self.get_ancestors().live().filter(content_type=self.content_type).values('title', 'id')
+        return ancestors
+
     def get_prev_page(self, live_only=True):
         """
         Get the previous page for navigation. Search order is previous sibling's last descendant,
@@ -745,6 +753,10 @@ class JournalPage(JournalPageMixin, Page):
                 return next_sib
             return next_sib.specific.get_next_page(children_and_sibs=True, live_only=live_only)
         return parent.specific.get_next_page(children_and_sibs=False, live_only=True)
+
+    @property
+    def bread_crumbs(self):
+        return self.get_bread_crumbs()
 
     @property
     def previous_page_id(self):
