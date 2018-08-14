@@ -50,7 +50,7 @@ class SiteInformationView(views.APIView):
             site.hostname,
             site.port,
         )
-        logo = get_image_url(site.sitebranding.site_logo)
+        logo = get_image_url(site.sitebranding.site_logo) if site.sitebranding.site_logo else None
         theme_name = site.sitebranding.theme_name
 
         return Response({
