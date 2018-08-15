@@ -395,10 +395,10 @@ class JournalAboutPage(JournalPageMixin, Page):
     journal = models.OneToOneField(Journal, on_delete=models.SET_NULL, null=True, blank=True)
     # title = journal.title ???
     card_image = models.ForeignKey(
-        'wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True, blank=True
+        JournalImage, on_delete=models.SET_NULL, related_name='+', null=True, blank=True
     )
     hero_image = models.ForeignKey(
-        'wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True, blank=True
+        JournalImage, on_delete=models.SET_NULL, related_name='+', null=True, blank=True
     )
     short_description = models.CharField(max_length=128, blank=True, default='')
     long_description = models.TextField(blank=True, default=None, null=True)
@@ -567,7 +567,7 @@ class JournalIndexPage(JournalPageMixin, Page):
     subpage_types = ['JournalAboutPage']
 
     hero_image = models.ForeignKey(
-        'wagtailimages.Image', on_delete=models.SET_NULL, related_name='+', null=True, blank=True
+        JournalImage, on_delete=models.SET_NULL, related_name='+', null=True, blank=True
     )
     intro = RichTextField(blank=True)
 
