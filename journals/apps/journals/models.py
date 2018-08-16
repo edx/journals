@@ -808,7 +808,11 @@ class JournalPage(JournalPageMixin, Page):
         """ Gets the journal about page field and calculates it if null """
         if not self.journal_about_page:
             self.journal_about_page = self._calculate_journal_about_page()
-            self.save()
+            # only save if page has been published otherwise saving causes
+            # page to be published which causes a problem for preview use-case
+            if self.page_ptr_id:
+                self.save()
+
         return self.journal_about_page
 
     def _calculate_journal_about_page(self):
