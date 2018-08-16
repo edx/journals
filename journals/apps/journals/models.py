@@ -623,6 +623,7 @@ class JournalPage(JournalPageMixin, Page):
     subpage_types = ['JournalPage']
 
     sub_title = models.CharField(max_length=255, blank=True, default='')
+    author = models.CharField(max_length=255, blank=True, default='')
     body = StreamField([
         (RICH_TEXT_BLOCK_TYPE, JournalRichTextBlock(
             features=['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image']
@@ -639,6 +640,7 @@ class JournalPage(JournalPageMixin, Page):
 
     content_panels = Page.content_panels + [
         FieldPanel('sub_title'),
+        FieldPanel('author'),
         StreamFieldPanel('body'),
     ]
 
@@ -649,6 +651,7 @@ class JournalPage(JournalPageMixin, Page):
 
     api_fields = [
         APIField('sub_title'),
+        APIField('author'),
         APIField('body'),
         APIField('bread_crumbs'),
         APIField('previous_page_id'),
