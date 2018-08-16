@@ -16,15 +16,30 @@ from urllib.parse import urlsplit, urlunsplit
 from django.core.management.base import BaseCommand
 from wagtail.wagtailcore.models import Collection, Site
 
-from journals.apps.journals.models import Journal, Video
+from journals.apps.journals.models import Journal, Video, JournalPage
 
 
 class Command(BaseCommand):
-    '''Management command to gather course videos'''
+    """
+    Management command to gather course videos
+    """
     help = 'Gathers all videos from relevant courses'
 
-    def rewrite_url_for_external_use(self, url, site):
-        '''Updates domain of URLs to use external host in declared in settings'''
+    def rewrite_url_for_external_use(self, url, site, block_id):
+        """
+        Updates domain of URLs to use external host in declared in settings
+        """
+        journal_pages = JournalPage.objects.filter(videos=Video.objects.get(block_id=block_id))
+        journal_uuids = [journal_page.get_journal().uuid for journal_page in journal_pages]
+        url = url.replace(
+            "xblock",
+            "journals/render_journal_block"
+        )
+        url = "{url}?journal_uuid={journal_uuid}".format(
+            url=url,
+            journal_uuid=journal_uuids[0]
+        )
+
         if not site.siteconfiguration.lms_public_url_root_override:
             # Return url if it's not being overwritten
             return url
@@ -227,7 +242,7 @@ class Command(BaseCommand):
                 display_name = blocks[block].get('display_name')
                 view_url = blocks[block].get('student_view_url')
                 transcript_url = blocks[block].get('student_view_data', {}).get('transcripts', {}).get('en')
-                view_url = self.rewrite_url_for_external_use(view_url, site)
+                view_url = self.rewrite_url_for_external_use(view_url, site, block_id)
                 block_ids.append(block_id)
 
                 Video.objects.update_or_create(

@@ -27,6 +27,7 @@ class JournalSerializer(serializers.ModelSerializer):
         model = Journal
         fields = (
             'name',
+            'uuid',
             'journalaboutpage',
             'organization'
         )
