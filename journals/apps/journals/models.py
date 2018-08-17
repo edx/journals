@@ -623,6 +623,7 @@ class JournalPage(JournalPageMixin, Page):
     subpage_types = ['JournalPage']
 
     sub_title = models.CharField(max_length=255, blank=True, default='')
+    display_last_modified_date = models.BooleanField(null=False, default=False)
     author = models.CharField(max_length=255, blank=True, default='')
     body = StreamField([
         (RICH_TEXT_BLOCK_TYPE, JournalRichTextBlock(
@@ -640,6 +641,7 @@ class JournalPage(JournalPageMixin, Page):
 
     content_panels = Page.content_panels + [
         FieldPanel('sub_title'),
+        FieldPanel('display_last_modified_date'),
         FieldPanel('author'),
         StreamFieldPanel('body'),
     ]
@@ -651,6 +653,7 @@ class JournalPage(JournalPageMixin, Page):
 
     api_fields = [
         APIField('sub_title'),
+        APIField('display_last_modified_date'),
         APIField('author'),
         APIField('body'),
         APIField('bread_crumbs'),
