@@ -422,7 +422,7 @@ class JournalAboutPage(JournalPageMixin, Page):
         APIField('hero_image_url'),
         APIField('custom_content'),
         APIField('structure'),
-
+        APIField('journal_id'),
     ]
 
     def get_context(self, request, *args, **kwargs):
