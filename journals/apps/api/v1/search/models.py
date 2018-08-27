@@ -51,7 +51,7 @@ class SearchHit(object):
         self.journal_name = about_page.title
         self.page_id = journal_page.id
         self.page_title = journal_page.title
-        self.page_path = journal_page.url_path  # TODO change this to list of parent page names WL-1720
+        self.breadcrumbs = journal_page.get_bread_crumbs(title_only=True)
 
     def _set_type_info(self, component):
         """

@@ -712,11 +712,16 @@ class JournalPage(JournalPageMixin, Page):
 
         return context
 
-    def get_bread_crumbs(self):
+    def get_bread_crumbs(self, title_only=False):
         """
         Get the ordered list of live ancestors to this page.
         """
-        ancestors = self.get_ancestors().live().filter(content_type=self.content_type).values('title', 'id')
+        if title_only:
+            ancestors = self.get_ancestors().live().filter(
+                content_type=self.content_type).values_list('title', flat=True)
+        else:
+            ancestors = self.get_ancestors().live().filter(content_type=self.content_type).values('title', 'id')
+
         return ancestors
 
     def get_prev_page(self, live_only=True):
