@@ -100,7 +100,7 @@ class SearchHitSerializer(serializers.Serializer):
     """
     page_id = serializers.IntegerField()
     page_title = serializers.CharField()
-    page_path = serializers.CharField()
+    breadcrumbs = serializers.ListSerializer(child=serializers.CharField())
     journal_about_page_id = serializers.IntegerField()
     journal_id = serializers.IntegerField()
     journal_name = serializers.CharField()
