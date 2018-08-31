@@ -1,16 +1,17 @@
 """ Helpers for Journal Page Types """
 import uuid
 from urllib.parse import urljoin
-from django.conf import settings
 from django.core.cache import cache
 from django.shortcuts import redirect
 from django.utils.cache import add_never_cache_headers
+import waffle
 
 from journals.apps.journals.utils import get_cache_key
 
 from wagtail.api.v2.endpoints import PagesAPIEndpoint
 
 FRONTEND_PREVIEW_PATH = 'preview'
+FRONTEND_ENABLED_WAFFLE_SWITCH = 'frontend_enabled'
 
 
 class JournalPageMixin(object):
@@ -108,7 +109,7 @@ class JournalPageMixin(object):
         This gets called whenever a page is requested to be viewed live
         from the Wagtail admin
         """
-        if not settings.FRONTEND_ENABLED:
+        if not waffle.switch_is_active(FRONTEND_ENABLED_WAFFLE_SWITCH):
             return super(JournalPageMixin, self).serve(request, args, kwargs)
 
         response = redirect(
@@ -127,7 +128,7 @@ class JournalPageMixin(object):
         We override to cache the page and redirect to the Journals Frontend App,
         which fetches page from cache (via REST call) and displays the page.
         """
-        if not settings.FRONTEND_ENABLED:
+        if not waffle.switch_is_active(FRONTEND_ENABLED_WAFFLE_SWITCH):
             return super(JournalPageMixin, self).serve_preview(request, mode_name)
 
         if not request.user.is_authenticated():
