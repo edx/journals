@@ -8,8 +8,6 @@ import waffle
 
 from journals.apps.journals.utils import get_cache_key
 
-from wagtail.api.v2.endpoints import PagesAPIEndpoint
-
 FRONTEND_PREVIEW_PATH = 'preview'
 FRONTEND_ENABLED_WAFFLE_SWITCH = 'frontend_enabled'
 
@@ -85,6 +83,7 @@ class JournalPageMixin(object):
         # import here to avoid circular dependency
         from journals.apps.api.v1.views import ManualPageSerializerViewSet
         from journals.apps.api.v1.content.urls import wagtail_router
+        from journals.apps.api.v1.content.views import JournalPagesAPIEndpoint
 
         # This is manual setup of the serializer class
         # args:
@@ -92,7 +91,7 @@ class JournalPageMixin(object):
         #   type: the type of Page (i.e. journals.JournalPage)
         #   field_config: '*' means serialize all fields defined in base PageSerializer class plus all APIFields,
         #                  others args in the tuple are ignored
-        serializer_class = PagesAPIEndpoint._get_serializer_class(  # pylint: disable=protected-access
+        serializer_class = JournalPagesAPIEndpoint._get_serializer_class(  # pylint: disable=protected-access
             wagtail_router,
             type(self),
             [('*', False, None)]
