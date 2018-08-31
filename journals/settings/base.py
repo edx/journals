@@ -336,5 +336,4 @@ THEME_DIR = '/edx/app/journals/themes/'
 CORS_ALLOW_CREDENTIALS = True
 CSRF_COOKIE_NAME = 'journals_csrftoken'
 
-FRONTEND_ENABLED = False
 BATCH_SIZE_FOR_LMS_USER_API = 50
