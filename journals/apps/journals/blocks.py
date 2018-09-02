@@ -103,7 +103,7 @@ class JournalRawHTMLBlock(blocks.RawHTMLBlock):
 class XBlockVideoBlock(blocks.StructBlock):
     """XBlockVideoBlock component"""
     video = VideoChooserBlock(required=True)
-    title = blocks.CharBlock(required=False, help_text='Override video')
+    title = blocks.CharBlock(required=False, help_text='Override video title')
 
     def get_title(self, value):
         return value.get('title')
