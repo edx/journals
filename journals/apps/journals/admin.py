@@ -47,6 +47,7 @@ class JournalAccessAdmin(admin.ModelAdmin):
 
 # Default admin pages below
 admin.site.register(Organization)
+admin.site.register(Video)
 
 
 class VideoModelAdmin(ModelAdmin):
