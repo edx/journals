@@ -74,6 +74,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'username',
+            'can_access_admin',
         )
 
 
