@@ -112,7 +112,7 @@ class Command(BaseCommand):
             return video_blocks
 
         course_runs = course_runs if course_runs else journal.video_course_ids['course_runs']
-        return self.get_vidoes_for_course_run(journal_site, course_runs)
+        return self.get_videos_for_course_run(journal_site, course_runs)
 
     def delete_unused_videos_for_course_run(self, course_run, studio_video_blocks):
         """
@@ -146,7 +146,7 @@ class Command(BaseCommand):
                 % (video.display_name, course_run)
             )
 
-    def get_vidoes_for_course_run(self, site, course_runs):
+    def get_videos_for_course_run(self, site, course_runs):
         """
         Args:
             site: site a journal belong to
@@ -178,7 +178,6 @@ class Command(BaseCommand):
                     requested_fields='block_id, display_name, student_view_url, student_view_data',
                 )
             except Exception as err:  # pylint: disable=broad-except
-
                 err_msg = "Unable to retrieve video blocks for {} error={}".format(course_run, err)
                 self.stderr.write(err_msg)
                 logger.error(err_msg)
@@ -189,9 +188,10 @@ class Command(BaseCommand):
                 'course_run': course_run,
                 'blocks': block_response.get('blocks')
             })
-            logger.info("Found {num_blocks} video blocks for {course_run}".format(
+            status_msg = "Found {num_blocks} video blocks for {course_run}".format(
                 num_blocks=len(block_response.get('blocks')),
-                course_run=course_run))
+                course_run=course_run)
+            logger.info(status_msg)
 
         return blocks if blocks else []
 
@@ -202,7 +202,7 @@ class Command(BaseCommand):
             return []
 
         course_runs = self.get_video_course_runs_for_site(site)
-        return self.get_vidoes_for_course_run(site, course_runs)
+        return self.get_videos_for_course_run(site, course_runs)
 
     def add_arguments(self, parser):
         parser.add_argument('--journal_ids', dest='journal_ids', nargs='+', type=int)
@@ -238,6 +238,7 @@ class Command(BaseCommand):
             )
 
         for block_collection in block_collections:
+            logger.info("About to update db for videos..")
             site = block_collection.get('site')
             collection = video_collection if video_collection else self.get_collection_for_site(site)
             course_run = block_collection.get('course_run')
@@ -264,7 +265,11 @@ class Command(BaseCommand):
                     }
                 )
                 total_video_imported += 1
-                self.stdout.write("Imported '%s' from '%s'" % (display_name, course_run))
+                status_msg = "Imported '{display_name}' from '{course_run}'".format(
+                    display_name=display_name,
+                    course_run=course_run)
+                self.stdout.write(status_msg)
+                logger.info('{status_msg} count={count}'.format(status_msg=status_msg, count=total_video_imported))
 
             self.delete_unused_videos_for_course_run(course_run, block_ids)
         return "Completed, %s videos imported" % total_video_imported
