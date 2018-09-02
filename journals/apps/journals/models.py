@@ -297,7 +297,6 @@ class JournalDocument(AbstractDocument):
         self.file.open()
         contents = base64.b64encode(self.file.read()).decode('ascii')
         self.file.close()
-        print('in get data for file=', self.file.name)
         return contents
 
 
@@ -338,7 +337,7 @@ class Video(CollectionMember, index.Indexed, models.Model):
     block_id = models.CharField(max_length=128, unique=True)
     display_name = models.CharField(max_length=255)
     view_url = models.URLField(max_length=255)
-    transcript_url = models.URLField(max_length=255)
+    transcript_url = models.URLField(max_length=255, null=True)
     source_course_run = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -367,12 +366,17 @@ class Video(CollectionMember, index.Indexed, models.Model):
         Read the transcript from the transcript url to provide
         to elasticsearch
         '''
+        if not self.transcript_url:
+            return None
+
         try:
             response = requests.get(self.transcript_url)  # No auth needed for transcripts
             contents = response.content
             return contents.decode('utf-8') if contents else None
         except Exception as err:  # pylint: disable=broad-except
-            print('Exception trying to read transcript', err)
+            logger.error(
+                'Exception trying to read transcript url={url} for Video err={err}'.format(
+                    url=self.transcript_url, err=err))
             return None
 
     def __str__(self):
