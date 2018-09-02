@@ -11,12 +11,15 @@ To gather videos for course runs in multiple journals having ids 101, 102, 103
 `./manage.py gather_videos --journal_ids 101 102 103`
 """
 import itertools
+import logging
 from urllib.parse import urlsplit, urlunsplit
 
 from django.core.management.base import BaseCommand
 from wagtail.wagtailcore.models import Collection, Site
 
 from journals.apps.journals.models import Journal, Video
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -153,8 +156,18 @@ class Command(BaseCommand):
 
         """
         blocks = []
-        client = site.siteconfiguration.lms_courses_api_client
+        client = None
+
+        try:
+            client = site.siteconfiguration.lms_courses_api_client
+        except Exception as err:  # pylint: disable=broad-except
+            err_msg = "client error={}".format(err)
+            self.stderr.write(err_msg)
+            logger.error(err_msg)
+            return blocks
+
         for course_run in course_runs:
+            logger.info("querying LMS for video blocks for {}".format(course_run))
             try:
                 block_response = client.blocks.get(
                     course_id=course_run,
@@ -162,15 +175,24 @@ class Command(BaseCommand):
                     all_blocks='true',
                     block_types_filter='video',
                     student_view_data='video',
+                    requested_fields='block_id, display_name, student_view_url, student_view_data',
                 )
-            except Exception:  # pylint: disable=broad-except
-                self.stderr.write("Unable to retrieves blocks from course run {}".format(course_run))
+            except Exception as err:  # pylint: disable=broad-except
+
+                err_msg = "Unable to retrieve video blocks for {} error={}".format(course_run, err)
+                self.stderr.write(err_msg)
+                logger.error(err_msg)
                 continue
+
             blocks.append({
                 'site': site,
                 'course_run': course_run,
                 'blocks': block_response.get('blocks')
             })
+            logger.info("Found {num_blocks} video blocks for {course_run}".format(
+                num_blocks=len(block_response.get('blocks')),
+                course_run=course_run))
+
         return blocks if blocks else []
 
     def get_videos_for_site(self, site):
