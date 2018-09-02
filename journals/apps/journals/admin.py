@@ -50,7 +50,6 @@ admin.site.register(Organization)
 admin.site.register(Video)
 
 
-
 class VideoModelAdmin(ModelAdmin):
     """
     Video model admin
