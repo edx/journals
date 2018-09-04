@@ -33,3 +33,11 @@ class VideoPermissionHelper(PermissionHelper):
         Check if user has delete permissions on videos
         """
         return False
+
+
+class JournalPermissionHelper(PermissionHelper):
+    """
+    Permission overrides for Journals
+    """
+    def user_has_specific_permission(self, user, perm_codename):
+        return user.is_superuser

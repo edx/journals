@@ -4,7 +4,12 @@ Utility methods for journals
 import csv
 import datetime
 import hashlib
+import logging
+
 import six
+from wagtail.wagtailadmin import messages
+
+logger = logging.getLogger(__name__)
 
 BLOCK_SPAN_ID_FORMATTER = '{block_type}-{block_id}'
 
@@ -62,6 +67,16 @@ def get_image_url(image, rendition='original'):
         return image.get_rendition(rendition).file.url
     else:
         return image.file.url
+
+
+def add_messages(request, message_type, messages_list):
+    """
+        add messages of message type (success, error or warning etc) to render is template
+    """
+    message_adder = getattr(messages, message_type)
+    for message in messages_list:
+        if message:
+            message_adder(request, message)
 
 
 def get_default_expiration_date(journal):

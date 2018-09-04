@@ -7,18 +7,17 @@ from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core import urlresolvers
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext_lazy as _
-
 from wagtail.wagtailadmin.menu import MenuItem
 from wagtail.wagtailadmin.site_summary import PagesSummaryItem
 from wagtail.wagtailcore import hooks
-from wagtail.wagtaildocs.wagtail_hooks import DocumentsSummaryItem
 from wagtail.wagtaildocs.permissions import permission_policy as document_permission_policy
-from wagtail.wagtailimages.wagtail_hooks import ImagesSummaryItem
+from wagtail.wagtaildocs.wagtail_hooks import DocumentsSummaryItem
 from wagtail.wagtailimages.permissions import permission_policy as image_permission_policy
+from wagtail.wagtailimages.wagtail_hooks import ImagesSummaryItem
 
-from journals.apps.journals.forms import GroupVideoPermissionFormSet
 from journals.apps.journals.models import WagtailModelManager
-from journals.apps.journals.views import AdminCommandsView
+from journals.apps.journals.wagtailadmin.forms import GroupVideoPermissionFormSet
+from journals.apps.journals.wagtailadmin.views import AdminCommandsView
 
 
 class JournalsPagesSummaryItem(PagesSummaryItem):
