@@ -13,7 +13,7 @@ class JournalAboutPageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = JournalAboutPage
-        fields = ('slug', 'card_image_absolute_url', 'short_description')
+        fields = ('id', 'card_image_absolute_url', 'short_description')
 
 
 class JournalSerializer(serializers.ModelSerializer):

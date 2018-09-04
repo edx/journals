@@ -145,7 +145,7 @@ class JournalMetaData(object):
             'short_description': self.journal_about_page.short_description,
             'full_description': self.journal_about_page.long_description,
             'status': 'active' if self.publish else 'inactive',
-            'slug': self.journal_about_page.slug,
+            'about_page_id': self.journal_about_page.id,
         }
 
     def get_ecommerce_data(self):
@@ -467,7 +467,7 @@ class JournalAboutPage(JournalPageMixin, Page):
             "title": self.title,
             "full_description": self.long_description,
             "short_description": self.short_description,
-            "slug": self.slug
+            "about_page_id": self.id,
         }
 
         if self.journal:
