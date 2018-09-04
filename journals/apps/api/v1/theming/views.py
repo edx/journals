@@ -53,6 +53,7 @@ class SiteInformationView(views.APIView):
         logo = get_image_url(site.sitebranding.site_logo) if site.sitebranding.site_logo else None
         theme_name = site.sitebranding.theme_name
         lms_url_root = site.siteconfiguration.lms_public_url_root_override or site.siteconfiguration.lms_url_root
+        footer_links = site.sitebranding.footer_links
 
         return Response({
             'user': UserSerializer(current_user).data,
@@ -62,4 +63,5 @@ class SiteInformationView(views.APIView):
             'logo': logo,
             'theme_name': theme_name,
             'lms_url_root': lms_url_root,
+            'footer_links': footer_links,
         })
