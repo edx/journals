@@ -1,12 +1,9 @@
 """
 Handlers for journal page signals
 """
-from django.db.models.signals import post_save
-
 from wagtail.wagtailcore.signals import page_published, page_unpublished
-from wagtail.wagtailsearch import index as search_index
 
-from .models import JournalAboutPage, JournalPage, Video
+from .models import JournalAboutPage, JournalPage
 
 
 def page_pub_receiver(sender, **kwargs):  # pylint: disable=unused-argument
@@ -29,17 +26,7 @@ def about_page_unpub_receiver(sender, **kwargs):  # pylint: disable=unused-argum
     journal_about_page.update_related_objects(deactivate=True)
 
 
-def update_search_index(sender, instance, created, **kwargs):  # pylint: disable=unused-argument
-    """
-    Updates search index with give instance of Video
-    only at the time when video is updated in wagtail admin
-    """
-    if not created:
-        search_index.insert_or_update_object(instance)
-
-
 page_published.connect(page_pub_receiver, sender=JournalPage)
 page_unpublished.connect(page_unpub_receiver, sender=JournalPage)
 page_published.connect(about_page_pub_receiver, sender=JournalAboutPage)
 page_unpublished.connect(about_page_unpub_receiver, sender=JournalAboutPage)
-post_save.connect(update_search_index, sender=Video)
