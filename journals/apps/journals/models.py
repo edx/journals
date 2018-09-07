@@ -319,6 +319,10 @@ class JournalImage(AbstractImage):
 class JournalImageRendition(AbstractRendition):
     image = models.ForeignKey(JournalImage, related_name='renditions', on_delete=models.CASCADE)
 
+    @property
+    def url(self):
+        return urljoin("http://localhost:18606", self.file.url)
+
     class Meta:
         unique_together = (
             ('image', 'filter_spec', 'focal_point_key'),

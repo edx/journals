@@ -5,6 +5,7 @@ from django.utils.safestring import mark_safe
 from wagtail.wagtailcore import blocks
 from wagtail.wagtaildocs.blocks import DocumentChooserBlock
 from wagtail.wagtailimages.blocks import ImageChooserBlock
+from wagtail.wagtailcore.rich_text import expand_db_html
 
 from journals.apps.journals.models import Video
 from journals.apps.journals.widgets import AdminVideoChooser
@@ -82,6 +83,9 @@ class JournalRichTextBlock(blocks.RichTextBlock):
     """JournalRichTextBlock component"""
     def get_searchable_content(self, value):
         return [parser(value.source, 'html.parser').get_text(' ')]
+
+    def get_api_representation(self, value, context=None):
+        return expand_db_html(value.source)
 
 
 class JournalRawHTMLBlock(blocks.RawHTMLBlock):
