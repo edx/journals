@@ -1,12 +1,16 @@
 """ Custom blocks """
+from urllib.parse import urljoin
+
 from bs4 import BeautifulSoup as parser
 from django.utils import six
 from django.utils.safestring import mark_safe
 from wagtail.wagtailcore import blocks
+from wagtail.wagtailcore.models import Page
 from wagtail.wagtaildocs.blocks import DocumentChooserBlock
 from wagtail.wagtailimages.blocks import ImageChooserBlock
+from wagtail.wagtailcore.rich_text import extract_attrs, get_link_handler, get_embed_handler, FIND_A_TAG, FIND_EMBED_TAG
 
-from journals.apps.journals.models import Video
+from journals.apps.journals.models import JournalDocument, Video
 from journals.apps.journals.widgets import AdminVideoChooser
 from journals.apps.journals.utils import get_image_url, get_span_id
 
@@ -82,6 +86,62 @@ class JournalRichTextBlock(blocks.RichTextBlock):
     """JournalRichTextBlock component"""
     def get_searchable_content(self, value):
         return [parser(value.source, 'html.parser').get_text(' ')]
+
+    def expand_db_html(self, html, for_editor=False, base_url='/'):
+        """
+        Override from wagtail.wagtailcore.rich_text to use full path
+        to embedded images
+        """
+        def replace_a_tag(m):
+            """
+            overridden, return href for Pages and Documents that
+            journals frontend knows how to display
+            """
+            attrs = extract_attrs(m.group(1))
+            if 'linktype' not in attrs:
+                # return unchanged
+                return m.group(0)
+            if attrs['linktype'] == 'page':
+                try:
+                    page = Page.objects.get(id=attrs['id'])
+                    return '<a href="{page_path}">'.format(page_path=page.specific.get_frontend_page_path())
+                except Page.DoesNotExist:
+                    return "<a>"
+
+            if attrs['linktype'] == 'document':
+                try:
+                    doc = JournalDocument.objects.get(id=attrs['id'])
+                    return '<a href="{viewer_path}" target="_blank">'.format(viewer_path=doc.get_viewer_url(base_url))
+                except Page.DoesNotExist:
+                    return "<a>"
+
+            handler = get_link_handler(attrs['linktype'])
+            return handler.expand_db_attributes(attrs, for_editor)
+
+        def replace_embed_tag(m):
+            """
+            overriden, change img src to be absolute url so it can be
+            rendered by frontend
+            """
+            attrs = extract_attrs(m.group(1))
+            handler = get_embed_handler(attrs['embedtype'])
+            html = handler.expand_db_attributes(attrs, for_editor)
+            if attrs['embedtype'] == 'image':
+                html = html.replace('src="/', 'src="{}'.format(base_url))
+            return html
+
+        html = FIND_A_TAG.sub(replace_a_tag, html)
+        html = FIND_EMBED_TAG.sub(replace_embed_tag, html)
+        return html
+
+    def get_api_representation(self, value, context=None):
+        request = context['request']
+        base_url = urljoin("{}://{}:{}".format(
+            request.scheme,
+            request.site.hostname,
+            request.site.port,
+        ), '/')
+        return self.expand_db_html(value.source, base_url=base_url)
 
 
 class JournalRawHTMLBlock(blocks.RawHTMLBlock):
