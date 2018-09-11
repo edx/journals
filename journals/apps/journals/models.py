@@ -5,6 +5,7 @@ import base64
 import datetime
 import json
 import logging
+import mimetypes
 import uuid
 from urllib.parse import quote, urljoin, urlparse, urlsplit, urlunsplit
 
@@ -297,6 +298,20 @@ class JournalDocument(AbstractDocument):
         contents = base64.b64encode(self.file.read()).decode('ascii')
         self.file.close()
         return contents
+
+    def get_viewer_url(self, base_url):
+        '''
+        Return full url to document viewer for this document
+        '''
+        if self.is_pdf():
+            return urljoin(base_url, 'static/pdf_js/web/viewer.html?file={document_path}'.format(
+                document_path=self.file.url)  # pylint: disable=no-member
+            )
+        else:
+            return urljoin(base_url, self.file.url)  # pylint: disable=no-member
+
+    def is_pdf(self):
+        return mimetypes.MimeTypes().guess_type(self.filename)[0] == 'application/pdf'
 
 
 class JournalImage(AbstractImage):
