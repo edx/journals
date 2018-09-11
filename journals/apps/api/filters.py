@@ -2,14 +2,15 @@
 from django_filters import rest_framework as filters
 from rest_framework.filters import BaseFilterBackend
 
-from journals.apps.journals.models import JournalAccess, JournalPage, UserPageVisit
+from journals.apps.journals.models import JournalAccess, JournalPage, UserPageVisit, Video
 
 
 class JournalAccessFilter(filters.FilterSet):
-    '''Filter for JournalAccess'''
+    """Filter for JournalAccess"""
     user = filters.CharFilter(name='user__username')
     get_latest = filters.BooleanFilter(name='get_latest', method='filter_latest')
     ignore_revoked = filters.BooleanFilter(name='ignore_revoked', method='filter_revoked')
+    block_id = filters.CharFilter(name='block_id', method='filter_xblock_id')
 
     def filter_revoked(self, queryset, name, value):  # pylint: disable=unused-argument
         """
@@ -49,6 +50,21 @@ class JournalAccessFilter(filters.FilterSet):
 
         filtered_queryset = queryset.filter(uuid__in=filtered_uuids)
         return filtered_queryset
+
+    def filter_xblock_id(self, queryset, name, value):  # pylint: disable=unused-argument
+        """
+        Get the Journal from video block_id and then filter on journal.
+        """
+        if not value:
+            return queryset
+        qs = queryset
+        try:
+            journal_pages = JournalPage.objects.filter(videos=Video.objects.get(block_id=value)).distinct().live()
+            journal_uuids = [journal_page.get_journal().uuid for journal_page in journal_pages]
+            qs = queryset.filter(journal__uuid__in=journal_uuids)
+        except Video.DoesNotExist:
+            pass
+        return qs
 
     class Meta:
         model = JournalAccess
