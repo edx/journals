@@ -159,7 +159,7 @@ class SiteFactory(factory.DjangoModelFactory):
     hostname = factory.Faker('url')
     port = "18606"
     is_default_site = False
-    root_page = factory.SubFactory(PageFactory)
+    root_page = factory.SubFactory(PageFactory, depth=2)
     site_name = FuzzyText(prefix='site-name-')
 
     class Meta:

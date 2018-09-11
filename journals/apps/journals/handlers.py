@@ -26,7 +26,18 @@ def about_page_unpub_receiver(sender, **kwargs):  # pylint: disable=unused-argum
     journal_about_page.update_related_objects(deactivate=True)
 
 
-page_published.connect(page_pub_receiver, sender=JournalPage)
-page_unpublished.connect(page_unpub_receiver, sender=JournalPage)
-page_published.connect(about_page_pub_receiver, sender=JournalAboutPage)
-page_unpublished.connect(about_page_unpub_receiver, sender=JournalAboutPage)
+def connect_page_signals_handlers():
+    page_published.connect(page_pub_receiver, sender=JournalPage)
+    page_unpublished.connect(page_unpub_receiver, sender=JournalPage)
+    page_published.connect(about_page_pub_receiver, sender=JournalAboutPage)
+    page_unpublished.connect(about_page_unpub_receiver, sender=JournalAboutPage)
+
+
+def disconnect_page_signals_handlers():
+    page_published.disconnect(page_pub_receiver, sender=JournalPage)
+    page_unpublished.disconnect(page_unpub_receiver, sender=JournalPage)
+    page_published.disconnect(about_page_pub_receiver, sender=JournalAboutPage)
+    page_unpublished.disconnect(about_page_unpub_receiver, sender=JournalAboutPage)
+
+
+connect_page_signals_handlers()
