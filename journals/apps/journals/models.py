@@ -11,6 +11,7 @@ from urllib.parse import quote, urljoin, urlparse, urlsplit, urlunsplit
 
 import requests
 from django.conf import settings
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.http import HttpResponseRedirect
@@ -18,6 +19,7 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 
 from jsonfield.fields import JSONField
+from slumber.exceptions import HttpNotFoundError
 from taggit.managers import TaggableManager
 from upload_validator import FileTypeValidator
 
@@ -36,10 +38,14 @@ from wagtail.wagtailsearch.queryset import SearchableQuerySetMixin
 from journals.apps.core.models import User
 from journals.apps.journals.api_utils import update_service
 from journals.apps.journals.journal_page_helper import JournalPageMixin
-from journals.apps.journals.utils import get_image_url, get_default_expiration_date
+from journals.apps.journals.utils import get_cache_key, get_image_url, get_default_expiration_date
 from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 
 logger = logging.getLogger(__name__)
+
+JOURNAL_PAGE_PREVIEW_PATH = 'pagePreview'
+JOURNAL_ABOUT_PAGE_PREVIEW_PATH = 'aboutPreview'
+JOURNAL_INDEX_PAGE_PREVIEW_PATH = 'indexPreview'
 
 
 class Organization(models.Model):
@@ -469,6 +475,8 @@ class JournalAboutPage(JournalPageMixin, Page):
         APIField('custom_content'),
         APIField('structure'),
         APIField('journal_id'),
+        APIField('purchase_url'),
+        APIField('price'),
     ]
 
     def get_context(self, request, *args, **kwargs):
@@ -479,11 +487,59 @@ class JournalAboutPage(JournalPageMixin, Page):
             context['user_has_access'] = JournalAccess.user_has_access(request.user, self.journal)
         else:
             context['user_has_access'] = False
-        discovery_journal_api_client = self.site.siteconfiguration.discovery_journal_api_client
-        journal_data = discovery_journal_api_client.journals(self.journal.uuid).get()
+        journal_data = self._get_journal_from_discovery()
         context['journal_data'] = journal_data
         context['buy_button_url'] = self.generate_require_auth_basket_url(journal_data['sku'])
         return context
+
+    def _get_journal_from_discovery(self):
+        '''
+        Get journal data from discovery first
+        checking in cache
+        '''
+        api_resource = 'journals'
+
+        cache_key = get_cache_key(
+            resource=api_resource,
+            journal_uuid=self.journal.uuid,
+            journal_about_id=self.id,
+        )
+
+        _CACHE_MISS = object()
+        journal_data = cache.get(cache_key, _CACHE_MISS)
+
+        if journal_data is _CACHE_MISS:
+            api_client = self.site.siteconfiguration.discovery_journal_api_client
+            try:
+                journal_data = api_client.journals(self.journal.uuid).get()
+                cache.set(cache_key, journal_data, 3600)
+            except HttpNotFoundError as err:
+                logger.error(
+                    'Could not find journal uuid={uuid} in discovery service, err={err}'.format(
+                        uuid=self.journal.uuid, err=err))
+                return None
+
+        return journal_data
+
+    @property
+    def purchase_url(self):
+        '''
+        Return the url used to purchase the Journal
+        '''
+        journal_data = self._get_journal_from_discovery()
+        if journal_data:
+            return self.generate_require_auth_basket_url(journal_data['sku'])
+        return None
+
+    @property
+    def price(self):
+        '''
+        Return the price of the Journal
+        '''
+        journal_data = self._get_journal_from_discovery()
+        if journal_data:
+            return journal_data.get('price', '0')
+        return '0'
 
     def generate_require_auth_basket_url(self, sku):
         basket_url = self.generate_basket_url(sku)
@@ -589,6 +645,12 @@ class JournalAboutPage(JournalPageMixin, Page):
     def get_frontend_page_path(self):
         return '{about_page_id}/about'.format(about_page_id=self.id)
 
+    def get_frontend_preview_path(self):
+        return '{journal_about_id}/{preview_path}'.format(
+            journal_about_id=self.id,
+            preview_path=JOURNAL_ABOUT_PAGE_PREVIEW_PATH,
+        )
+
 
 class JournalIndexPage(JournalPageMixin, Page):
     """
@@ -635,6 +697,9 @@ class JournalIndexPage(JournalPageMixin, Page):
     def get_frontend_page_path(self):
         # index page is just at / in frontend app
         return ''
+
+    def get_frontend_preview_path(self):
+        return JOURNAL_INDEX_PAGE_PREVIEW_PATH
 
 
 class JournalPage(JournalPageMixin, Page):
@@ -827,6 +892,12 @@ class JournalPage(JournalPageMixin, Page):
         return '{about_page_id}/pages/{page_id}'.format(
             about_page_id=self.get_journal_about_page().id,
             page_id=self.id
+        )
+
+    def get_frontend_preview_path(self):
+        return '{journal_about_id}/{preview_path}'.format(
+            journal_about_id=self.get_journal_about_page().id,
+            preview_path=JOURNAL_PAGE_PREVIEW_PATH,
         )
 
     def serve(self, request, *args, **kwargs):
