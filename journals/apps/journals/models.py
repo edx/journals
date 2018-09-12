@@ -10,7 +10,10 @@ import uuid
 from urllib.parse import quote, urljoin, urlparse, urlsplit, urlunsplit
 
 import requests
+<<<<<<< c43f182754e978502e3ce250f9287c1e1f0f88a5
 from django.conf import settings
+=======
+>>>>>>> Add journal purchase and access control information to API
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import models
