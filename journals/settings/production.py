@@ -49,5 +49,7 @@ WAGTAILSEARCH_BACKENDS['default'].update({
     'INDEX_NAME': ELASTICSEARCH_INDEX_NAME,
 })
 
+USE_X_FORWARDED_PORT = True
+
 for override, value in DB_OVERRIDES.items():
     DATABASES['default'][override] = value

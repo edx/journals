@@ -51,8 +51,9 @@ class SiteInformationView(views.APIView):
             request.scheme,
             site.hostname,
         )
-        if request.META['SERVER_PORT'] not in STANDARD_HTTP_PORTS:
-            server_url += ':{}'.format(request.META['SERVER_PORT'])
+        port = request.get_port()
+        if port not in STANDARD_HTTP_PORTS:
+            server_url += ':{}'.format(port)
         logo = get_image_url(site.sitebranding.site_logo) if site.sitebranding.site_logo else None
         theme_name = site.sitebranding.theme_name
         lms_url_root = site.siteconfiguration.lms_public_url_root_override or site.siteconfiguration.lms_url_root
