@@ -14,6 +14,8 @@ from journals.apps.journals.models import UserPageVisit
 from journals.apps.journals.utils import get_image_url
 from journals.apps.theming.models import SiteBranding
 
+STANDARD_HTTP_PORTS = [80, 443]
+
 
 class SiteBrandingViewSet(viewsets.ReadOnlyModelViewSet):
     """ API for SiteBranding model """
@@ -45,11 +47,12 @@ class SiteInformationView(views.APIView):
         except SiteConfiguration.DoesNotExist:
             site = request.site
 
-        server_url = "{}://{}:{}".format(
+        server_url = "{}://{}".format(
             request.scheme,
             site.hostname,
-            site.port,
         )
+        if request.META['SERVER_PORT'] not in STANDARD_HTTP_PORTS:
+            server_url += ':{}'.format(request.META['SERVER_PORT'])
         logo = get_image_url(site.sitebranding.site_logo) if site.sitebranding.site_logo else None
         theme_name = site.sitebranding.theme_name
         lms_url_root = site.siteconfiguration.lms_public_url_root_override or site.siteconfiguration.lms_url_root
