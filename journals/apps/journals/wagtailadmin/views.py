@@ -20,6 +20,8 @@ from wagtail.utils.pagination import paginate
 from wagtail.wagtailadmin import messages
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, MultiFieldPanel, ObjectList
 from wagtail.wagtailadmin.forms import SearchForm
+from wagtail.wagtailadmin.navigation import get_explorable_root_page
+from wagtail.wagtailadmin.views.pages import move_choose_destination
 from wagtail.wagtailcore.models import Collection
 
 from journals.apps.journals.api_utils import get_discovery_journal
@@ -437,3 +439,18 @@ class AdminCommandsView(TemplateView):
             'success_message': linebreaks(stdout.getvalue()),
             'failure_message': linebreaks(stderr.getvalue()),
         })
+
+
+def move_page(request, page_to_move_id):
+    """
+    Args:
+        request: http request object
+        page_to_move_id: id of the page to move
+
+    This method sets viewed_page id to site's root page and calls wagtail's move page view
+    Reason we override `cms/pages/(page_to_move_id)/move` view is to show user only those
+    destinations where user has permissions
+
+    """
+    viewed_page = get_explorable_root_page(request.user)
+    return move_choose_destination(request, page_to_move_id, viewed_page_id=viewed_page.id)
