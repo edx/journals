@@ -47,6 +47,8 @@ DATABASES = {
 }
 # END TEST DATABASE
 
+CELERY_TASK_ALWAYS_EAGER = True
+
 # Docker does not support the syslog socket at /dev/log. Rely on the console.
 LOGGING['handlers']['local'] = {
     'class': 'logging.NullHandler',

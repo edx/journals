@@ -61,6 +61,9 @@ CORS_ORIGIN_WHITELIST = (
     'localhost:1991'
 )
 
+# CELERY SETTINGS
+CELERY_BROKER_URL = 'replace-me'
+
 #####################################################################
 # Lastly, see if the developer has any local overrides.
 if os.path.isfile(join(dirname(abspath(__file__)), 'private.py')):
