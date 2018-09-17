@@ -27,6 +27,7 @@ from wagtail.wagtaildocs import urls as wagtaildocs_urls
 from journals.apps.api.v1.content.urls import wagtail_router
 from journals.apps.core import views as core_views
 from journals.apps.search import views as search_views
+from journals.apps.journals.wagtailadmin import views as custom_wagtailadmin_views
 
 admin.autodiscover()
 
@@ -39,6 +40,7 @@ urlpatterns = auth_urlpatterns + [
     url(r'^api-auth/', include(auth_urlpatterns, namespace='rest_framework')),
     url(r'^auto_auth/$', core_views.AutoAuth.as_view(), name='auto_auth'),
     url(r'^health/$', core_views.health, name='health'),
+    url(r'^cms/pages/(\d+)/move/$', custom_wagtailadmin_views.move_page, name='move_page'),
     # Wagtail paths
     url(r'^cms/', include(wagtailadmin_urls)),
     url(r'^documents/', include(wagtaildocs_urls)),
