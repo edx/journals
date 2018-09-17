@@ -10,6 +10,7 @@ import uuid
 from urllib.parse import quote, urljoin, urlparse, urlsplit, urlunsplit
 
 import requests
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.http import HttpResponseRedirect
@@ -18,6 +19,7 @@ from model_utils.models import TimeStampedModel
 
 from jsonfield.fields import JSONField
 from taggit.managers import TaggableManager
+from upload_validator import FileTypeValidator
 
 from wagtail.api import APIField
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
@@ -282,6 +284,14 @@ class JournalDocument(AbstractDocument):
     Override the base Document model so we can index the Document contents for search
     and add reference to JournalAboutPage
     '''
+
+    file = models.FileField(
+        upload_to='documents', verbose_name=_('PDF document'),
+        validators=[FileTypeValidator(
+            allowed_types=settings.ALLOWED_DOCUMENT_TYPES, allowed_extensions=settings.ALLOWED_DOCUMENT_FILE_EXTENSIONS
+        )]
+    )
+
     search_fields = AbstractDocument.search_fields + [
         index.SearchField('data', partial_match=False),
         index.FilterField('id'),
