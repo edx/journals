@@ -10,10 +10,7 @@ import uuid
 from urllib.parse import quote, urljoin, urlparse, urlsplit, urlunsplit
 
 import requests
-<<<<<<< c43f182754e978502e3ce250f9287c1e1f0f88a5
 from django.conf import settings
-=======
->>>>>>> Add journal purchase and access control information to API
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import models
@@ -480,7 +477,12 @@ class JournalAboutPage(JournalPageMixin, Page):
         APIField('journal_id'),
         APIField('purchase_url'),
         APIField('price'),
+        APIField('organization'),
     ]
+
+    @property
+    def organization(self):
+        return self.journal.organization.name if self.journal else None
 
     def get_context(self, request, *args, **kwargs):
         # Update context to include only published pages
