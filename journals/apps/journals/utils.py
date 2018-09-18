@@ -52,7 +52,6 @@ def get_cache_key(**kwargs):
          An MD5 encoded key uniquely identified by the key word arguments.
     """
     key = '__'.join(['{}:{}'.format(item, value) for item, value in six.iteritems(kwargs)])
-    print('key=', key)
     return hashlib.md5(key.encode('utf-8')).hexdigest()
 
 

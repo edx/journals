@@ -10,7 +10,7 @@ from journals.apps.api.serializers import UserSerializer, UserPageVisitSerialize
 from journals.apps.api.v1.theming.filters import SiteBrandingFilter
 from journals.apps.api.v1.theming.serializers import SiteBrandingSerializer
 from journals.apps.core.models import SiteConfiguration, User
-from journals.apps.journals.models import UserPageVisit
+from journals.apps.journals.models import JournalAccess, UserPageVisit
 from journals.apps.journals.utils import get_image_url
 from journals.apps.theming.models import SiteBranding
 
@@ -58,6 +58,7 @@ class SiteInformationView(views.APIView):
         theme_name = site.sitebranding.theme_name
         lms_url_root = site.siteconfiguration.lms_public_url_root_override or site.siteconfiguration.lms_url_root
         footer_links = site.sitebranding.footer_links
+        authorized_journals = JournalAccess.get_user_accessible_journal_ids(request.user)
 
         return Response({
             'user': UserSerializer(current_user).data,
@@ -68,4 +69,5 @@ class SiteInformationView(views.APIView):
             'theme_name': theme_name,
             'lms_url_root': lms_url_root,
             'footer_links': footer_links,
+            'authorized_journals': authorized_journals,
         })
