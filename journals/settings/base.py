@@ -333,7 +333,6 @@ WAGTAIL_FRONTEND_LOGIN_URL = LOGIN_URL
 
 THEME_DIR = '/edx/app/journals/themes/'
 
-CORS_ALLOW_CREDENTIALS = True
 CSRF_COOKIE_NAME = 'journals_csrftoken'
 
 ALLOWED_DOCUMENT_TYPES = ['application/pdf']
