@@ -61,6 +61,8 @@ CORS_ORIGIN_WHITELIST = (
     'localhost:1991'
 )
 
+CORS_ALLOW_CREDENTIALS = True
+
 #####################################################################
 # Lastly, see if the developer has any local overrides.
 if os.path.isfile(join(dirname(abspath(__file__)), 'private.py')):
