@@ -11,6 +11,8 @@ from wagtail.wagtailsearch.backends.elasticsearch5 import (
     Elasticsearch5SearchQuery, Elasticsearch5SearchResults)
 from wagtail.wagtailsearch.index import class_is_indexed
 
+from journals.apps.search.tasks import task_index_journal_document, task_index_journal_video
+
 JOURNAL_DOCUMENT_INDEX_NAME = '{}__journals_journaldocument'.format(settings.WAGTAILSEARCH_BACKENDS['default']['INDEX'])
 JOURNAL_DOCUMENT_TYPE = 'wagtaildocs_abstractdocument_journals_journaldocument'
 JOURNAL_DOCUMENT_ATTACHMENT_CONTENT_FIELD = 'attachment.content'
@@ -100,20 +102,16 @@ class JournalsearchIndex(Elasticsearch5Index):
         '''
 
         # Make sure the object can be indexed
-        if not class_is_indexed(item.__class__):
+        item_class = item.__class__
+        if not class_is_indexed(item_class):
             return
 
         # Get mapping
-        mapping = self.mapping_class(item.__class__)
+        mapping = self.mapping_class(item_class)
         if mapping.get_document_type() == JOURNAL_DOCUMENT_TYPE:
-            results = self.es.index(
-                self.name,
-                mapping.get_document_type(),
-                mapping.get_document(item),
-                pipeline=INGEST_ATTACHMENT_ID,
-                id=mapping.get_document_id(item)
-            )
-            print('in add_item with attachment results=', results)
+            task_index_journal_document.apply_async(args=[item.id])
+        elif mapping.get_document_type() == VIDEO_DOCUMENT_TYPE:
+            task_index_journal_video.apply_async(args=[item.id])
         else:
             super(JournalsearchIndex, self).add_item(item)
 
