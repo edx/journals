@@ -477,7 +477,12 @@ class JournalAboutPage(JournalPageMixin, Page):
         APIField('journal_id'),
         APIField('purchase_url'),
         APIField('price'),
+        APIField('organization'),
     ]
+
+    @property
+    def organization(self):
+        return self.journal.organization.name if self.journal else None
 
     def get_context(self, request, *args, **kwargs):
         # Update context to include only published pages
