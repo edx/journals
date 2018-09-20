@@ -43,6 +43,7 @@ THIRD_PARTY_APPS = (
     'waffle',
     'django_filters',
     'corsheaders',
+    'storages'
 )
 
 PROJECT_APPS = (
