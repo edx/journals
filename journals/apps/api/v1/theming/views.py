@@ -59,6 +59,7 @@ class SiteInformationView(views.APIView):
         lms_url_root = site.siteconfiguration.lms_public_url_root_override or site.siteconfiguration.lms_url_root
         footer_links = site.sitebranding.footer_links
         authorized_journals = JournalAccess.get_user_accessible_journal_ids(request.user)
+        segment_key = site.siteconfiguration.segment_key
 
         return Response({
             'user': UserSerializer(current_user).data,
@@ -70,4 +71,5 @@ class SiteInformationView(views.APIView):
             'lms_url_root': lms_url_root,
             'footer_links': footer_links,
             'authorized_journals': authorized_journals,
+            'segment_key': segment_key,
         })
