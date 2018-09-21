@@ -195,6 +195,8 @@ class SiteConfiguration(models.Model):
         unique=True
     )
 
+    segment_key = models.CharField(max_length=64, null=False, blank=True, default='')
+
     def build_lms_url(self, path=''):
         """
         Returns path joined with the appropriate LMS URL root for the current site.
