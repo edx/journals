@@ -5,8 +5,9 @@ import csv
 import datetime
 import hashlib
 import logging
-
+from urllib.parse import urljoin, urlparse
 import six
+
 from wagtail.wagtailadmin import messages
 
 logger = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ def get_cache_key(**kwargs):
     return hashlib.md5(key.encode('utf-8')).hexdigest()
 
 
-def get_image_url(image, rendition='original'):
+def get_image_url(site, image, rendition='original'):
     """
     Get image url for a given rendition, defaults to 'original'
     Args:
@@ -63,9 +64,15 @@ def get_image_url(image, rendition='original'):
         rendition: image rendition to return, None will fetch the original image url
     """
     if rendition:
-        return image.get_rendition(rendition).file.url
+        image_url = image.get_rendition(rendition).file.url
     else:
-        return image.file.url
+        image_url = image.file.url
+
+    is_absolute_url = bool(urlparse(image_url).netloc)
+    if is_absolute_url:
+        return image_url
+    else:
+        return urljoin(site.root_url, image_url)
 
 
 def add_messages(request, message_type, messages_list):
