@@ -252,7 +252,7 @@ class JournalImageChooserBlock(blocks.StructBlock):
             'width': image.width,
             'height': image.height,
             'image_id': image.id,
-            'url': get_image_url(image),
+            'url': get_image_url(context['request'].site, image),
             'caption': self.get_caption_text(value) if block_caption else image.caption,
             'span_id': get_span_id(IMAGE_BLOCK_TYPE, image.id)
         }

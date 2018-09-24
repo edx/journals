@@ -600,7 +600,7 @@ class JournalAboutPage(JournalPageMixin, Page):
         if not self.hero_image:
             return ''
 
-        return get_image_url(self.hero_image)
+        return get_image_url(self.site, self.hero_image)
 
     @property
     def card_image_url(self):
@@ -610,7 +610,7 @@ class JournalAboutPage(JournalPageMixin, Page):
         if not self.card_image:
             return ''
 
-        return get_image_url(self.card_image)
+        return get_image_url(self.site, self.card_image)
 
     @property
     def card_image_absolute_url(self):
@@ -687,7 +687,7 @@ class JournalIndexPage(JournalPageMixin, Page):
     @property
     def hero_image_url(self):
         if self.hero_image:
-            return get_image_url(self.hero_image)
+            return get_image_url(self.site, self.hero_image)
         else:
             return ''
 
