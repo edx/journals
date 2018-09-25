@@ -147,3 +147,8 @@ def register_run_commands_menu_item():
         classnames='icon icon-cogs',
         order=1000
     )
+
+
+@hooks.register('insert_global_admin_css')
+def global_admin_css():
+    return format_html('<link rel="stylesheet" href="{}">', static('css/journals_editor.css'))

@@ -1,0 +1,112 @@
+
+a, .icon.teal, .nolink:hover, .listing .title h2 a:hover {
+    color: #007db8;
+}
+header, .breadcrumb, .page-explorer .listing .index, .tab-nav.merged, .dropdown ul {
+    background-color: #007db8;
+}
+
+.tab-nav a {
+    background-color: #126F9A;
+    border-top: .3em solid #126F9A;
+}
+
+.tab-nav a:hover {
+    border-top: .3em solid #ffffff;
+}
+
+.breadcrumb li:hover, header .button {
+    background-color: #126F9A;
+}
+
+header .button:hover {
+    background-color: #0A4A67;
+}
+
+.breadcrumb li a:after, .breadcrumb li span:after, .button  {
+    color: #ffffff;
+}
+
+.page-explorer .listing .index .button, .button {
+     border-color: #126F9A;
+}
+
+.page-explorer .listing .index .button.bicolor, .dropdown .dropdown-toggle, .button {
+    background-color: #007db8;
+}
+
+.page-explorer .listing .index .button:hover, .t-inverted .u-btn-current:hover, .button:hover,
+.replace-file-input:hover .button, .dropdown .dropdown-toggle:hover, .dropdown ul li a:hover,
+.dropdown.open .dropdown-toggle {
+    background-color: #126F9A;
+    border-color: #126F9A;
+}
+
+.t-default .u-btn-current, .listing .children a {
+    color: #007db8;
+}
+
+.summary ul.stats a:hover {
+    color: #126F9A;
+}
+
+.listing .children a:hover, .listing .no-children a:hover{
+    background-color: #007db8;
+    color:#fff;
+}
+
+body.ready .listing .children, body.ready .listing .no-children {
+    background-color: #ffffff;
+}
+body.ready .listing .children:hover, body.ready .listing .no-children:hover {
+    background-color: #007db8;
+}
+
+.privacy-indicator .label-private:before, .privacy-indicator .label-public:before {
+    color:#007db8;
+}
+
+.listing .button-secondary:hover, .button-secondary:hover,
+.t-default .u-btn-current:hover,form.status-tag:hover {
+    border-color: #007db8;
+    background-color: #007db8;
+}
+
+.richtext:focus, .tagit:focus, input:focus, select:focus, textarea:focus {
+    border-color: #007db8;
+    background-color: #F2F8FB;
+}
+
+a.status-tag.primary:hover, a.status-tag:hover, form.status-tag:hover {
+    color: #007db8;
+    border-color: #007db8;
+}
+.object>h2 label:before, .object>h2:before {
+    background-color: #1b6f98 !important;
+}
+
+.object>h2 {
+    background-color: #dceef7 !important;
+}
+
+.sequence-controls h3 label {
+    color: #007db8 !important;
+}
+
+.stream-menu button:focus, .stream-menu button:hover {
+    background-color: #007db8 !important;
+}
+
+.button-secondary {
+    background-color: transparent;
+    color: #007db8
+}
+
+.sequence-controls, li.sequence-member:hover {
+    border-color: #e1e1e1 !important;
+    background-color: #F2F8FB !important;
+}
+
+.dropdown ul li {
+    border-color: #ffffff;
+}
