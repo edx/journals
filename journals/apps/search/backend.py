@@ -3,13 +3,18 @@ Search backend module
 """
 from __future__ import absolute_import, unicode_literals
 
+import logging
+
 from django.conf import settings
+from elasticsearch import NotFoundError
 
 from elasticsearch.helpers import bulk
 from wagtail.wagtailsearch.backends.elasticsearch5 import (
     Elasticsearch5Index, Elasticsearch5Mapping, Elasticsearch5SearchBackend,
     Elasticsearch5SearchQuery, Elasticsearch5SearchResults)
 from wagtail.wagtailsearch.index import class_is_indexed
+
+log = logging.getLogger(__name__)
 
 JOURNAL_DOCUMENT_INDEX_NAME = '{}__journals_journaldocument'.format(settings.WAGTAILSEARCH_BACKENDS['default']['INDEX'])
 JOURNAL_DOCUMENT_TYPE = 'wagtaildocs_abstractdocument_journals_journaldocument'
@@ -20,6 +25,12 @@ INGEST_ATTACHMENT_ID = 'attachment'
 INGEST_ATTACHMENT_DATA_FIELD = 'data'
 VIDEO_DOCUMENT_TYPE = 'journals_video'
 VIDEO_DOCUMENT_TRANSCRIPT_FIELD = 'transcript'
+INGEST_PIPELINE_BODY = {
+    'description': 'Extract attachment information',
+    'processors': [
+        {INGEST_ATTACHMENT_ID: {'field': INGEST_ATTACHMENT_DATA_FIELD}}
+    ]
+}
 
 LARGE_TEXT_FIELD_SEARCH_PROPS = {
     'type': 'text',
@@ -69,29 +80,17 @@ class JournalsearchMapping(Elasticsearch5Mapping):
 
 class JournalsearchIndex(Elasticsearch5Index):
     '''Journal specific backend to Elasticsearch5'''
-    def put(self):
-        '''
-        Called during index creation
-        Override to setup the ingest_attachment plugin
-        '''
-        super(JournalsearchIndex, self).put()
 
-        # TODO is this the right place? Only do it once if it doesn't exist
-        if self.name == JOURNAL_DOCUMENT_INDEX_NAME:
-            body = {'description': 'Extract attachment information',
-                    'processors': [
-                        {INGEST_ATTACHMENT_ID: {'field': INGEST_ATTACHMENT_DATA_FIELD}}
-                    ]
-                    }
-
-            results = self.es.index(
-                index=INGEST_ATTACHMENT_INDEX,
-                doc_type=INGEST_ATTACHMENT_DOC_TYPE,
-                id=INGEST_ATTACHMENT_ID,
-                body=body
-            )
-
-            print('created index for _ingest attachment, results=', results)
+    def add_ingest_pipeline(self):
+        try:
+            try:
+                results = self.es.ingest.get_pipeline(id=INGEST_ATTACHMENT_ID)
+                log.info('Pipeline found for ingest attachment, results={results}'.format(results=results))
+            except NotFoundError:
+                results = self.es.ingest.put_pipeline(id=INGEST_ATTACHMENT_ID, body=INGEST_PIPELINE_BODY)
+                log.info('Created pipeline for ingest attachment, results={results}'.format(results=results))
+        except Exception as e:  # pylint: disable=broad-except
+            log.exception("Some Exception occurred while adding ingest pipeline. {e}".format(e=e))
 
     def add_item(self, item):
         '''
@@ -106,6 +105,8 @@ class JournalsearchIndex(Elasticsearch5Index):
         # Get mapping
         mapping = self.mapping_class(item.__class__)
         if mapping.get_document_type() == JOURNAL_DOCUMENT_TYPE:
+            # sometime pipeline is missing. adding them to make sure they exists before using them in indexing)
+            self.add_ingest_pipeline()
             results = self.es.index(
                 self.name,
                 mapping.get_document_type(),
@@ -113,7 +114,7 @@ class JournalsearchIndex(Elasticsearch5Index):
                 pipeline=INGEST_ATTACHMENT_ID,
                 id=mapping.get_document_id(item)
             )
-            print('in add_item with attachment results=', results)
+            log.info('in add_item with attachment results={results}'.format(results=results))
         else:
             super(JournalsearchIndex, self).add_item(item)
 
@@ -131,6 +132,7 @@ class JournalsearchIndex(Elasticsearch5Index):
 
         if mapping.get_document_type() == JOURNAL_DOCUMENT_TYPE:
             # Create list of actions
+            self.add_ingest_pipeline()
             actions = []
             for item in items:
                 # Create the action
@@ -143,7 +145,7 @@ class JournalsearchIndex(Elasticsearch5Index):
                 action.update(mapping.get_document(item))
                 actions.append(action)
 
-            print('in add_items with attachment')
+                log.info('in add_items with attachment')
             # Run the actions
             bulk(self.es, actions)
         else:

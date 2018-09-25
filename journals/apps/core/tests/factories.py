@@ -18,12 +18,16 @@ from journals.apps.journals.models import (
     JournalImage,
     JournalPage,
     Organization,
+    JournalDocument,
+    Video,
 )
 from journals.apps.core.models import SiteConfiguration, User
 from journals.apps.theming.models import SiteBranding
 
 USER_PASSWORD = 'password'
 RANDOM_SEED_STATE = random.getstate()
+RAW_HTML_BLOCK_DATA = 'The quick brown fox jumps over the lazy dog'
+RAW_HTML_BLOCK = '<h1>{data}</h1>'.format(data=RAW_HTML_BLOCK_DATA)
 
 
 def random_string_generator(size=5, chars=string.ascii_lowercase + string.digits):
@@ -169,7 +173,7 @@ class SiteFactory(factory.DjangoModelFactory):
 class ImageFactory(factory.DjangoModelFactory):
     """ Model factory for Image model """
 
-    title = factory.Iterator(fake_words_generator(prefix='title:'))
+    title = factory.Iterator(fake_words_generator(prefix='image-title:'))
     file = factory.Faker('file_path', depth=1, extension='png')
     width = random.randint(100, 2000)
     height = random.randint(100, 2000)
@@ -177,6 +181,29 @@ class ImageFactory(factory.DjangoModelFactory):
 
     class Meta:
         model = JournalImage
+
+
+class DocumentFactory(factory.DjangoModelFactory):
+    """ Model factory for Document model """
+
+    title = factory.Iterator(fake_words_generator(prefix='doc-title:'))
+    file = factory.django.FileField()
+    collection_id = 1
+
+    class Meta:
+        model = JournalDocument
+
+
+class VideoFactory(factory.DjangoModelFactory):
+    """ Model factory for Document model """
+
+    display_name = factory.Iterator(fake_words_generator(prefix='video-title:'))
+    view_url = factory.Faker('url')
+    source_course_run = FuzzyText()
+    collection_id = 1
+
+    class Meta:
+        model = Video
 
 
 class SiteBrandingFactory(factory.DjangoModelFactory):

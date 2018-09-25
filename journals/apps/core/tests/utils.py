@@ -1,5 +1,9 @@
 """ Helper Methods for Journal Tests and Test Data """
-from .factories import JournalAboutPageFactory, JournalPageFactory
+import uuid
+
+from journals.apps.journals.blocks import RAW_HTML_BLOCK_TYPE
+from .factories import JournalAboutPageFactory, JournalPageFactory, ImageFactory, DocumentFactory, VideoFactory, \
+    RAW_HTML_BLOCK
 
 # Default test data for a journal
 TEST_JOURNAL_STRUCTURE = {
@@ -71,7 +75,22 @@ def child_path_gen(parent_path):
         yield parent_path + child_path_suffix
 
 
-def create_journal_about_page_factory(journal, journal_structure, about_page_slug=None):
+def get_available_child_path(parent_page):
+    """
+    :param parent_page: for which we want to get upcoming child path
+    :return: path that can be use to create new child for parent_page
+    """
+    if not parent_page.get_children():
+        # There is not any child before, so we just can make first child
+        return "{root_path}0001".format(root_path=parent_page.path)
+    # Have to find last child and add 1 to get path for upcoming child
+    child_path = int(parent_page.get_last_child().path[-4:]) + 1
+    if child_path <= 9999:
+        return "{root_path}{child_path:04}".format(root_path=parent_page.path, child_path=child_path)
+    raise Exception("No more child can be added to {}".format(parent_page))
+
+
+def create_journal_about_page_factory(journal, journal_structure, root_page, about_page_slug=None):
     """
     Creates JournalAboutPageFactory and all of its sub pages that are defined in the journal_structure
 
@@ -83,13 +102,11 @@ def create_journal_about_page_factory(journal, journal_structure, about_page_slu
         (JournalAboutPageFactory): JournalAboutPageFactory that has all the sub pages defined in the
             journal_structure
     """
-    title = None
-    if 'title' in journal_structure:
-        title = journal_structure['title']
-
-    path = "000100010002"
-    depth = 3
+    title = journal_structure['title']
     children = journal_structure['structure']
+
+    path = get_available_child_path(root_page)
+    depth = root_page.depth + 1
     numchild = len(children)
     about_page_factory = JournalAboutPageFactory(
         journal=journal,
@@ -99,6 +116,10 @@ def create_journal_about_page_factory(journal, journal_structure, about_page_slu
         depth=depth,
         slug=about_page_slug
     )
+
+    # just added JournalAboutPage to root_page as child above, so need to increment numchild for root_page
+    root_page.numchild += 1
+    root_page.save()
 
     child_path = child_path_gen(path)
     for child in children:
@@ -134,7 +155,7 @@ def create_nested_journal_pages(journal_page, path, depth, slug, journal_about_p
 
     children = journal_page['children']
     numchild = len(children)
-    JournalPageFactory(
+    journal_page = JournalPageFactory(
         title=title,
         path=path,
         numchild=numchild,
@@ -142,6 +163,13 @@ def create_nested_journal_pages(journal_page, path, depth, slug, journal_about_p
         slug=slug,
         journal_about_page=journal_about_page,
     )
+
+    journal_page.images.add(ImageFactory())
+    journal_page.documents.add(DocumentFactory())
+    journal_page.videos.add(VideoFactory(block_id=uuid.uuid4()))
+
+    journal_page.body = [(RAW_HTML_BLOCK_TYPE, RAW_HTML_BLOCK)]
+    journal_page.save()
 
     child_path = child_path_gen(path)
     for child in children:

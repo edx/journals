@@ -3,11 +3,11 @@ Test Cases for journal about page
 """
 from django.test import TestCase
 from django.urls import reverse
+from wagtail.wagtailcore.models import Site
 
 from journals.apps.core.tests.factories import (
     JournalFactory,
     OrganizationFactory,
-    SiteFactory,
     SiteConfigurationFactory,
     UserFactory,
     USER_PASSWORD,
@@ -41,7 +41,7 @@ class TestJournalAboutPageStructure(TestCase):
         self.user.is_superuser = True
         self.user.save()
         self.test_about_page_slug = 'journal-about-page-slug'
-        self.site = SiteFactory()
+        self.site = Site.objects.first()
         self.site_configuration = SiteConfigurationFactory(site=self.site)
         self.org = OrganizationFactory(site=self.site)
         self.journal = JournalFactory(
@@ -50,6 +50,7 @@ class TestJournalAboutPageStructure(TestCase):
         self.journal_about_page = create_journal_about_page_factory(
             journal=self.journal,
             journal_structure=self.journal_test_data,
+            root_page=self.site.root_page,
             about_page_slug=self.test_about_page_slug
         )
 

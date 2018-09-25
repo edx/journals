@@ -12,6 +12,15 @@ services:
       MYSQL_USER: "journalsdbuser"
       MYSQL_PASSWORD: "password"
       MYSQL_DATABASE: "journals"
+
+  elasticsearch:
+    container_name: journals.elasticsearch
+    build:
+      context: ../
+      dockerfile: Dockerfile-elasticsearch
+    environment:
+      discovery.type: single-node
+
   journals:
     #image: edxops/journals::test
     container_name: journals_testing
