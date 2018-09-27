@@ -71,8 +71,6 @@ class SiteInformationView(views.APIView):
         segment_key = site.siteconfiguration.segment_key
         last_visited = self.get_last_visited(self.request.user) if self.request.user.is_authenticated else []
 
-        last_visited = self.get_last_visited(self.request.user)
-
         return Response({
             'user': UserSerializer(current_user).data,
             'is_authenticated': bool(current_user),
