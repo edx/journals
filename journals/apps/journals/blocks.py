@@ -1,4 +1,5 @@
 """ Custom blocks """
+import logging
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup as parser
@@ -24,6 +25,8 @@ STREAM_DATA_DOC_FIELD = 'doc'
 STREAM_DATA_VIDEO_FIELD = 'video'
 
 BLOCK_FORMATTER = '{block_prefix} {block}'
+
+log = logging.getLogger(__name__)
 
 
 def get_block_prefix(span_id):
@@ -74,11 +77,20 @@ class PDFBlock(blocks.StructBlock):
         block_title = self.get_title(value)
         document = self.get_doc(value)
 
+        if document:
+            return {
+                'doc_id': document.id,
+                'title': block_title if block_title else document.title,
+                'url': document.file.url,
+                'span_id': get_span_id(PDF_BLOCK_TYPE, document.id),
+            }
+
+        log.warning('Missing Document: document has been deleted but still referenced in page')
         return {
-            'doc_id': document.id,
-            'title': block_title if block_title else document.title,
-            'url': document.file.url,
-            'span_id': get_span_id(PDF_BLOCK_TYPE, document.id)
+            'doc_id': 0,
+            'title': block_title if block_title else "Missing Document",
+            'url': '',
+            'span_id': 'missing-document',
         }
 
 
@@ -182,12 +194,22 @@ class XBlockVideoBlock(blocks.StructBlock):
         block_title = self.get_title(value)
         video = self.get_video(value)
 
+        if video:
+            return {
+                'video_id': video.id,
+                'title': block_title if block_title else video.display_name,
+                'view_url': video.view_access_url,
+                'transcript_url': video.transcript_url,
+                'span_id': get_span_id(VIDEO_BLOCK_TYPE, video.id),
+            }
+
+        log.warning('Missing Video: video has been deleted but still referenced in page')
         return {
-            'video_id': video.id,
-            'title': block_title if block_title else video.display_name,
-            'view_url': video.view_access_url,
-            'transcript_url': video.transcript_url,
-            'span_id': get_span_id(VIDEO_BLOCK_TYPE, video.id)
+            'video_id': 0,
+            'title': block_title if block_title else "Missing Video",
+            'view_url': '',
+            'transcript_url': '',
+            'span_id': 'missing-video',
         }
 
     class Meta:
@@ -247,12 +269,24 @@ class JournalImageChooserBlock(blocks.StructBlock):
         block_caption = self.get_caption_block(value)
         image = self.get_image(value)
 
+        if image:
+            return {
+                'title': block_title if block_title else image.title,
+                'width': image.width,
+                'height': image.height,
+                'image_id': image.id,
+                'url': get_image_url(context['request'].site, image),
+                'caption': self.get_caption_text(value) if block_caption else image.caption,
+                'span_id': get_span_id(IMAGE_BLOCK_TYPE, image.id)
+            }
+
+        log.warning('Missing Image: image has been deleted but still referenced in page')
         return {
-            'title': block_title if block_title else image.title,
-            'width': image.width,
-            'height': image.height,
-            'image_id': image.id,
-            'url': get_image_url(context['request'].site, image),
-            'caption': self.get_caption_text(value) if block_caption else image.caption,
-            'span_id': get_span_id(IMAGE_BLOCK_TYPE, image.id)
+            'title': block_title if block_title else "Missing Image",
+            'width': 0,
+            'height': 0,
+            'image_id': 0,
+            'url': '',
+            'caption': self.get_caption_text(value) if block_caption else '',
+            'span_id': 'missing-image',
         }
