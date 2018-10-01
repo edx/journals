@@ -32,13 +32,22 @@ class SiteInformationView(views.APIView):
     """
     permission_classes = (AllowAny, )
 
+    def get_last_visited(self, user):
+        """ Returns the the last visited page per journal per user"""
+        user_visits = UserPageVisit.objects.filter(user=user)
+        visited_journal_about_ids = user_visits.values_list('journal_about', flat=True).distinct()
+        return [
+            user_visits.filter(journal_about_id=about_id).order_by("-visited_at").first()
+            for about_id
+            in visited_journal_about_ids
+        ]
+
     def get(self, request):
         """ Responds to GET calls with theming, user, and site information """
         if request.user.is_authenticated:
             current_user = User.objects.get(pk=self.request.user.pk)
         else:
             current_user = None
-        visited_pages = UserPageVisit.objects.filter(user_id=self.request.user.pk).order_by("-visited_at")
         frontend_url = request.META.get('HTTP_REFERER')
         frontend_url = urlparse(frontend_url)._replace(path='').geturl()
         try:
@@ -60,11 +69,12 @@ class SiteInformationView(views.APIView):
         footer_links = site.sitebranding.footer_links
         authorized_journals = JournalAccess.get_user_accessible_journal_ids(request.user)
         segment_key = site.siteconfiguration.segment_key
+        last_visited = self.get_last_visited(self.request.user) if self.request.user.is_authenticated else []
 
         return Response({
             'user': UserSerializer(current_user).data,
             'is_authenticated': bool(current_user),
-            'visited_pages': UserPageVisitSerializer(visited_pages, many=True).data,
+            'visited_pages': UserPageVisitSerializer(last_visited, many=True).data,
             'server_url': server_url,
             'logo': logo,
             'theme_name': theme_name,
