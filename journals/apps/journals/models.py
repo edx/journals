@@ -1049,6 +1049,12 @@ class UserPageVisit(models.Model):
     """
     user = models.ForeignKey(User, null=True, related_name='visited_pages', on_delete=models.SET_NULL)
     page = models.ForeignKey('wagtailcore.Page', null=True, on_delete=models.SET_NULL)
+    journal_about = models.ForeignKey(
+        JournalAboutPage,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='page_visits'
+    )
     visited_at = models.DateTimeField(auto_now=True, db_index=True)
     stale = models.BooleanField(
         default=False,

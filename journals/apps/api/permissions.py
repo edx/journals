@@ -12,9 +12,14 @@ class UserPageVisitPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         """ Allows everything put posting visits for other users"""
-        if request.user.is_staff or request.method != "POST":
+        if request.user.is_staff or request.method == "GET":
             return True
-        return True if int(request.data.get('user')) == request.user.id else False
+
+        post_user = request.data.get('user')
+        if request.method == "POST" and post_user and int(post_user) == request.user.id:
+            return True
+
+        return False
 
 
 class WagtailAdminPermission(permissions.BasePermission):

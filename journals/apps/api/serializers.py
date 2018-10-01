@@ -3,7 +3,14 @@
 from rest_framework import serializers
 
 from journals.apps.core.models import User
-from journals.apps.journals.models import Journal, JournalAccess, JournalAboutPage, Organization, UserPageVisit
+from journals.apps.journals.models import (
+    Journal,
+    JournalAboutPage,
+    JournalAccess,
+    JournalPage,
+    Organization,
+    UserPageVisit
+)
 
 
 class JournalAboutPageSerializer(serializers.ModelSerializer):
@@ -55,11 +62,28 @@ class UserPageVisitSerializer(serializers.ModelSerializer):
     Serializer for the "UserPageVisit" model.
     """
 
+    def create(self, validated_data):
+        page = validated_data.get('page')
+        if isinstance(page.specific, JournalPage):
+            journal_about = page.specific.get_journal_about_page()
+            validated_data.update({'journal_about': journal_about})
+            return UserPageVisit.objects.create(**validated_data)
+        return UserPageVisit.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.page = validated_data.get('page', instance.page)
+        instance.user = validated_data.get('user', instance.user)
+        if isinstance(instance.page.specific, JournalPage):
+            instance.journal_about = instance.page.specific.get_journal_about_page()
+        instance.save()
+        return instance
+
     class Meta(object):
         model = UserPageVisit
         fields = (
             'user',
             'page',
+            'journal_about',
             'visited_at',
             'stale'
         )
