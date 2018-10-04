@@ -1,14 +1,16 @@
 '''management command to publish journals'''
 from __future__ import unicode_literals
-
+import logging
 from hashlib import md5
 
 from django.core.management.base import BaseCommand, CommandError
-from slumber.exceptions import HttpClientError
+from slumber.exceptions import HttpClientError, HttpServerError
 from wagtail.wagtailcore.models import Page
 
 from journals.apps.journals.models import Journal, JournalIndexPage, JournalAboutPage, JournalMetaData, Organization
 from journals.apps.journals.api_utils import update_service, delete_from_service
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -62,22 +64,34 @@ class Command(BaseCommand):
             raise CommandError('Error creating journal: {}'.format(err))
 
         try:
+            discovery_data = journal_meta_data.get_discovery_data()
             self._update_discovery(
                 journal.organization.site.siteconfiguration.discovery_journal_api_client,
-                journal_meta_data.get_discovery_data()
+                discovery_data
             )
-        except HttpClientError as err:
+        except (HttpClientError, HttpServerError) as err:
             # TODO - roll back journal updates if this fails
-            raise CommandError('Error publishing to discovery-service: {}'.format(err.content))
+            err_str = 'Error publishing to discovery-service, discovery data={discovery_data} err={err}'.format(
+                discovery_data=discovery_data,
+                err=err.content
+            )
+            logger.error(err_str)
+            raise CommandError(err_str)
 
         try:
+            ecomm_data = journal_meta_data.get_ecommerce_data()
             self._update_ecommerce(
                 journal.organization.site.siteconfiguration.ecommerce_journal_api_client,
-                journal_meta_data.get_ecommerce_data()
+                ecomm_data
             )
-        except HttpClientError as err:
+        except (HttpClientError, HttpServerError) as err:
             # TODO - roll back discovery updates if this fails
-            raise CommandError('Error publishing to ecommerce-service: {}'.format(err.content))
+            err_str = 'Error publishing to ecommerce-service, ecomm data={ecomm_data} err={err}'.format(
+                ecomm_data=ecomm_data,
+                err=err.content
+            )
+            logger.error(err_str)
+            raise CommandError(err_str)
 
         return journal
 
