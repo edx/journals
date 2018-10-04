@@ -144,7 +144,7 @@ class JournalMetaData(object):
         return {
             'uuid': str(self.journal.uuid),
             'partner': self.journal.organization.site.siteconfiguration.discovery_partner_id,
-            'organization': self.journal.organization.name,
+            'organization': {'key': self.journal.organization.name},
             'title': self.journal.name,
             'price': self.price,
             'currency': self.currency,
