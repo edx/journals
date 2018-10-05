@@ -48,8 +48,11 @@ class JournalAccessViewSet(viewsets.ModelViewSet):
             return Response(content, status=status.HTTP_401_UNAUTHORIZED)
 
         except Journal.DoesNotExist:  # pylint: disable=duplicate-except
-            logger.error("Could not grant access to journal [%s] for user [%s], journal does not exist",
-                        journal_uuid, username)
+            logger.error(
+                "Could not grant access to journal [%s] for user [%s], journal does not exist",
+                journal_uuid,
+                username
+            )
             content = "Journal [{}] does not exist".format(journal_uuid)
             return Response(content, status=status.HTTP_404_NOT_FOUND)
 
