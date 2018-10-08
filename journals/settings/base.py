@@ -35,6 +35,7 @@ INSTALLED_APPS = (
     'modelcluster',
     'release_util',
     'taggit',
+    'background_task',
 )
 
 THIRD_PARTY_APPS = (
@@ -343,3 +344,8 @@ ALLOWED_DOCUMENT_TYPES = ['application/pdf']
 ALLOWED_DOCUMENT_FILE_EXTENSIONS = ['.pdf']
 
 BATCH_SIZE_FOR_LMS_USER_API = 50
+
+# background_task
+# how many times a task will be attempted
+MAX_ATTEMPTS = 2
+# End background_task

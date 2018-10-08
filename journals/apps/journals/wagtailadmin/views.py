@@ -26,6 +26,7 @@ from wagtail.wagtailcore.models import Collection
 
 from journals.apps.journals.api_utils import get_discovery_journal
 from journals.apps.journals.wagtailadmin.forms import JournalEditForm, JournalCreateForm
+from journals.apps.journals.wagtailadmin.tasks import task_run_management_command
 from journals.apps.journals.models import Journal, Organization
 from journals.apps.journals.permissions import video_permission_policy
 from journals.apps.journals.utils import add_messages
@@ -428,10 +429,8 @@ class AdminCommandsView(TemplateView):
             stderr.write('Unknown command "%s"' % management_command)
         else:
             try:
-                management.call_command(
-                    management_command,
-                    stdout=stdout, stderr=stderr
-                )
+                task_run_management_command(management_command)
+                stdout.write("Command %s successully queued to run in the background process." % management_command)
             except Exception as ex:  # pylint: disable=broad-except
                 stderr.write(str(ex))
 
