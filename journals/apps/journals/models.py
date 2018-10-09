@@ -310,9 +310,10 @@ class JournalDocument(AbstractDocument):
         Return the contents of the document as base64 encoded
         data used as input to elasticsearch ingest-attachment plugin
         '''
-        self.file.open()
-        contents = base64.b64encode(self.file.read()).decode('ascii')
-        self.file.close()
+        # converting to base64 is (Size * 8)/6 times bigger than binary file
+        # determine the max number of bytes we can read to not exceed the max upload size
+        read_max = (settings.MAX_ELASTICSEARCH_UPLOAD_SIZE * 6) / 8
+        contents = base64.b64encode(self.file.read(int(read_max))).decode('ascii')
         return contents
 
     def get_viewer_url(self, base_url):
@@ -402,7 +403,7 @@ class Video(CollectionMember, index.Indexed, models.Model):
         try:
             response = requests.get(self.transcript_url)  # No auth needed for transcripts
             contents = response.content
-            return contents.decode('utf-8') if contents else None
+            return contents.decode('utf-8')[:settings.MAX_ELASTICSEARCH_UPLOAD_SIZE] if contents else None
         except Exception as err:  # pylint: disable=broad-except
             logger.error(
                 'Exception trying to read transcript url={url} for Video err={err}'.format(

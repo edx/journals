@@ -343,3 +343,4 @@ ALLOWED_DOCUMENT_TYPES = ['application/pdf']
 ALLOWED_DOCUMENT_FILE_EXTENSIONS = ['.pdf']
 
 BATCH_SIZE_FOR_LMS_USER_API = 50
+MAX_ELASTICSEARCH_UPLOAD_SIZE = 10000000  # maximum number of bytes per document that can be uploaded to elasticsearch
