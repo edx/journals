@@ -49,7 +49,6 @@ urlpatterns = auth_urlpatterns + [
     url(r'^documents/', include(wagtaildocs_urls)),
     url(r'^search/$', search_views.search, name='search'),
     url(r'^require_auth/$', core_views.required_auth),
-    url(r'^$', RedirectView.as_view(url='/cms/')),
     url(r'', include(wagtail_urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
