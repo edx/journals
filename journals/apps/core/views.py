@@ -42,9 +42,10 @@ def health(_):
         cursor.fetchone()
         cursor.close()
         database_status = Status.OK
-    except DatabaseError:
+    except Exception as err:
         # TODO: WL-1713:  the code will never get here because the SiteMiddleware
         # (wagtail.wagtailcore.middleware.SiteMiddleware) will throw a 500 if the database is down
+        logger.error("Error in healthcheck err={err}".format(err=err))
         database_status = Status.UNAVAILABLE
 
     overall_status = Status.OK if (database_status == Status.OK) else Status.UNAVAILABLE

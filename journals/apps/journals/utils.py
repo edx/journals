@@ -9,10 +9,29 @@ from urllib.parse import urljoin, urlparse
 import six
 
 from wagtail.wagtailadmin import messages
+from wagtail.wagtailcore.middleware import SiteMiddleware
+from wagtail.wagtailcore.models import Site
 
 logger = logging.getLogger(__name__)
 
 BLOCK_SPAN_ID_FORMATTER = '{block_type}-{block_id}'
+
+
+class JournalSiteMiddleware(SiteMiddleware):
+    def process_request(self, request):
+        """
+        Set request.site to contain the Site object responsible for handling this request,
+        according to hostname matching rules
+        """
+        import pdb; pdb.set_trace()
+        try:
+            request.site = Site.find_for_request(request)
+        except Site.DoesNotExist:
+            request.site = None
+        except Exception as err:
+            import pdb; pdb.set_trace()
+            logger.info('Got exception in process_request')
+            request.site = None
 
 
 def make_md5_hash(value):
