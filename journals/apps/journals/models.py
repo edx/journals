@@ -663,7 +663,7 @@ class JournalIndexPage(JournalPageMixin, Page):
     The marketing page that shows all the journals available on a given site.
     Publicly available.
     """
-    subpage_types = ['JournalAboutPage']
+    subpage_types = []
 
     hero_image = models.ForeignKey(
         JournalImage, on_delete=models.SET_NULL, related_name='+', null=True, blank=True
