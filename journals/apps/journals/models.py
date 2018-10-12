@@ -313,7 +313,9 @@ class JournalDocument(AbstractDocument):
         # converting to base64 is (Size * 8)/6 times bigger than binary file
         # determine the max number of bytes we can read to not exceed the max upload size
         read_max = (settings.MAX_ELASTICSEARCH_UPLOAD_SIZE * 6) / 8
+        self.file.open()
         contents = base64.b64encode(self.file.read(int(read_max))).decode('ascii')
+        self.file.close()
         return contents
 
     def get_viewer_url(self, base_url):

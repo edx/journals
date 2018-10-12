@@ -324,8 +324,8 @@ WAGTAILSEARCH_BACKENDS = {
         'BACKEND': 'journals.apps.search.backend',
         'URLS': ['http://journals.elasticsearch:9200'],
         'INDEX': 'journals',
-        'TIMEOUT': 5,
-        'OPTIONS': {},
+        'TIMEOUT': 20,
+        'OPTIONS': {'max_retries': 2, 'retry_on_timeout': True},
         'INDEX_SETTINGS': {},
     }
 }
