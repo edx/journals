@@ -46,6 +46,7 @@ logger = logging.getLogger(__name__)
 JOURNAL_PAGE_PREVIEW_PATH = 'pagePreview'
 JOURNAL_ABOUT_PAGE_PREVIEW_PATH = 'aboutPreview'
 JOURNAL_INDEX_PAGE_PREVIEW_PATH = 'indexPreview'
+RICH_TEXT_FEATURES = ['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image']
 
 
 class Organization(models.Model):
@@ -457,7 +458,7 @@ class JournalAboutPage(JournalPageMixin, Page):
     )
     short_description = models.CharField(max_length=128, blank=True, default='')
     long_description = models.TextField(blank=True, default=None, null=True)
-    custom_content = RichTextField(blank=True)
+    custom_content = RichTextField(blank=True, features=RICH_TEXT_FEATURES)
 
     content_panels = Page.content_panels + [
         FieldPanel('short_description'),
@@ -670,7 +671,7 @@ class JournalIndexPage(JournalPageMixin, Page):
     hero_image = models.ForeignKey(
         JournalImage, on_delete=models.SET_NULL, related_name='+', null=True, blank=True
     )
-    intro = RichTextField(blank=True)
+    intro = RichTextField(blank=True, features=RICH_TEXT_FEATURES)
 
     content_panels = Page.content_panels + [
         ImageChooserPanel('hero_image'),
@@ -731,7 +732,7 @@ class JournalPage(JournalPageMixin, Page):
     author = models.CharField(max_length=255, blank=True, default='')
     body = StreamField([
         (RICH_TEXT_BLOCK_TYPE, JournalRichTextBlock(
-            features=['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image']
+            features=RICH_TEXT_FEATURES
         )),
         (RAW_HTML_BLOCK_TYPE, JournalRawHTMLBlock()),
         (IMAGE_BLOCK_TYPE, JournalImageChooserBlock()),
