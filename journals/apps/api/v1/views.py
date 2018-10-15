@@ -5,9 +5,9 @@ import logging
 from collections import OrderedDict
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, generics, status
+from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework import generics
 
 from journals.apps.api.filters import JournalAccessFilter, UserPageVisitFilter
 from journals.apps.api.pagination import LargeResultsSetPagination
@@ -31,7 +31,7 @@ class JournalAccessViewSet(viewsets.ModelViewSet):
     pagination_class = LargeResultsSetPagination
 
     def create(self, request, *args, **kwargs):
-        '''create a JournalAccess entry'''
+        """create a JournalAccess entry"""
         username = request.data.get('user')
         journal_uuid = request.data.get('journal')
         order_number = request.data.get('order_number', None)
@@ -43,14 +43,18 @@ class JournalAccessViewSet(viewsets.ModelViewSet):
             user = User.objects.get(username=username)
             journal = Journal.objects.get(uuid=journal_uuid)
         except User.DoesNotExist:
-            # TODO: should be warning or error level?
-            logger.info("Could not grant access to user [%s], user does not exist in journals service", username)
-            return HttpResponseBadRequest()
+            logger.error("Could not grant access to user [%s], user does not exist in journals service", username)
+            content = "User [{}] does not exist in journals service".format(username)
+            return Response(content, status=status.HTTP_401_UNAUTHORIZED)
 
         except Journal.DoesNotExist:  # pylint: disable=duplicate-except
-            logger.info("Could not grant access to journal [%s] for user [%s], journal does not exist",
-                        journal_uuid, username)
-            return HttpResponseBadRequest()
+            logger.error(
+                "Could not grant access to journal [%s] for user [%s], journal does not exist",
+                journal_uuid,
+                username
+            )
+            content = "Journal [{}] does not exist".format(journal_uuid)
+            return Response(content, status=status.HTTP_404_NOT_FOUND)
 
         JournalAccess.create_journal_access(user, journal, order_number)
         logger.info("User [%s] granted access to journal [%s]", username, journal)
