@@ -7,6 +7,7 @@ from journals.apps.journals.models import (
     JournalAboutPage,
     JournalAccess,
     Organization,
+    Video,
 )
 from journals.apps.journals.views import JournalAccessView
 
@@ -44,3 +45,4 @@ class JournalAccessAdmin(admin.ModelAdmin):
 
 # Default admin pages below
 admin.site.register(Organization)
+admin.site.register(Video)
