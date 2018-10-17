@@ -291,8 +291,8 @@ LOGGING = {
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
-        'edx_rest_framework_extensions.authentication.BearerAuthentication',
-        'edx_rest_framework_extensions.authentication.JwtAuthentication',
+        'edx_rest_framework_extensions.auth.bearer.authentication.BearerAuthentication',
+        'edx_rest_framework_extensions.auth.jwt.authentication.JwtAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
@@ -302,7 +302,7 @@ REST_FRAMEWORK = {
 
 
 JWT_AUTH = {
-    'JWT_DECODE_HANDLER': 'edx_rest_framework_extensions.utils.jwt_decode_handler',
+    'JWT_DECODE_HANDLER': 'edx_rest_framework_extensions.auth.jwt.decoder.jwt_decode_handler',
     'JWT_AUDIENCE': 'journals',
     'JWT_VERIFY_AUDIENCE': False,
     'JWT_ALGORITHM': 'HS256',
