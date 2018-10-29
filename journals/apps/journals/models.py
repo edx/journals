@@ -48,6 +48,9 @@ JOURNAL_ABOUT_PAGE_PREVIEW_PATH = 'aboutPreview'
 JOURNAL_INDEX_PAGE_PREVIEW_PATH = 'indexPreview'
 RICH_TEXT_FEATURES = ['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image']
 
+# TODO: Make working 'document-link' and 'image' for RichTextField (currently not click-able on frontend.)
+RICH_TEXT_FIELD_FEATURES = ['h1', 'h2', 'h3', 'ol', 'ul', 'hr', 'bold', 'italic', 'link']
+
 
 class Organization(models.Model):
     '''Organization Model'''
@@ -443,6 +446,19 @@ from .blocks import (
     STREAM_DATA_DOC_FIELD, STREAM_DATA_TYPE_FIELD)  # noqa
 
 
+class JournalRichTextField(RichTextField):
+    def clean(self, value, model_instance):
+        """
+            Overridden this method to call JournalRichTextBlock.expand_db_html(), that correct links and embeds
+            Note:
+                - When user will publish page (containing this field), this method will be called and updated value will
+                  be stored into database
+                - This method also called on preview of page
+        """
+        value = super(JournalRichTextField, self).clean(value, model_instance)
+        return JournalRichTextBlock.expand_db_html(value)
+
+
 class JournalAboutPage(JournalPageMixin, Page):
     """
     Represents both the base journal with it's metadata and the journal
@@ -458,7 +474,7 @@ class JournalAboutPage(JournalPageMixin, Page):
     )
     short_description = models.CharField(max_length=128, blank=True, default='')
     long_description = models.TextField(blank=True, default=None, null=True)
-    custom_content = RichTextField(blank=True, features=RICH_TEXT_FEATURES)
+    custom_content = JournalRichTextField(blank=True, features=RICH_TEXT_FIELD_FEATURES)
 
     content_panels = Page.content_panels + [
         FieldPanel('short_description'),
@@ -671,7 +687,7 @@ class JournalIndexPage(JournalPageMixin, Page):
     hero_image = models.ForeignKey(
         JournalImage, on_delete=models.SET_NULL, related_name='+', null=True, blank=True
     )
-    intro = RichTextField(blank=True, features=RICH_TEXT_FEATURES)
+    intro = JournalRichTextField(blank=True, features=RICH_TEXT_FIELD_FEATURES)
 
     content_panels = Page.content_panels + [
         ImageChooserPanel('hero_image'),
