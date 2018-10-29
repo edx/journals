@@ -9,6 +9,7 @@ INSTALLED_APPS += (
 )
 
 MIDDLEWARE_CLASSES = (
+    'journals.apps.core.middleware.SettingsOverrideMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
