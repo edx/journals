@@ -99,7 +99,8 @@ class JournalRichTextBlock(blocks.RichTextBlock):
     def get_searchable_content(self, value):
         return [parser(value.source, 'html.parser').get_text(' ')]
 
-    def expand_db_html(self, html, for_editor=False, base_url='/'):
+    @staticmethod
+    def expand_db_html(html, for_editor=False, base_url='/'):
         """
         Override from wagtail.wagtailcore.rich_text to use full path
         to embedded images
