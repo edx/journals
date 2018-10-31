@@ -1,18 +1,19 @@
 """ Core views. """
 import logging
 import uuid
-from urllib.parse import unquote
+from urllib.parse import unquote, urlsplit
 
 from django.db import transaction, connection, DatabaseError
 from django.http import JsonResponse
 from django.conf import settings
 from django.contrib.auth import get_user_model, login, authenticate
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.http import Http404, HttpResponseForbidden
 from django.shortcuts import redirect
 from django.views.generic import View
 
 from journals.apps.core.constants import Status
+from journals.settings.utils import get_whitelist_domains
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
@@ -108,4 +109,9 @@ def required_auth(request):
     """
     # Quoted URL: http%3A//localhost%3A18130/basket/add/%3Fsku%3D8CF08E5
     forwarded_url = unquote(request.GET.get('forward'))
+
+    (_, forwarded_url_domain, _, _, _) = urlsplit(forwarded_url)
+    if forwarded_url_domain and forwarded_url_domain not in get_whitelist_domains(request):
+        return HttpResponseForbidden("Cannot redirect to {}".format(forwarded_url))
+
     return redirect(forwarded_url)
