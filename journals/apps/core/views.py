@@ -4,7 +4,7 @@ import uuid
 from urllib.parse import unquote
 
 from django.db import transaction, connection, DatabaseError
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.contrib.auth import get_user_model, login, authenticate
 from django.contrib.auth.decorators import login_required
@@ -109,3 +109,15 @@ def required_auth(request):
     # Quoted URL: http%3A//localhost%3A18130/basket/add/%3Fsku%3D8CF08E5
     forwarded_url = unquote(request.GET.get('forward'))
     return redirect(forwarded_url)
+
+
+def wagtail_admin_access_check(request):
+    """
+    When Wagtail tries to send a user to the cms login page, check if they are
+    already logged in. If they are redirect to an error page, showing they are
+    unauthorized to view that page. Otherwise, forward to the login page
+    """
+
+    if request.user.is_authenticated:
+        return HttpResponse('Unauthorized to access admin page', status=403)
+    return redirect('/require_auth?forward=/cms/')
