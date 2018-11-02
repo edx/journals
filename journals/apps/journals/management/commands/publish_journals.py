@@ -37,15 +37,13 @@ class Command(BaseCommand):
         '''handle creation of new Journal'''
         name = options['create']
         org = options['org']
-        price = options['price']
+        price = options.get('price', '0')
         currency = options['currency']
         access_length = options['access_length']
         publish = options['publish']
 
         if not org:
             raise CommandError('--org <Org Name> must be specified')
-        if not price:
-            raise CommandError('--price <Journal price> must be specified')
 
         try:
             journal, _ = Journal.objects.get_or_create(name=name, organization=Organization.objects.get(name=org),
