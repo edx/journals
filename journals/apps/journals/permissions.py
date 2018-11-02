@@ -36,8 +36,12 @@ class VideoPermissionHelper(PermissionHelper):
 
 
 class JournalPermissionHelper(PermissionHelper):
-    """
-    Permission overrides for Journals
-    """
-    def user_has_specific_permission(self, user, perm_codename):
+    # """
+    # Permission overrides for Journals
+    # """
+    def user_can_delete_obj(self, user, obj):
+        """
+        Only allow superuser to delete regardless of permission specified in Groups UI
+        Other permissions (create, edit) honor settings specified in Groups permission UI
+        """
         return user.is_superuser
