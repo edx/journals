@@ -30,7 +30,8 @@ VALUES (
     'edx',
     'http://edx.devstack.ecommerce:18130/journals/api/v1',
     'http://localhost:1991',
-    ''
+    '',
+    'journals@edx.org'
 );
 UNLOCK TABLES;
 

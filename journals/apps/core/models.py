@@ -197,6 +197,11 @@ class SiteConfiguration(models.Model):
 
     segment_key = models.CharField(max_length=64, null=False, blank=True, default='')
 
+    from_email = models.EmailField(
+        default='journals@edx.org',
+        verbose_name=_('From email address used in the system generated emails')
+    )
+
     def build_lms_url(self, path=''):
         """
         Returns path joined with the appropriate LMS URL root for the current site.

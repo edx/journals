@@ -76,6 +76,7 @@ INSTALLED_APPS += PROJECT_APPS
 INSTALLED_APPS += WAGTAIL_APPS
 
 MIDDLEWARE_CLASSES = (
+    'journals.apps.core.middleware.SettingsOverrideMiddleware',
     'edx_django_utils.cache.middleware.RequestCacheMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -333,6 +334,8 @@ WAGTAILDOCS_DOCUMENT_MODEL = 'journals.JournalDocument'
 WAGTAILIMAGES_IMAGE_MODEL = 'journals.JournalImage'
 WAGTAIL_FRONTEND_LOGIN_URL = LOGIN_URL
 WAGTAIL_ENABLE_UPDATE_CHECK = False
+
+DEFAULT_FROM_EMAIL = "journals@edx.org"
 
 THEME_DIR = '/edx/app/journals/themes/'
 
