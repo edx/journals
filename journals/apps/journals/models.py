@@ -769,6 +769,8 @@ class JournalPage(JournalPageMixin, Page):
 
     search_fields = Page.search_fields + [
         index.SearchField('body', partial_match=True),
+        index.SearchField('sub_title', partial_match=True),
+        index.SearchField('author', partial_match=True),
         index.SearchField('search_description', partial_match=True)
     ]
 
