@@ -1,14 +1,12 @@
 """ Helpers for Journal Page Types """
 import uuid
 from urllib.parse import urljoin
+
 from django.core.cache import cache
 from django.shortcuts import redirect
 from django.utils.cache import add_never_cache_headers
-import waffle
 
 from journals.apps.journals.utils import get_cache_key
-
-FRONTEND_ENABLED_WAFFLE_SWITCH = 'frontend_enabled'
 
 
 class JournalPageMixin(object):
@@ -101,15 +99,12 @@ class JournalPageMixin(object):
 
         return serializer
 
-    def serve(self, request, *args, **kwargs):
+    def serve(self, request, *args, **kwargs):  # pylint: disable=unused-argument
         """
         Override serve to redirect to frontend app
         This gets called whenever a page is requested to be viewed live
         from the Wagtail admin
         """
-        if not waffle.switch_is_active(FRONTEND_ENABLED_WAFFLE_SWITCH):
-            return super(JournalPageMixin, self).serve(request, args, kwargs)
-
         response = redirect(
             urljoin(
                 request.site.siteconfiguration.frontend_url,
@@ -120,15 +115,12 @@ class JournalPageMixin(object):
         add_never_cache_headers(response)
         return response
 
-    def serve_preview(self, request, mode_name):
+    def serve_preview(self, request, mode_name):  # pylint: disable=unused-argument
         """
         This method gets called from Wagtail when a page is previewed.
         We override to cache the page and redirect to the Journals Frontend App,
         which fetches page from cache (via REST call) and displays the page.
         """
-        if not waffle.switch_is_active(FRONTEND_ENABLED_WAFFLE_SWITCH):
-            return super(JournalPageMixin, self).serve_preview(request, mode_name)
-
         if not request.user.is_authenticated():
             return redirect('/login/')
 
