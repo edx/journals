@@ -33,7 +33,7 @@ class JournalModelAdmin(ModelAdmin):
     model = Journal
     menu_label = 'Journals'
     menu_icon = 'doc-full'
-    menu_order = 500
+    menu_order = 1
     add_to_settings_menu = False
     exclude_from_explorer = False
     permission_helper_class = JournalPermissionHelper
