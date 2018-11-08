@@ -1,13 +1,17 @@
 """Test core.views."""
+from urllib.parse import urljoin
 
+import ddt
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
-from django.test import TestCase
+from django.test import TestCase, RequestFactory
 from django.test.utils import override_settings
+from rest_framework import status
+from wagtail.wagtailcore.models import Site
 
 from journals.apps.core.constants import Status
-
+from journals.apps.core.tests.factories import UserFactory, SiteConfigurationFactory
 
 User = get_user_model()
 
@@ -73,3 +77,32 @@ class AutoAuthTests(TestCase):
 
         # Verify that the user has superuser permissions
         self.assertTrue(user.is_superuser)
+
+
+@ddt.ddt
+class TestUserRequireAuthView(TestCase):
+    """
+    Test Cases for required_auth
+    """
+
+    def setUp(self):
+        super(TestUserRequireAuthView, self).setUp()
+
+        self.user = UserFactory()
+        self.site = Site.objects.first()
+        self.site_configuration = SiteConfigurationFactory(site=self.site)
+        self.client.login(username=self.user.username, password='password')
+        self.path = reverse("require_auth")
+
+    @ddt.data(
+        ("http://evil.com", False, status.HTTP_403_FORBIDDEN),
+        ("/cms/", False, status.HTTP_302_FOUND),
+        ("/cms/", True, status.HTTP_302_FOUND),
+    )
+    @ddt.unpack
+    def test_unauthorized_calls(self, url, join_base_url, expected_status):
+        if join_base_url:
+            base_url = RequestFactory().get('/').build_absolute_uri()
+            url = urljoin(base_url, url)
+        response = self.client.get(self.path, {"forward": url})
+        self.assertEqual(response.status_code, expected_status)
