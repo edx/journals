@@ -2,9 +2,8 @@ import logging
 from os import environ
 from urllib.parse import urlsplit
 
+from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
-
-from journals.apps.core.models import SiteConfiguration
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +23,7 @@ def get_whitelist_domains(request):
     """
     (_, request_domain, _, _, _) = urlsplit(request.build_absolute_uri())
     permitted_domains = [request_domain]
+    SiteConfiguration = apps.get_model('core', 'SiteConfiguration')
     try:
         for key, value in request.site.siteconfiguration.__dict__.items():
             if "url" in key.lower() and type(value) == str:
