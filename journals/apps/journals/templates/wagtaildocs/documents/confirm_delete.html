@@ -1,0 +1,16 @@
+{% extends "wagtailadmin/base.html" %}
+{% load i18n %}
+{% block titletag %}{% blocktrans with title=document.title %}Delete {{ title }}{% endblocktrans %}{% endblock %}
+{% block content %}
+    {% trans "Delete document" as del_str %}
+    {% include "wagtailadmin/shared/header.html" with title=del_str subtitle=document.title icon="doc-full-inverse" %}
+
+    <div class="nice-padding">
+        <p>{{ document.deletion_warning_message }}</p>
+        <form action="{% url 'wagtaildocs:delete' document.id %}" method="POST">
+            {% csrf_token %}
+            <input type="submit" value='{% trans "Yes, delete" %}' class="button serious" />
+            <a href="{% url 'wagtaildocs:edit' document.id %}" class="button">{% trans 'No' %}</a>
+        </form>
+    </div>
+{% endblock %}
