@@ -5,8 +5,27 @@ from urllib.parse import urljoin
 from django.core.cache import cache
 from django.shortcuts import redirect
 from django.utils.cache import add_never_cache_headers
+from wagtail.wagtailcore.models import PagePermissionTester, UserPagePermissionsProxy
 
 from journals.apps.journals.utils import get_cache_key
+
+
+class JournalPagePermissionTester(PagePermissionTester):
+    def can_delete(self):
+        """
+            Overridden to prevent some pages from being deleted from CMS
+        """
+        from journals.apps.journals.models import JournalIndexPage, JournalAboutPage
+        if isinstance(self.page.specific, (JournalAboutPage, JournalIndexPage)):
+            return False
+        return super(JournalPagePermissionTester, self).can_delete()
+
+
+class UserJournalPagePermissionsProxy(UserPagePermissionsProxy):
+    def for_page(self, page):
+        """Return a PagePermissionTester object that can be used to query whether this user has
+        permission to perform specific tasks on the given page"""
+        return JournalPagePermissionTester(self, page)
 
 
 class JournalPageMixin(object):
@@ -150,3 +169,10 @@ class JournalPageMixin(object):
         )
         add_never_cache_headers(response)
         return response
+
+    def permissions_for_user(self, user):
+        """
+        Return a PagePermissionsTester object defining what actions the user can perform on this page
+        """
+        user_perms = UserJournalPagePermissionsProxy(user)
+        return user_perms.for_page(self)
