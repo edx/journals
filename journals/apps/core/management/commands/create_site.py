@@ -2,6 +2,7 @@
 from urllib.parse import urljoin
 
 from django.contrib.auth.models import Group, Permission
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
@@ -109,6 +110,10 @@ class Command(BaseCommand):
         parser.add_argument(
             '--frontend-url',
             help='Frontend app URL for Journals app',
+        )
+        parser.add_argument(
+            '--org',
+            help='Organization associated with the Site',
         )
 
     def create_index_page(self, sitename):
@@ -299,3 +304,12 @@ class Command(BaseCommand):
             index_page=index_page,
             collection=collection,
         )
+
+        # If organization specified, associate the site with it
+        org = options.get('org', None)
+        if org:
+            call_command(
+                'create_org',
+                '--key', org,
+                '--sitename', sitename
+            )
