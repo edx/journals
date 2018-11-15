@@ -6,6 +6,7 @@ from journals.apps.journals.models import (
     Journal,
     JournalAboutPage,
     JournalAccess,
+    JournalIndexPage,
     Organization,
     Video,
 )
@@ -16,6 +17,18 @@ from journals.apps.journals.views import JournalAccessView
 @admin.register(JournalAboutPage)
 class JournalAboutPageAdmin(admin.ModelAdmin):
     fields = ('journal',)
+
+    def has_add_permission(self, request):
+        return False
+
+
+@admin.register(JournalIndexPage)
+class JournalIndexPageAdmin(admin.ModelAdmin):
+    fields = ('title',)
+    readonly_fields = ('title',)
+
+    def has_add_permission(self, request):
+        return False
 
 
 @admin.register(Journal)

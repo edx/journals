@@ -484,7 +484,9 @@ class JournalAboutPage(JournalPageMixin, Page):
         FieldPanel('custom_content'),
     ]
 
-    parent_page_types = ['JournalIndexPage']
+    #  Setting parent_page_types to an empty list to prevent from being created in the editor interface.
+    #  Reference: http://docs.wagtail.io/en/v2.0/topics/pages.html#parent-page-subpage-type-rules
+    parent_page_types = []
     subpage_types = ['JournalPage']
 
     api_fields = [
@@ -703,6 +705,9 @@ class JournalIndexPage(JournalPageMixin, Page):
         APIField('intro'),
         APIField('hero_image_url')
     ]
+
+    #  Setting parent_page_types to an empty list to prevent from being created in the editor interface.
+    parent_page_types = []
 
     @property
     def hero_image_url(self):
