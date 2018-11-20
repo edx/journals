@@ -12,7 +12,7 @@
             {% image image max-800x600 %}
         </div>
         <div class="col6">
-            <p>{{ image.deletion_warning_message }}</p>
+            <p>{{ image.deletion_warning_message|safe }}</p>
             <form action="{% url 'wagtailimages:delete' image.id %}" method="POST">
                 {% csrf_token %}
                 <input type="submit" value="{% trans 'Yes, delete' %}" class="button serious" />

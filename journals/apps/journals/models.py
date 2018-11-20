@@ -14,10 +14,8 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import models
-from django.db.models.signals import pre_delete
-from django.dispatch.dispatcher import receiver
+
 from django.http import HttpResponseRedirect
-from django.template.defaultfilters import pluralize
 from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 
@@ -40,12 +38,11 @@ from wagtail.wagtailsearch.queryset import SearchableQuerySetMixin
 
 from journals.apps.core.models import User
 from journals.apps.journals.api_utils import update_service
-from journals.apps.journals.journal_page_helper import JournalPageMixin
+from journals.apps.journals.journal_page_helper import JournalPageMixin, ReferencedObjectMixin
 from journals.apps.journals.utils import (
     get_cache_key,
     get_image_url,
     get_default_expiration_date,
-    delete_block_references
 )
 from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 
@@ -297,7 +294,7 @@ class JournalAccess(TimeStampedModel):
         return access_record
 
 
-class JournalDocument(AbstractDocument):
+class JournalDocument(AbstractDocument, ReferencedObjectMixin):
     '''
     Override the base Document model so we can index the Document contents for search
     and add reference to JournalAboutPage
@@ -316,12 +313,6 @@ class JournalDocument(AbstractDocument):
     ]
 
     admin_form_fields = Document.admin_form_fields
-
-    def get_journal_page_usage(self):
-        """
-        Returns document's usage in journal pages.
-        """
-        return JournalPage.objects.filter(documents=self)
 
     def data(self):
         '''
@@ -350,35 +341,11 @@ class JournalDocument(AbstractDocument):
     def is_pdf(self):
         return mimetypes.MimeTypes().guess_type(self.filename)[0] == 'application/pdf'
 
-    @property
-    def deletion_warning_message(self):
-        """
-        Returns the custom deletion warning message if document is being used in journal pages.
-        """
-        warning_message = _("Are you sure you want to delete this document?")
-        journal_pages_title = self.get_journal_page_usage().values_list('title', flat=True)
-        if journal_pages_title:
-            warning_message = "The document '{document_title}' is being used in page{plural}: {page_titles} Deleting " \
-                              "it will remove the document from the page{plural} as well. Are you sure you want to " \
-                              "delete?"
-            warning_message = _(warning_message).format(    # pylint: disable=no-member
-                document_title=self.title,
-                plural=pluralize(journal_pages_title),
-                page_titles=', '.join(journal_pages_title)
-            )
-        return warning_message
+    def get_object_type(self):
+        return "document"
 
 
-@receiver(pre_delete, sender=JournalDocument)
-def delete_document_references(sender, instance, *args, **kwargs):      # pylint: disable=unused-argument
-    """
-    Pre_delete signal for JournalDocument which deletes the
-    document's references from the related journal pages.
-    """
-    delete_block_references(instance, PDF_BLOCK_TYPE)
-
-
-class JournalImage(AbstractImage):
+class JournalImage(AbstractImage, ReferencedObjectMixin):
     '''
     Override the base Image model so we can index the Image contents for search
     and add additional fields
@@ -394,39 +361,8 @@ class JournalImage(AbstractImage):
         'caption',
     )
 
-    def get_journal_page_usage(self):
-        """
-        Returns image's usage in journal pages.
-        """
-        return JournalPage.objects.filter(images=self)
-
-    @property
-    def deletion_warning_message(self):
-        """
-        Returns the custom deletion warning message
-        if image is being used in journal pages.
-        """
-        warning_message = _("Are you sure you want to delete this image?")
-        journal_pages_title = self.get_journal_page_usage().values_list('title', flat=True)
-        if journal_pages_title:
-            warning_message = "The image '{image_title}' is being used in page{plural}: {page_titles} Deleting it " \
-                              "will remove the image from the page{plural} as well. Are you sure you want to " \
-                              "delete?"
-            warning_message = _(warning_message).format(         # pylint: disable=no-member
-                image_title=self.title,
-                plural=pluralize(len(journal_pages_title)),
-                page_titles=', '.join(journal_pages_title)
-            )
-        return warning_message
-
-
-@receiver(pre_delete, sender=JournalImage)
-def delete_image_references(sender, instance, *args, **kwargs):     # pylint: disable=unused-argument
-    """
-    Pre_delete signal for JournalImage which deletes the
-    image's references from the related journal pages.
-    """
-    delete_block_references(instance, IMAGE_BLOCK_TYPE)
+    def get_object_type(self):
+        return "image"
 
 
 class JournalImageRendition(AbstractRendition):
