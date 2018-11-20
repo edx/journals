@@ -506,19 +506,6 @@ class JournalAboutPage(JournalPageMixin, Page):
     def organization(self):
         return self.journal.organization.name if self.journal else None
 
-    def get_context(self, request, *args, **kwargs):
-        # Update context to include only published pages
-        context = super(JournalAboutPage, self).get_context(request, args, kwargs)
-        context['root_journal_page_url'] = self.root_journal_page_url
-        if request.user.is_authenticated():
-            context['user_has_access'] = JournalAccess.user_has_access(request.user, self.journal)
-        else:
-            context['user_has_access'] = False
-        journal_data = self._get_journal_from_discovery()
-        context['journal_data'] = journal_data
-        context['buy_button_url'] = self.generate_require_auth_basket_url(journal_data['sku'])
-        return context
-
     def _get_journal_from_discovery(self):
         '''
         Get journal data from discovery first
@@ -830,15 +817,6 @@ class JournalPage(JournalPageMixin, Page):
                 image_set.add(JournalImage.objects.get(id=data.get('value').get('image')))
 
         return doc_set, video_set, image_set
-
-    def get_context(self, request, *args, **kwargs):
-        context = super(JournalPage, self).get_context(request, args, kwargs)
-        context['journal_structure'] = self.get_journal_structure()
-
-        context['prevPage'] = self.get_prev_page()
-        context['nextPage'] = self.get_next_page()
-
-        return context
 
     def get_bread_crumbs(self, title_only=False):
         """
