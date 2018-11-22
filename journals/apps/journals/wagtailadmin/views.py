@@ -216,7 +216,7 @@ class JournalIndexView(WMABaseView):
         action_url_name = self.url_helper.get_action_url_name('index')
         create_url_name = self.url_helper.get_action_url_name('create')
 
-        return render(request, 'journals/admin_index.html', {
+        return render(request, 'wagtailadmin/journal_index.html', {
             'view': self,
             'ordering': ordering,
             'journals': journals,
