@@ -28,7 +28,6 @@ from wagtail.wagtaildocs import urls as wagtaildocs_urls
 
 from journals.apps.api.v1.content.urls import wagtail_router
 from journals.apps.core import views as core_views
-from journals.apps.search import views as search_views
 from journals.apps.journals.wagtailadmin import views as custom_wagtailadmin_views
 
 admin.autodiscover()
@@ -48,7 +47,6 @@ urlpatterns = auth_urlpatterns + [
     url(r'^cms/logout/$', RedirectView.as_view(url='/logout')),
     url(r'^cms/', include(wagtailadmin_urls)),
     url(r'^documents/', include(wagtaildocs_urls)),
-    url(r'^search/$', search_views.search, name='search'),
     url(r'^require_auth/$', core_views.required_auth, name='require_auth'),
     url(r'', include(wagtail_urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

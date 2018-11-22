@@ -4,7 +4,6 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup as parser
 from django.utils import six
-from django.utils.safestring import mark_safe
 from wagtail.wagtailcore import blocks
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtaildocs.blocks import DocumentChooserBlock
@@ -24,13 +23,7 @@ STREAM_DATA_TYPE_FIELD = 'type'
 STREAM_DATA_DOC_FIELD = 'doc'
 STREAM_DATA_VIDEO_FIELD = 'video'
 
-BLOCK_FORMATTER = '{block_prefix} {block}'
-
 log = logging.getLogger(__name__)
-
-
-def get_block_prefix(span_id):
-    return '<span id="{}"></span>'.format(span_id)
 
 
 class VideoChooserBlock(blocks.ChooserBlock):
@@ -59,16 +52,6 @@ class PDFBlock(blocks.StructBlock):
 
     def get_doc(self, value):
         return value.get(STREAM_DATA_DOC_FIELD)
-
-    @mark_safe
-    def render(self, value, context=None):
-        return BLOCK_FORMATTER.format(
-            block_prefix=get_block_prefix(get_span_id(PDF_BLOCK_TYPE, self.get_doc(value).id)),
-            block=super(PDFBlock, self).render(value, context)
-        )
-
-    class Meta:
-        template = 'blocks/pdf.html'
 
     def get_searchable_content(self, value):
         return [self.get_title(value)]
@@ -184,10 +167,6 @@ class XBlockVideoBlock(blocks.StructBlock):
     def get_video(self, value):
         return value.get(STREAM_DATA_VIDEO_FIELD)
 
-    def get_context(self, value, parent_context=None):
-        context = super(XBlockVideoBlock, self).get_context(value, parent_context)
-        return context
-
     def get_searchable_content(self, value):
         return [self.get_title(value)]
 
@@ -213,16 +192,6 @@ class XBlockVideoBlock(blocks.StructBlock):
             'span_id': 'missing-video',
         }
 
-    class Meta:
-        template = 'blocks/xblockvideo.html'
-
-    @mark_safe
-    def render(self, value, context=None):
-        return BLOCK_FORMATTER.format(
-            block_prefix=get_block_prefix(get_span_id(VIDEO_BLOCK_TYPE, self.get_video(value).id)),
-            block=super(XBlockVideoBlock, self).render(value, context)
-        )
-
 
 class JournalImageChooserBlock(blocks.StructBlock):
     """ JournalImageChooserBlock component """
@@ -246,16 +215,6 @@ class JournalImageChooserBlock(blocks.StructBlock):
 
     def get_caption_block(self, value):
         return value.get('caption')
-
-    def get_image_block(self):
-        return self.child_blocks.get('image')
-
-    @mark_safe
-    def render(self, value, context=None):
-        return BLOCK_FORMATTER.format(
-            block_prefix=get_block_prefix(get_span_id(IMAGE_BLOCK_TYPE, self.get_image(value).id)),
-            block=self.get_image_block().render(self.get_image(value), context)
-        )
 
     def get_searchable_content(self, value):
         block_caption = self.get_caption_block(value)
