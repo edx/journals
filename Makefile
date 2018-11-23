@@ -10,7 +10,7 @@ JS_TEST_HOST ?= journals.app
 
 .PHONY: clean compile_translations dummy_translations extract_translations fake_translations help html_coverage \
 	migrate pull_translations push_translations quality requirements requirements.js prod-requirements \
-	test test_python test_js e2e html_coverage quality_python quality_js update_translations validate
+	test test_python test_js e2e html_coverage quality_python quality_js update_translations validate upgrade
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -90,6 +90,14 @@ quality_js:
 quality: quality_python quality_js
 
 validate: test quality
+
+upgrade: ## update the requirements/*.txt files with the latest packages satisfying requirements/*.in
+	pip install -q pip-tools
+	pip-compile --verbose --upgrade -o requirements/base.txt requirements/base.in
+	pip-compile --verbose --upgrade -o requirements/docs.txt requirements/docs.in
+	pip-compile --verbose --upgrade -o requirements/test.txt requirements/test.in
+	pip-compile --verbose --upgrade -o requirements/production.txt requirements/production.in
+	pip-compile --verbose --upgrade -o requirements/local.txt requirements/local.in
 
 migrate:
 	python manage.py migrate

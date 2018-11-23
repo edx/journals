@@ -258,9 +258,9 @@ class JournalsearchSearchResults(Elasticsearch5SearchResults):
                 # let's flaten into a list of highlighs
                 values = highlights.values()
                 highlight_list = [item for sublist in values for item in sublist]
-                setattr(obj, 'search_results_metadata', {'highlights': highlight_list})
+                obj.search_results_metadata = {'highlights': highlight_list}
             else:
-                setattr(obj, 'search_results_metadata', {})
+                obj.search_results_metadata = {}
 
         # Return results in order given by Elasticsearch
         return [results[str(pk)] for pk in pks if results[str(pk)]]

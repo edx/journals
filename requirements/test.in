@@ -1,0 +1,15 @@
+# Packages required for testing
+-r base.txt
+
+bok-choy
+ddt
+django-dynamic-fixture
+django-nose
+edx-lint
+mock
+pycodestyle
+pytest-cov
+pytest-django
+pytest-selenium
+pytest-xdist
+factory-boy

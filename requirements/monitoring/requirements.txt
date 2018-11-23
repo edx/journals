@@ -7,6 +7,5 @@
 -r ../base.txt
 -r ../docs.txt
 -r ../local.txt
--r ../optional.txt
 -r ../production.txt
 -r ../test.txt

@@ -43,7 +43,7 @@ class TestSiteBrandingAPI(TestCase):
         self.assertEqual(len(response_json), 1, "Only 1 item should be returned")
         self.assertEqual(response_json[0]['theme_name'], test_site_branding['theme_name'])
         self.assertEqual(response_json[0]['site_logo']['title'], test_site_branding['site_logo']['title'])
-        self.assertTrue(test_site_branding['site_logo']['file'].name in response_json[0]['site_logo']['file'])
+        self.assertIn(test_site_branding['site_logo']['file'].name, response_json[0]['site_logo']['file'])
 
     def test_get_sitebranding_query_param_frontend_url(self):
         """ Test that sitebranding API returns the site branding when the 'frontend_url' query param is set """

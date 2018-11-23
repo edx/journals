@@ -209,13 +209,16 @@ class ReferencedObjectMixin(object):
         """
         object_type = self.get_object_type()
 
-        warning_message = _("Are you sure you want to delete this {object}?".format(object=object_type))
+        warning_message = _(  # pylint: disable=no-member
+            "Are you sure you want to delete this {object}?"
+        ).format(object=object_type)
         journal_pages_title = self.get_journal_page_usage().values_list('title', flat=True)
         if journal_pages_title:
-            warning_message = "The {object} <b>{title}</b> is being used in page{plural}: <b>{page_titles}</b>." \
-                            "<p>Deleting it will remove the {object} from the page{plural} as well." \
-                            "<p>Are you sure you want to delete the {object}?"
-            warning_message = _(warning_message).format(         # pylint: disable=no-member
+            warning_message = _(  # pylint: disable=no-member
+                "The {object} <b>{title}</b> is being used in page{plural}: <b>{page_titles}</b>."
+                "<p>Deleting it will remove the {object} from the page{plural} as well."
+                "<p>Are you sure you want to delete the {object}?"
+            ).format(
                 object=object_type,
                 title=self.title,
                 plural=pluralize(len(journal_pages_title)),

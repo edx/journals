@@ -1,0 +1,5 @@
+# Dependencies to generate documents
+
+Sphinx
+requests==2.11.1                    # pinned to resolve dependecy conflict while running pip-compile
+edx-sphinx-theme                    # Sphinx theme for Open edX documentation

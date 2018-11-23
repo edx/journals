@@ -266,7 +266,7 @@ class TestSearchAPI(TestCase):
         self.assertEqual(response_json['meta']['text_count'], page_count, "Incorrect number of text_count")
         for hit in response_json['hits']:
             if hit['block_type'] == RICH_TEXT_BLOCK_TYPE:
-                self.assertTrue(RAW_HTML_BLOCK_DATA in striptags(hit['highlights'][0]))
+                self.assertIn(RAW_HTML_BLOCK_DATA, striptags(hit['highlights'][0]))
 
     def test_search_multiple_journals_with_no_query_params(self):
         response = self.client.get(self.multi_journal_search_path)
