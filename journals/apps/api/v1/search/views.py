@@ -7,6 +7,8 @@
         <query_string>: The text to search, should be url encoded
         <operator>: 'or' - to match any terms in the query_string (default)
                     'and' - exact match for all the terms in the query_string
+                            (Note: AND is overridden to 'phrase' type search.
+                             https://www.elastic.co/guide/en/elasticsearch/guide/current/phrase-matching.html#_what_is_a_phrase)
         <type>: 'all' - search across all content types (default)
                 'images' - search for images only
                 'documents' - search in documents only

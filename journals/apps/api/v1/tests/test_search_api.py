@@ -84,9 +84,9 @@ class TestSearchAPI(TestCase):
             PARAM_TYPE: TYPE_ALL
         })
         self.assertEqual(response.status_code, 200)
-        doc_count = JournalDocument.objects.filter(title__contains=query_string).count()
-        image_count = JournalImage.objects.filter(title__contains=query_string).count()
-        video_count = Video.objects.filter(display_name__contains=query_string).count()
+        doc_count = JournalDocument.objects.filter(title__icontains=query_string).count()
+        image_count = JournalImage.objects.filter(title__icontains=query_string).count()
+        video_count = Video.objects.filter(display_name__icontains=query_string).count()
         total = doc_count + image_count + video_count
 
         self._make_assertions(response, doc_count, image_count, video_count, total)
@@ -101,9 +101,9 @@ class TestSearchAPI(TestCase):
         journal_filter_kwargs = {
             'journalpage__journal_about_page__journal': self.journal,
         }
-        doc_count = JournalDocument.objects.filter(title__contains=query_string, **journal_filter_kwargs).count()
-        image_count = JournalImage.objects.filter(title__contains=query_string, **journal_filter_kwargs).count()
-        video_count = Video.objects.filter(display_name__contains=query_string, **journal_filter_kwargs).count()
+        doc_count = JournalDocument.objects.filter(title__icontains=query_string, **journal_filter_kwargs).count()
+        image_count = JournalImage.objects.filter(title__icontains=query_string, **journal_filter_kwargs).count()
+        video_count = Video.objects.filter(display_name__icontains=query_string, **journal_filter_kwargs).count()
         total = doc_count + image_count + video_count
 
         self._make_assertions(response, doc_count, image_count, video_count, total)
@@ -151,9 +151,9 @@ class TestSearchAPI(TestCase):
         filter_kwargs = {
             'journalpage__journal_about_page__journal': self.journal,
         }
-        doc_count = JournalDocument.objects.filter(title__contains=query_string, **filter_kwargs).count()
-        image_count = JournalImage.objects.filter(title__contains=query_string, **filter_kwargs).count()
-        video_count = Video.objects.filter(display_name__contains=query_string, **filter_kwargs).count()
+        doc_count = JournalDocument.objects.filter(title__icontains=query_string, **filter_kwargs).count()
+        image_count = JournalImage.objects.filter(title__icontains=query_string, **filter_kwargs).count()
+        video_count = Video.objects.filter(display_name__icontains=query_string, **filter_kwargs).count()
         total = doc_count + image_count + video_count
 
         self._make_assertions(response, doc_count, image_count, video_count, total)
@@ -170,30 +170,35 @@ class TestSearchAPI(TestCase):
             PARAM_TYPE: TYPE_ALL
         })
         self.assertEqual(response.status_code, 200)
-        doc_count = JournalDocument.objects.filter(Q(title__contains='title') | Q(title__contains='doc')).count()
-        image_count = JournalImage.objects.filter(Q(title__contains='title') | Q(title__contains='doc')).count()
-        video_count = Video.objects.filter(Q(display_name__contains='title') | Q(display_name__contains='doc')).count()
+        doc_count = JournalDocument.objects.filter(Q(title__icontains='title') | Q(title__icontains='doc')).count()
+        image_count = JournalImage.objects.filter(Q(title__icontains='title') | Q(title__icontains='doc')).count()
+        video_count = Video.objects.filter(
+                Q(display_name__icontains='title') | Q(display_name__icontains='doc')
+            ).count()
         total = doc_count + image_count + video_count
 
         self._make_assertions(response, doc_count, image_count, video_count, total)
 
     def test_search_across_multiple_journals_with_AND_operator(self):
         """
-            Testing search with AND operator
+            Testing search with AND operator (Note: AND has been overridden to 'phrase' type)
         """
-        query_string = 'doc+title'
-
         response = self.client.get(self.multi_journal_search_path, {
-            PARAM_QUERY: query_string,
+            PARAM_QUERY: RAW_HTML_BLOCK_DATA,
             PARAM_OPERATOR: OPERATOR_AND,
             PARAM_TYPE: TYPE_ALL
         })
         self.assertEqual(response.status_code, 200)
-        doc_count = JournalDocument.objects.filter(Q(title__contains='title') & Q(title__contains='doc')).count()
-        image_count = JournalImage.objects.filter(Q(title__contains='title') & Q(title__contains='doc')).count()
-        video_count = Video.objects.filter(
-            Q(display_name__contains='title') & Q(display_name__contains='doc')).count()
-        total = doc_count + image_count + video_count
+        response_json = json.loads(response.content.decode('utf-8'))
+
+        # as each page contains same raw_html i.e RAW_HTML_BLOCK_DATA, so we expect same page count is search results
+        page_count = JournalPage.objects.count()
+        # because non of these have RAW_HTML_BLOCK_DATA in there content/title
+        doc_count = video_count = image_count = 0
+        total = page_count + video_count + image_count + doc_count
+
+        # make assertions
+        self.assertEqual(response_json['meta']['text_count'], page_count, "Incorrect number of text_count")
         self._make_assertions(response, doc_count, image_count, video_count, total)
 
     def test_search_across_multiple_journals_with_DOC_type(self):
@@ -211,7 +216,7 @@ class TestSearchAPI(TestCase):
         })
         self.assertEqual(response.status_code, 200)
 
-        doc_count = JournalDocument.objects.filter(title__contains=self.common_query_string).count()
+        doc_count = JournalDocument.objects.filter(title__icontains=self.common_query_string).count()
         self._make_assertions(response, doc_count=doc_count, image_count=0, video_count=0, total=doc_count)
 
     def test_search_across_multiple_journals_with_IMAGE_types(self):
@@ -226,7 +231,7 @@ class TestSearchAPI(TestCase):
             PARAM_QUERY: self.common_query_string,
             PARAM_TYPE: TYPE_IMAGE
         })
-        image_count = JournalImage.objects.filter(title__contains=self.common_query_string).count()
+        image_count = JournalImage.objects.filter(title__icontains=self.common_query_string).count()
         self.assertEqual(response.status_code, 200)
         self._make_assertions(response, doc_count=0, image_count=image_count, video_count=0, total=image_count)
 
@@ -244,7 +249,7 @@ class TestSearchAPI(TestCase):
             PARAM_TYPE: TYPE_VIDEO
         })
         self.assertEqual(response.status_code, 200)
-        video_count = Video.objects.filter(display_name__contains=self.common_query_string).count()
+        video_count = Video.objects.filter(display_name__icontains=self.common_query_string).count()
         self._make_assertions(response, doc_count=0, image_count=0, video_count=video_count, total=video_count)
 
     def test_raw_html(self):
