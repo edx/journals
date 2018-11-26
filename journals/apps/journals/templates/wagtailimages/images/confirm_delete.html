@@ -1,0 +1,23 @@
+{% extends "wagtailadmin/base.html" %}
+{% load wagtailimages_tags %}
+{% load i18n %}
+{% block titletag %}{% trans "Delete image" %}{% endblock %}
+
+{% block content %}
+    {% trans "Delete image" as del_str %}
+    {% include "wagtailadmin/shared/header.html" with title=del_str icon="image" %}
+
+    <div class="row row-flush nice-padding">
+        <div class="col6">
+            {% image image max-800x600 %}
+        </div>
+        <div class="col6">
+            <p>{{ image.deletion_warning_message|safe }}</p>
+            <form action="{% url 'wagtailimages:delete' image.id %}" method="POST">
+                {% csrf_token %}
+                <input type="submit" value="{% trans 'Yes, delete' %}" class="button serious" />
+                <a href="{% url 'wagtailimages:edit' image.id %}" class="button">{% trans 'No' %}</a>
+            </form>
+        </div>
+    </div>
+{% endblock %}

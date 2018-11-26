@@ -14,6 +14,7 @@ from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import models
+
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
@@ -37,8 +38,12 @@ from wagtail.wagtailsearch.queryset import SearchableQuerySetMixin
 
 from journals.apps.core.models import User
 from journals.apps.journals.api_utils import update_service
-from journals.apps.journals.journal_page_helper import JournalPageMixin
-from journals.apps.journals.utils import get_cache_key, get_image_url, get_default_expiration_date
+from journals.apps.journals.journal_page_helper import JournalPageMixin, ReferencedObjectMixin
+from journals.apps.journals.utils import (
+    get_cache_key,
+    get_image_url,
+    get_default_expiration_date,
+)
 from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 
 logger = logging.getLogger(__name__)
@@ -289,7 +294,7 @@ class JournalAccess(TimeStampedModel):
         return access_record
 
 
-class JournalDocument(AbstractDocument):
+class JournalDocument(AbstractDocument, ReferencedObjectMixin):
     '''
     Override the base Document model so we can index the Document contents for search
     and add reference to JournalAboutPage
@@ -336,8 +341,11 @@ class JournalDocument(AbstractDocument):
     def is_pdf(self):
         return mimetypes.MimeTypes().guess_type(self.filename)[0] == 'application/pdf'
 
+    def get_object_type(self):
+        return "document"
 
-class JournalImage(AbstractImage):
+
+class JournalImage(AbstractImage, ReferencedObjectMixin):
     '''
     Override the base Image model so we can index the Image contents for search
     and add additional fields
@@ -352,6 +360,9 @@ class JournalImage(AbstractImage):
     admin_form_fields = Image.admin_form_fields + (
         'caption',
     )
+
+    def get_object_type(self):
+        return "image"
 
 
 class JournalImageRendition(AbstractRendition):

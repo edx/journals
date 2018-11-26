@@ -5,8 +5,10 @@ from urllib.parse import urljoin
 from django.core.cache import cache
 from django.shortcuts import redirect
 from django.utils.cache import add_never_cache_headers
-from wagtail.wagtailcore.models import PagePermissionTester, UserPagePermissionsProxy
+from django.template.defaultfilters import pluralize
+from django.utils.translation import ugettext_lazy as _
 
+from wagtail.wagtailcore.models import PagePermissionTester, UserPagePermissionsProxy
 from journals.apps.journals.utils import get_cache_key
 
 
@@ -176,3 +178,47 @@ class JournalPageMixin(object):
         """
         user_perms = UserJournalPagePermissionsProxy(user)
         return user_perms.for_page(self)
+
+
+class ReferencedObjectMixin(object):
+    """
+    Mixin class that has helper methods for objects referenced by Journal Pages
+    """
+    def is_image(self):
+        return self.get_object_type() == "image"
+
+    def is_document(self):
+        return self.get_object_type() == "document"
+
+    def get_journal_page_usage(self):
+        """
+        Returns image's usage in journal pages.
+        """
+        from journals.apps.journals.models import JournalPage
+        if self.is_image():
+            return JournalPage.objects.filter(images=self)
+        elif self.is_document():
+            return JournalPage.objects.filter(documents=self)
+        return None
+
+    @property
+    def deletion_warning_message(self):
+        """
+        Returns the custom deletion warning message
+        if image is being used in journal pages.
+        """
+        object_type = self.get_object_type()
+
+        warning_message = _("Are you sure you want to delete this {object}?".format(object=object_type))
+        journal_pages_title = self.get_journal_page_usage().values_list('title', flat=True)
+        if journal_pages_title:
+            warning_message = "The {object} <b>{title}</b> is being used in page{plural}: <b>{page_titles}</b>." \
+                            "<p>Deleting it will remove the {object} from the page{plural} as well." \
+                            "<p>Are you sure you want to delete the {object}?"
+            warning_message = _(warning_message).format(         # pylint: disable=no-member
+                object=object_type,
+                title=self.title,
+                plural=pluralize(len(journal_pages_title)),
+                page_titles=', '.join(journal_pages_title)
+            )
+        return warning_message

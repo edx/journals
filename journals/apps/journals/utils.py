@@ -106,3 +106,34 @@ def parse_csv(file_stream):
     csv_file = csv.reader(file_stream.read().decode('utf-8').splitlines())
     for row in csv_file:
         yield row[0]
+
+
+def delete_block_references(instance, block_type):
+    """
+    Removes reference of the given instance (JournalImage/JournalDocument)
+    from their related journal pages. It deletes the related block from
+    journal_page's body
+    """
+    from journals.apps.journals.blocks import (
+        IMAGE_BLOCK_TYPE,
+        PDF_BLOCK_TYPE,
+        STREAM_DATA_DOC_FIELD
+    )
+    journal_pages = instance.get_journal_page_usage()
+    for journal_page in journal_pages:
+        has_changed = False
+        journal_page_body = journal_page.body
+        for body_index, data in enumerate(journal_page_body.stream_data):
+            if block_type == PDF_BLOCK_TYPE and find_block(PDF_BLOCK_TYPE, STREAM_DATA_DOC_FIELD, data, instance) or \
+                    block_type == IMAGE_BLOCK_TYPE and find_block(IMAGE_BLOCK_TYPE, IMAGE_BLOCK_TYPE, data, instance):
+                        journal_page_body.stream_data.pop(body_index)
+                        has_changed = True
+        if has_changed:
+            journal_page.save()
+            journal_page.save_revision().publish()
+
+
+def find_block(block_type, block_id_field, data, instance):
+    from journals.apps.journals.blocks import STREAM_DATA_TYPE_FIELD
+    return (data.get(STREAM_DATA_TYPE_FIELD, None) == block_type and
+            instance.id == data.get('value').get(block_id_field))
