@@ -36,6 +36,9 @@ docker exec -t edx.devstack.lms  bash -c "source /edx/app/edxapp/edxapp_env && p
 docker cp provision-journal.sql journals.mysql:/provision-journal.sql
 docker exec -t journals.mysql bash -c "mysql -u root journals < /provision-journal.sql"
 
+# Create Site with appropriate configuration via mgmt cmd
+docker exec -t journals.app bash -c "cd /edx/app/${name}/${name}/ && python /edx/app/${name}/${name}/manage.py create_site --sitename 'edX' --default-site --hostname 'localhost' --port '18606' --lms-url-root 'http://edx.devstack.lms:18000' --lms-public-url-root-override 'http://localhost:18000' --discovery-api-url 'http://edx.devstack.discovery:18381/api/v1/' --ecommerce-api-url 'http://edx.devstack.ecommerce:18130/api/v2/' --discovery-partner-id 'edx' --ecommerce-partner-id 'edx' --currency-codes 'USD' --client-secret 'journals-secret' --client-id 'journals-key' --discovery-journal-api-url 'http://edx.devstack.discovery:18381/journal/api/v1/' --ecommerce-journal-api-url 'http://edx.devstack.ecommerce:18130/journals/api/v1' --ecommerce-public-url-root 'http://localhost:18130' --theme-name 'edX' --frontend-url 'http://localhost:1991' --org 'edX'"
+
 # Create demo Journal via mgmt cmd
 docker exec -t journals.app bash -c "cd /edx/app/${name}/${name}/ && python /edx/app/${name}/${name}/manage.py publish_journals --create 'Demo Journal' --org 'edX' --price '100.00'"
 
