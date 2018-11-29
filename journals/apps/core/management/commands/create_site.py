@@ -54,6 +54,14 @@ class Command(BaseCommand):
             help='Webserver port to listen to',
             required=True
         )
+
+        parser.add_argument(
+            '--default-site',
+            dest='default_site',
+            action='store_true',
+            help='Make this the default site'
+        )
+
         parser.add_argument(
             '--lms-url-root',
             help='Root URL for LMS for API calls',
@@ -141,7 +149,9 @@ class Command(BaseCommand):
             "SOCIAL_AUTH_EDX_OIDC_URL_ROOT": urljoin(lms_url_root, '/oauth2'),
             "SOCIAL_AUTH_EDX_OIDC_KEY": client_id,
             "SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT": urljoin(lms_public_url_root_override, 'oauth2'),
-            "SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL": urljoin(lms_public_url_root_override, 'logout')
+            "SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL": urljoin(lms_public_url_root_override, 'logout'),
+            "SOCIAL_AUTH_EDX_OIDC_ISSUER": urljoin(lms_url_root, '/oauth2'),
+            "SOCIAL_AUTH_EDX_OIDC_ISSUERS": [lms_url_root],
         }
         return settings
 
@@ -272,6 +282,7 @@ class Command(BaseCommand):
         hostname = options['hostname']
         port = options['port']
         theme_name = options['theme_name']
+        default_site = options['default_site']
         if not theme_name:
             theme_name = sitename
 
@@ -283,7 +294,8 @@ class Command(BaseCommand):
             hostname=hostname,
             port=port,
             root_page=index_page,
-            site_name=sitename
+            site_name=sitename,
+            is_default_site=default_site,
         )
 
         # Create site config
