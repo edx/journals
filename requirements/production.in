@@ -1,0 +1,10 @@
+# Packages required in a production environment
+-r base.txt
+
+gevent
+gunicorn
+newrelic
+python-memcached
+PyYAML
+docker-compose==1.9.0               # lock to this version to workaround https://github.com/ansible/ansible/issues/20492
+django-ses

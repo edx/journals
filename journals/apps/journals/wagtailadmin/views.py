@@ -186,9 +186,9 @@ class JournalIndexView(WMABaseView):
             journal_discovery_data = next(
                 (data for data in journals_discovery_data if data['uuid'] == str(journal.uuid)), None)
             if journal_discovery_data:
-                setattr(journal, 'price', journal_discovery_data['price'])
-                setattr(journal, 'currency', journal_discovery_data['currency'])
-                setattr(journal, 'status', journal_discovery_data['status'])
+                journal.price = journal_discovery_data['price']
+                journal.currency = journal_discovery_data['currency']
+                journal.status = journal_discovery_data['status']
 
     def get(self, request, *args, **kwargs):
         """
@@ -378,10 +378,10 @@ class JournalAdminDeleteView(DeleteView):
 
     def confirmation_message(self):
         """overridden to custom confirmation message"""
-        return _(
+        return _(  # pylint: disable=no-member
             'Are you sure you want to delete this {instance}? All pages created in this {instance} will be'
-            ' deleted as well. Please use caution.'.format(instance=self.verbose_name)
-        )
+            ' deleted as well. Please use caution.'
+        ).format(instance=self.verbose_name)
 
     def delete_journal_on_other_services(self):
         """

@@ -1,0 +1,26 @@
+# Core dependencies for running journals
+
+beautifulsoup4>=4.6.0,<5.0.0        # html parser
+boto                                # python interfaces to Amazon Web Services
+django==1.11.15
+django-filter==1.1.0                # pinned to avoid this issue https://github.com/carltongibson/django-filter/issues/815
+django-extensions                   # django custom extensions
+django-model-utils
+django-upload-validator
+django-storages
+django-waffle
+djangorestframework
+djangorestframework-jwt
+edx-auth-backends
+edx-django-release-util
+edx-django-utils
+edx-drf-extensions
+edx_rest_api_client
+elasticsearch>=5.0.0,<6.0.0
+jsonfield
+mysqlclient
+pytz
+requests==2.11.1                    # pinned to resolve dependecy conflict while running pip-compile
+urllib3
+wagtail>=1.13,<1.14
+django-cors-headers

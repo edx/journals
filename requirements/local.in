@@ -1,0 +1,7 @@
+# Packages required for local development
+-r test.txt
+-r docs.txt
+
+django-debug-toolbar
+edx-i18n-tools
+transifex-client==0.13.1            # pinned to resolve dependecy conflict in requests package while running pip-compile
