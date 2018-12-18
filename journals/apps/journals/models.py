@@ -510,6 +510,7 @@ class JournalAboutPage(JournalPageMixin, Page):
         APIField('journal_id'),
         APIField('purchase_url'),
         APIField('price'),
+        APIField('access_length'),
         APIField('organization'),
     ]
 
@@ -565,6 +566,13 @@ class JournalAboutPage(JournalPageMixin, Page):
         if journal_data:
             return journal_data.get('price', '0')
         return '0'
+
+    @property
+    def access_length(self):
+        """
+        Return number of days journal can be accessed after purchase
+        """
+        return self.journal.access_length
 
     def generate_require_auth_basket_url(self, sku):
         basket_url = self.generate_basket_url(sku)
