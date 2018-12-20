@@ -20,6 +20,7 @@ from wagtail.utils.pagination import paginate
 from wagtail.wagtailadmin import messages
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, MultiFieldPanel, ObjectList
 from wagtail.wagtailadmin.forms import SearchForm
+from wagtail.wagtailadmin.modal_workflow import render_modal_workflow
 from wagtail.wagtailadmin.navigation import get_explorable_root_page
 from wagtail.wagtailadmin.views.pages import move_choose_destination
 from wagtail.wagtailcore.models import Collection
@@ -439,6 +440,23 @@ class AdminCommandsView(TemplateView):
             'success_message': linebreaks(stdout.getvalue()),
             'failure_message': linebreaks(stderr.getvalue()),
         })
+
+
+class AdminInsertCodeBlockView(TemplateView):
+    """
+    View to render code block text input while inserting code block in WYSIWYG editor
+    """
+    template_name = 'wagtailadmin/halo/code_block.html'
+
+    def get(self, request, *args, **kwargs):
+        return render_modal_workflow(
+            request,
+            self.template_name,
+            'wagtailadmin/halo/code_inserted.js',
+            {
+                'code_block': request.GET.get('code_block', '')
+            }
+        )
 
 
 def move_page(request, page_to_move_id):

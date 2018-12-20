@@ -51,7 +51,9 @@ logger = logging.getLogger(__name__)
 JOURNAL_PAGE_PREVIEW_PATH = 'pagePreview'
 JOURNAL_ABOUT_PAGE_PREVIEW_PATH = 'aboutPreview'
 JOURNAL_INDEX_PAGE_PREVIEW_PATH = 'indexPreview'
-RICH_TEXT_FEATURES = ['h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image']
+RICH_TEXT_FEATURES = [
+    'h1', 'h2', 'h3', 'ol', 'ul', 'bold', 'italic', 'link', 'hr', 'document-link', 'image', 'code-block'
+]
 
 # TODO: Make working 'document-link' and 'image' for RichTextField (currently not click-able on frontend.)
 RICH_TEXT_FIELD_FEATURES = ['h1', 'h2', 'h3', 'ol', 'ul', 'hr', 'bold', 'italic', 'link']

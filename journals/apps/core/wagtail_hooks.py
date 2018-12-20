@@ -8,8 +8,10 @@ from django.core import urlresolvers
 from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext_lazy as _
 from wagtail.wagtailadmin.menu import MenuItem
+from wagtail.wagtailadmin.rich_text import HalloPlugin
 from wagtail.wagtailadmin.site_summary import PagesSummaryItem
 from wagtail.wagtailcore import hooks
+from wagtail.wagtailcore.whitelist import allow_without_attributes
 from wagtail.wagtaildocs.permissions import permission_policy as document_permission_policy
 from wagtail.wagtaildocs.wagtail_hooks import DocumentsSummaryItem
 from wagtail.wagtailimages.permissions import permission_policy as image_permission_policy
@@ -105,6 +107,13 @@ def images_with_add_or_change_permissions_only(images, request):  # pylint: disa
     )
 
 
+@hooks.register('insert_editor_css')
+def editor_css():
+    return """
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/styles/default.min.css">
+    """
+
+
 @hooks.register('insert_editor_js')
 def editor_js():
     """
@@ -112,6 +121,7 @@ def editor_js():
     """
     js_files = [
         static('js/video/chooser/video-chooser.js'),
+        '//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js',
     ]
     js_includes = format_html_join(
         '\n', '<script src="{0}"></script>',
@@ -121,10 +131,38 @@ def editor_js():
         """
         <script>
             window.chooserUrls.videoChooser = '{0}';
+            window.chooserUrls.insertCodeBlock = '{1}';
+            registerHalloPlugin('hallowagtailcodeblock');
+            hljs.configure({{languages: ['javascript', 'xml', 'python']}});
+            hljs.initHighlightingOnLoad();
         </script>
         """,
-        urlresolvers.reverse('journals:video_chooser')
+        urlresolvers.reverse('journals:video_chooser'),
+        urlresolvers.reverse('journals:insert_code_block'),
     )
+
+
+@hooks.register('construct_whitelister_element_rules')
+def whitelist_element_rules():
+    return {
+        'pre': allow_without_attributes,
+        'code': allow_without_attributes,
+    }
+
+
+@hooks.register('register_rich_text_features')
+def register_embed_feature(features):
+    """
+    Hook to register custom richtext features
+    """
+    features.register_editor_plugin(
+        'hallo', 'code-block',
+        HalloPlugin(
+            name='hallowagtailcodeblock',
+            js=['js/lib/halo_codeblock_plugin.js'],
+        )
+    )
+    features.default_features.append('code-block')
 
 
 @hooks.register('register_group_permission_panel')
