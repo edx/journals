@@ -20,7 +20,7 @@ from django.utils.translation import ugettext_lazy as _
 from model_utils.models import TimeStampedModel
 
 from jsonfield.fields import JSONField
-from slumber.exceptions import HttpNotFoundError
+from slumber.exceptions import HttpClientError, HttpNotFoundError, HttpServerError
 from taggit.managers import TaggableManager
 from upload_validator import FileTypeValidator
 
@@ -534,11 +534,11 @@ class JournalAboutPage(JournalPageMixin, Page):
         journal_data = cache.get(cache_key, _CACHE_MISS)
 
         if journal_data is _CACHE_MISS:
-            api_client = self.site.siteconfiguration.discovery_journal_api_client
             try:
+                api_client = self.site.siteconfiguration.discovery_journal_api_client
                 journal_data = api_client.journals(self.journal.uuid).get()
                 cache.set(cache_key, journal_data, 3600)
-            except HttpNotFoundError as err:
+            except (HttpClientError, HttpNotFoundError, HttpServerError, requests.exceptions.ConnectionError) as err:
                 logger.error(
                     'Could not find journal uuid={uuid} in discovery service, err={err}'.format(
                         uuid=self.journal.uuid, err=err))

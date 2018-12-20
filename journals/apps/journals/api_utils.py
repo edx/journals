@@ -2,6 +2,7 @@
 Utility methods for journals
 """
 import logging
+import requests
 
 from slumber.exceptions import HttpNotFoundError, HttpClientError
 
@@ -41,6 +42,12 @@ def update_service(client, uuid, data, service_name):
             service_name=service_name,
             error=err.content
         ))
+    except requests.exceptions.ConnectionError as conn_err:
+        logger.error(
+            'Could not update journal uuid={uuid} in {service_name} service, err={err}'.format(
+                uuid=uuid, service_name=service_name, err=conn_err
+            ))
+
     return False
 
 
