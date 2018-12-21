@@ -10,4 +10,5 @@ urlpatterns = [
     url(r'^import_videos/$', wagtailadmin_views.VideoImportView.as_view(), name='import_videos'),
     url(r'^video_chooser/$', video_chooser_views.chooser, name='video_chooser'),
     url(r'^video_chooser/(\d+)/$', video_chooser_views.video_chosen, name='video_chosen'),
+    url(r'^insert_code_block/$', wagtailadmin_views.AdminInsertCodeBlockView.as_view(), name='insert_code_block'),
 ]
