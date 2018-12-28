@@ -1,16 +1,13 @@
 APP_NAME=journals
-NODE_BIN=./node_modules/.bin
 TEST_ROOT=test_root
 MIN_COVERAGE=30
 SELENIUM_BROWSER ?= firefox
 SELENIUM_HOST ?= edx.devstack.firefox
-JS_TEST_BROWSER ?= FirefoxDocker
-JS_TEST_HOST ?= journals.app
 .DEFAULT_GOAL := test
 
 .PHONY: clean compile_translations dummy_translations extract_translations fake_translations help html_coverage \
-	migrate pull_translations push_translations quality requirements requirements.js prod-requirements \
-	test test_python test_js e2e html_coverage quality_python quality_js update_translations validate upgrade
+	migrate pull_translations push_translations quality requirements  prod-requirements \
+	test test_python e2e html_coverage quality_python update_translations validate upgrade
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -25,14 +22,11 @@ help:
 	@echo "  production-requirements          install requirements for production"
 	@echo "  pull_translations          pull translations from Transifex"
 	@echo "  push_translations          push source translation files (.po) from Transifex"
-	@echo "  quality                    run PEP8 and Pylint and eslint"
+	@echo "  quality                    run PEP8 and Pylint"
 	@echo "  quality_python             run PEP8 and Pylint"
-	@echo "  quality_js                 run eslint"
 	@echo "  requirements               install requirements for local development"
 	@echo "  static                     make static assets for production"
 	@echo "  test_python                run python unit tests and generate coverage report"
-	@echo "  test_js                    run javascript unit tests and generate coverage report"
-	@echo "  test_js_dev                run javascript unit tests in development/debug mode and generate coverage report"
 	@echo "  e2e                        run end to end tests"
 	@echo "  test                       run tests and generate coverage report"
 	@echo "  validate                   run tests and quality checks"
@@ -49,10 +43,7 @@ clean:
 	rm -rf coverage $(TEST_ROOT)
 	mkdir -p $(TEST_ROOT)/reports
 
-requirements.js:
-	npm install
-
-requirements: requirements.js
+requirements:
 	pip install -qr requirements/local.txt --exists-action w
 
 static: ## Gather all static assets for production
@@ -72,22 +63,13 @@ e2e:
 	py.test e2e --driver Remote --junitxml=test_root/reports/e2e/xunit.xml --rootdir=$(TEST_ROOT)
 endif
 
-test_js:
-	$(NODE_BIN)/gulp test --browsers $(JS_TEST_BROWSER) --hostname $(JS_TEST_HOST) --single-run=true
-
-test_js_dev:
-	$(NODE_BIN)/gulp test --browsers $(JS_TEST_BROWSER) --hostname $(JS_TEST_HOST) --single-run=false
-
-test: test_python test_js e2e
+test: test_python e2e
 
 quality_python:
 	pycodestyle --config=.pycodestyle journals *.py
 	pylint --rcfile=pylintrc journals *.py
 
-quality_js:
-	$(NODE_BIN)/gulp lint
-
-quality: quality_python quality_js
+quality: quality_python
 
 validate: test quality
 
