@@ -31,7 +31,6 @@ services:
     volumes:
       - ..:/edx/app/journals/journals
       - $HOME/.cache/pip:/edx/app/journals/.cache/pip
-      - /edx/app/journals/journals/node_modules
     depends_on:
       - mysql
     environment:

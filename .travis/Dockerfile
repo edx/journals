@@ -1,6 +1,5 @@
-FROM edxops/python:3.5
+FROM python:3.5
 WORKDIR /edx/app/journals/journals
-ADD package.json /edx/app/journals/journals/
 ADD Makefile /edx/app/journals/journals/
 ADD requirements/ /edx/app/journals/journals/requirements/
 ADD . /edx/app/journals/journals
