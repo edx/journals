@@ -8,8 +8,6 @@ services:
 
 cache:
   - pip
-  - directories:
-    - node_modules
 
 before_install:
   - docker-compose -f ./.travis/docker-compose-travis.yml up -d
