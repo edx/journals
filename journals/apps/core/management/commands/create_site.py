@@ -150,8 +150,8 @@ class Command(BaseCommand):
             "SOCIAL_AUTH_EDX_OIDC_KEY": client_id,
             "SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT": urljoin(lms_public_url_root_override, 'oauth2'),
             "SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL": urljoin(lms_public_url_root_override, 'logout'),
-            "SOCIAL_AUTH_EDX_OIDC_ISSUER": urljoin(lms_url_root, '/oauth2'),
-            "SOCIAL_AUTH_EDX_OIDC_ISSUERS": [lms_url_root],
+            "SOCIAL_AUTH_EDX_OIDC_ISSUER": urljoin(lms_public_url_root_override, '/oauth2'),
+            "SOCIAL_AUTH_EDX_OIDC_ISSUERS": [lms_public_url_root_override],
         }
         return settings
 
