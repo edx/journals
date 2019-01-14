@@ -2,6 +2,7 @@
 from urllib.parse import urlparse
 
 from django_filters.rest_framework import DjangoFilterBackend
+import waffle
 from rest_framework import views, viewsets
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -16,6 +17,7 @@ from journals.apps.theming.models import SiteBranding
 from journals.apps.journals.utils import lms_integration_enabled
 
 STANDARD_HTTP_PORTS = [80, 443]
+DISABLE_LMS_WAFFLE_SWITCH = 'disable_lms_integration'
 
 
 class SiteBrandingViewSet(viewsets.ReadOnlyModelViewSet):
