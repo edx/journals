@@ -126,8 +126,11 @@ dev.makemigrations:
 dev.migrate: # Migrates databases. Application and DB server must be up for this to work.
 	docker exec -it journals.app bash -c 'cd /edx/app/journals/journals && make migrate'
 
-dev.up: # Starts all containers
+dev.build: # Build and starts all containers
 	docker-compose up -d --build
+
+dev.up: # Starts all containers
+	docker-compose up -d
 
 dev.down: # Kills containers and all of their data that isn't in volumes
 	docker-compose down
