@@ -310,7 +310,7 @@ JWT_AUTH = {
         {
             'SECRET_KEY': 'lms-secret',
             'AUDIENCE': 'lms-key',
-            'ISSUER': 'http://edx.devstack.lms:18000/oauth2'
+            'ISSUER': 'http://localhost:18000/oauth2'
         }
     ],
     'JWT_ISSUER': 'journals'
