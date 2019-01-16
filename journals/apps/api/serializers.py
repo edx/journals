@@ -100,6 +100,7 @@ class UserSerializer(serializers.ModelSerializer):
             'id',
             'username',
             'can_access_admin',
+            'email',
         )
 
 
