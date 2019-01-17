@@ -2,7 +2,7 @@
 
 import logging
 
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from collections import OrderedDict
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django_filters.rest_framework import DjangoFilterBackend
@@ -23,16 +23,20 @@ logger = logging.getLogger(__name__)
 
 class UserAccountView(views.APIView):
     """
-    API to create users and login
+    API to create users, login and logout
     """
     permission_classes = (AllowAny, )
 
     def post(self, request, *args, **kwargs):
         """create a user entry and log them in"""
+        logout_only = request.data.get('logout')
         login_only = request.data.get('login')
         username = request.data.get('username')
         email = request.data.get('email')
         password = request.data.get('password')
+
+        if logout_only:
+            return self._handle_logout(request)
 
         if login_only:
             return self._handle_login(request, username, password)
@@ -57,6 +61,20 @@ class UserAccountView(views.APIView):
             })
         except Exception as err:
             message = "Login failed username={} err={}".format(username, err)
+            logger.error(message)
+            return HttpResponseBadRequest(message)
+
+    def _handle_logout(self, request):
+        try:
+            logout(request)
+            return Response({
+                # 'user': UserSerializer(user).data,
+                'username': '',
+                'email': '',
+                'is_authenticated': False,
+            })
+        except Exception as err:
+            message = "Logout failed err={}".format(err)
             logger.error(message)
             return HttpResponseBadRequest(message)
 
