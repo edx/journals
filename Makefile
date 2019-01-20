@@ -44,7 +44,7 @@ clean:
 	mkdir -p $(TEST_ROOT)/reports
 
 requirements:
-	pip install -qr requirements/local.txt --exists-action w
+	pip install -r requirements/local.txt --exists-action w
 
 static: ## Gather all static assets for production
 	python manage.py collectstatic --noinput
@@ -126,8 +126,11 @@ dev.makemigrations:
 dev.migrate: # Migrates databases. Application and DB server must be up for this to work.
 	docker exec -it journals.app bash -c 'cd /edx/app/journals/journals && make migrate'
 
-dev.up: # Starts all containers
+dev.build: # Build and starts all containers
 	docker-compose up -d --build
+
+dev.up: # Starts all containers
+	docker-compose up -d
 
 dev.down: # Kills containers and all of their data that isn't in volumes
 	docker-compose down

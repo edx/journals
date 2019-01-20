@@ -43,6 +43,7 @@ from journals.apps.journals.utils import (
     get_cache_key,
     get_image_url,
     get_default_expiration_date,
+    lms_integration_enabled,
 )
 from journals.apps.search.backend import LARGE_TEXT_FIELD_SEARCH_PROPS
 
@@ -525,6 +526,9 @@ class JournalAboutPage(JournalPageMixin, Page):
         Get journal data from discovery first
         checking in cache
         '''
+        if not lms_integration_enabled():
+            return None
+
         api_resource = 'journals'
 
         cache_key = get_cache_key(

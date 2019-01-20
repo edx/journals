@@ -26,7 +26,7 @@ services:
 
   journals:
     # Uncomment this line to use the official journals base image
-    image: edxops/journals:devstack
+    # image: edxops/journals:devstack
     build: 
       context: .
       dockerfile: Dockerfile-journals

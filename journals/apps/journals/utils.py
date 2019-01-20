@@ -5,6 +5,7 @@ import csv
 import datetime
 import hashlib
 import logging
+import waffle
 from urllib.parse import urljoin, urlparse
 import six
 
@@ -13,7 +14,7 @@ from wagtail.wagtailadmin import messages
 logger = logging.getLogger(__name__)
 
 BLOCK_SPAN_ID_FORMATTER = '{block_type}-{block_id}'
-
+DISABLE_LMS_WAFFLE_SWITCH = 'disable_lms_integration'
 
 def make_md5_hash(value):
     if value:
@@ -137,3 +138,7 @@ def find_block(block_type, block_id_field, data, instance):
     from journals.apps.journals.blocks import STREAM_DATA_TYPE_FIELD
     return (data.get(STREAM_DATA_TYPE_FIELD, None) == block_type and
             instance.id == data.get('value').get(block_id_field))
+
+
+def lms_integration_enabled():
+    return not waffle.switch_is_active(DISABLE_LMS_WAFFLE_SWITCH)
