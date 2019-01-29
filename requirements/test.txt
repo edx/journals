@@ -27,70 +27,70 @@ django-storages==1.7.1
 django-taggit==0.22.2
 django-treebeard==4.3
 django-upload-validator==1.0
-django-waffle==0.15.0
-django==1.11.15
+django-waffle==0.15.1
+django==1.11.18
 djangorestframework-jwt==1.11.0
 djangorestframework==3.6.4
 edx-auth-backends==1.2.1
 edx-django-release-util==0.3.1
-edx-django-utils==1.0.1
+edx-django-utils==1.0.3
 edx-drf-extensions==2.0.1
-edx-lint==0.6.0
+edx-lint==1.1.0
 edx-opaque-keys==0.4.4
 edx-rest-api-client==1.9.2
 elasticsearch==5.5.3
 execnet==1.5.0            # via pytest-xdist
 factory-boy==2.11.1
-faker==1.0.0              # via factory-boy
+faker==1.0.2              # via factory-boy
 future==0.17.1
 html5lib==0.999999999
 isort==4.3.4              # via pylint
 jsonfield==2.0.2
 lazy-object-proxy==1.3.1  # via astroid
-lazy==1.3                 # via bok-choy
+lazy==1.4                 # via bok-choy
 mccabe==0.6.1             # via pylint
 mock==2.0.0
-more-itertools==4.3.0     # via pytest
+more-itertools==5.0.0     # via pytest
 mysqlclient==1.3.14
-newrelic==4.8.0.110
+newrelic==4.12.0.113
 nose==1.3.7               # via django-nose
-oauthlib==2.1.0
+oauthlib==3.0.1
 pathlib2==2.3.3           # via pytest
 pbr==5.1.1
-pillow==5.3.0
-pluggy==0.8.0             # via pytest
+pillow==5.4.1
+pluggy==0.8.1             # via pytest
 psutil==1.2.1
 py==1.7.0                 # via pytest
 pycodestyle==2.4.0
-pycryptodomex==3.7.2
+pycryptodomex==3.7.3
 pyjwkest==1.3.2
-pyjwt==1.7.0
+pyjwt==1.7.1
 pylint-celery==0.3        # via edx-lint
 pylint-django==0.7.2      # via edx-lint
 pylint-plugin-utils==0.4  # via pylint-celery, pylint-django
 pylint==1.7.6             # via edx-lint, pylint-celery, pylint-django, pylint-plugin-utils
 pymongo==3.7.2
 pytest-base-url==1.4.1    # via pytest-selenium
-pytest-cov==2.6.0
-pytest-django==3.4.4
-pytest-forked==0.2        # via pytest-xdist
-pytest-html==1.19.0       # via pytest-selenium
-pytest-metadata==1.7.0    # via pytest-html
-pytest-selenium==1.14.0
+pytest-cov==2.6.1
+pytest-django==3.4.5
+pytest-forked==1.0.1      # via pytest-xdist
+pytest-html==1.20.0       # via pytest-selenium
+pytest-metadata==1.8.0    # via pytest-html
+pytest-selenium==1.15.1
 pytest-variables==1.7.1   # via pytest-selenium
-pytest-xdist==1.24.1
-pytest==4.0.1             # via pytest-base-url, pytest-cov, pytest-django, pytest-forked, pytest-html, pytest-metadata, pytest-selenium, pytest-variables, pytest-xdist
+pytest-xdist==1.26.1
+pytest==4.1.1             # via pytest-base-url, pytest-cov, pytest-django, pytest-forked, pytest-html, pytest-metadata, pytest-selenium, pytest-variables, pytest-xdist
 python-dateutil==2.7.5
 python-magic==0.4.15
 python3-openid==3.1.0
-pytz==2018.7
+pytz==2018.9
 pyyaml==3.13
-requests-oauthlib==1.0.0
+requests-oauthlib==1.2.0
 requests==2.11.1
 rest-condition==1.0.3
 selenium==3.141.0         # via bok-choy, pytest-selenium
 semantic-version==2.6.0
-six==1.11.0
+six==1.12.0
 slumber==0.7.1
 social-auth-app-django==1.2.0
 social-auth-core[openidconnect]==1.7.0
@@ -101,4 +101,4 @@ urllib3==1.24.1
 wagtail==1.13.4
 webencodings==0.5.1
 willow==1.0
-wrapt==1.10.11            # via astroid
+wrapt==1.11.1             # via astroid
