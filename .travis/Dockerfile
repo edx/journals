@@ -1,4 +1,4 @@
-FROM python:3.5
+FROM python:3.6
 WORKDIR /edx/app/journals/journals
 ADD Makefile /edx/app/journals/journals/
 ADD requirements/ /edx/app/journals/journals/requirements/
