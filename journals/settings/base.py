@@ -106,19 +106,34 @@ WSGI_APPLICATION = 'journals.wsgi.application'
 # Set this value in the environment-specific files (e.g. local.py, production.py, test.py)
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',  # Empty for localhost through domain sockets or '127.0.0.1' for localhost through TCP.
-        'PORT': '',  # Set to empty string for default.
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'journals',
+        'USER': 'journ001',
+        'PASSWORD': 'password',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+        'ATOMIC_REQUESTS': False,
+        'CONN_MAX_AGE': 60,
+        'OPTIONS': {
+            'connect_timeout': 10,
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
+
+# CACHE CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#caches
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+# END CACHE CONFIGURATION
 
 # Internationalization
 # https://docs.djangoproject.com/en/dev/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en'
 
 TIME_ZONE = 'UTC'
 
@@ -139,6 +154,12 @@ MEDIA_ROOT = root('media')
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#media-url
 MEDIA_URL = '/media/'
+
+MEDIA_STORAGE_BACKEND = {
+    'DEFAULT_FILE_STORAGE': 'django.core.files.storage.FileSystemStorage',
+    'MEDIA_ROOT': MEDIA_ROOT,
+    'MEDIA_URL': MEDIA_URL
+}
 # END MEDIA CONFIGURATION
 
 
@@ -300,20 +321,18 @@ REST_FRAMEWORK = {
     ),
 }
 
-
 JWT_AUTH = {
-    'JWT_DECODE_HANDLER': 'edx_rest_framework_extensions.auth.jwt.decoder.jwt_decode_handler',
-    'JWT_AUDIENCE': 'journals',
-    'JWT_VERIFY_AUDIENCE': False,
-    'JWT_ALGORITHM': 'HS256',
-    'JWT_ISSUERS': [
+    'JWT_ISSUER': [
         {
-            'SECRET_KEY': 'lms-secret',
-            'AUDIENCE': 'lms-key',
-            'ISSUER': 'http://localhost:18000/oauth2'
+            'AUDIENCE': 'SET-ME-PLEASE',
+            'ISSUER': 'http://127.0.0.1:8000/oauth2',
+            'SECRET_KEY': 'SET-ME-PLEASE'
         }
     ],
-    'JWT_ISSUER': 'journals'
+    'JWT_PUBLIC_SIGNING_JWK_SET': None,
+    'JWT_AUTH_COOKIE_HEADER_PAYLOAD': 'edx-jwt-cookie-header-payload',
+    'JWT_AUTH_COOKIE_SIGNATURE': 'edx-jwt-cookie-signature',
+    'JWT_AUTH_REFRESH_COOKIE': 'edx-jwt-refresh-cookie'
 }
 # Wagtail Specific
 
@@ -346,3 +365,57 @@ ALLOWED_DOCUMENT_FILE_EXTENSIONS = ['.pdf']
 
 BATCH_SIZE_FOR_LMS_USER_API = 50
 MAX_ELASTICSEARCH_UPLOAD_SIZE = 10000000  # maximum number of bytes per document that can be uploaded to elasticsearch
+
+ELASTICSEARCH_URL = 'http://127.0.0.1:9500'
+ELASTICSEARCH_INDEX_NAME = 'journals'
+
+DEFAULT_PARTNER_ID = 1
+
+AWS_SES_REGION_NAME = 'us-east-1'
+AWS_SES_REGION_ENDPOINT = 'email.us-east-1.amazonaws.com'
+
+EMAIL_BACKEND = 'django_ses.SESBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 25
+EMAIL_USE_TLS = False
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+
+PUBLISHER_FROM_EMAIL = None
+
+OPENEXCHANGERATES_API_KEY = ''
+
+PARLER_DEFAULT_LANGUAGE_CODE = 'en'
+PARLER_LANGUAGES = {
+    '1': [{'code': 'en'}],
+    'default': {
+        'fallbacks': ['en'],
+        'hide_untranslated': 'False'
+    }
+}
+
+CSRF_COOKIE_SECURE = False
+
+SOCIAL_AUTH_EDX_OIDC_KEY = 'journals-key'
+SOCIAL_AUTH_EDX_OIDC_SECRET = 'journals-secret'
+SOCIAL_AUTH_EDX_OIDC_URL_ROOT = 'http://127.0.0.1:8000/oauth2'
+SOCIAL_AUTH_EDX_OIDC_LOGOUT_URL = 'http://127.0.0.1:8000/logout'
+SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY = 'journals-secret'
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
+SOCIAL_AUTH_EDX_OIDC_PUBLIC_URL_ROOT = 'http://127.0.0.1:8000/oauth2'
+SOCIAL_AUTH_EDX_OIDC_ISSUER = 'http://127.0.0.1:8000/oauth2'
+SOCIAL_AUTH_EDX_OAUTH2_KEY = 'journals-sso-key'
+SOCIAL_AUTH_EDX_OAUTH2_SECRET = 'journals-sso-secret'
+SOCIAL_AUTH_EDX_OAUTH2_ISSUER = 'http://127.0.0.1:8000'
+SOCIAL_AUTH_EDX_OAUTH2_URL_ROOT = 'http://127.0.0.1:8000'
+SOCIAL_AUTH_EDX_OAUTH2_LOGOUT_URL = 'http://127.0.0.1:8000/logout'
+
+BACKEND_SERVICE_EDX_OAUTH2_KEY = 'journals-backend-service-key'
+BACKEND_SERVICE_EDX_OAUTH2_SECRET = 'journals-service-secret'
+BACKEND_SERVICE_EDX_OAUTH2_PROVIDER_URL = 'http://127.0.0.1:8000/oauth2'
+
+API_ROOT = None
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
