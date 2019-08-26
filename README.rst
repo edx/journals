@@ -6,9 +6,11 @@ journals  |Travis|_ |Codecov|_
 .. |Codecov| image:: http://codecov.io/github/edx/journals/coverage.svg?branch=master
 .. _Codecov: http://codecov.io/github/edx/journals?branch=master
 
-The Journal service is a standalone IDA that provides functionality to create, author, search and deploy Content Journals. 
-A Content Journal is a topical, updatable, searchable, purchasable, "Non-Course" like collection of content (html, images, videos, documents) served up through an intuitive web front-end. 
-It utilizes the `Wagtail CMS <https://wagtail.io/>`_ for authoring and `Elasticsearch <https://www.elastic.co/products/elasticsearch>`_ for full-text content search, including rich text, PDF's and Video transcripts. 
+**This repository has been archived and is no longer supported—use it at your own risk. This repository may depend on out-of-date libraries with security issues, and security updates will not be provided. Pull requests against this repository will also not be merged.**
+
+The Journal service is a standalone IDA that provides functionality to create, author, search and deploy Content Journals.
+A Content Journal is a topical, updatable, searchable, purchasable, "Non-Course" like collection of content (html, images, videos, documents) served up through an intuitive web front-end.
+It utilizes the `Wagtail CMS <https://wagtail.io/>`_ for authoring and `Elasticsearch <https://www.elastic.co/products/elasticsearch>`_ for full-text content search, including rich text, PDF's and Video transcripts.
 
 Journal service is intended to be used in conjunction with the `Journals Frontend React App <https://github.com/edx/journals-frontend/>`_ and is fully integrated with the edx platform to be discoverable in LMS, purchasable in ecommerce and marketable in discovery.
 It also exposes a set of Rest-APIs that are used by these other services.
@@ -36,14 +38,14 @@ Please do not report security issues in public. Please email security@edx.org.
 
 Getting Started
 ---------------
-Journal service and frontend currently run in their own independent docker environments. 
+Journal service and frontend currently run in their own independent docker environments.
 Initial Journal setup and user authentication depends on a working independent edx-platform docker environment as the docker environments all communciate with each other.
 In the future, features may be added to journals such that it doesn't require edx-platform at all and can run standalone.
 
 Configure edx-platform
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 1. Get edx-platform docker devstack up and running
-   
+
 -  ``git clone https://github.com/edx/devstack.git``
 -  Then follow instructions found here to configure: https://github.com/edx/devstack/blob/master/README.rst
 -  Start devstack ``make dev.up``
@@ -83,12 +85,12 @@ Configure Journal Service
 
 ::
 
-            Name                       Command               State                    Ports                 
+            Name                       Command               State                    Ports
     ---------------------------------------------------------------------------------------------------------
-    journals.app             bash -c while true; do pyt ...   Up      0.0.0.0:13876->13876/tcp,              
-                                                                    0.0.0.0:18606->18606/tcp               
-    journals.elasticsearch   /docker-entrypoint.sh elas ...   Up      9200/tcp, 9300/tcp                     
-    journals.mysql           docker-entrypoint.sh mysqld      Up      3306/tcp     
+    journals.app             bash -c while true; do pyt ...   Up      0.0.0.0:13876->13876/tcp,
+                                                                    0.0.0.0:18606->18606/tcp
+    journals.elasticsearch   /docker-entrypoint.sh elas ...   Up      9200/tcp, 9300/tcp
+    journals.mysql           docker-entrypoint.sh mysqld      Up      3306/tcp
 
 5. Access Journal editor by going to http://localhost:18606/cms. This displays Journal Editor UI where you can create and edit Journals.
 
